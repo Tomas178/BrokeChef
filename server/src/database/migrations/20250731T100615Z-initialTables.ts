@@ -9,10 +9,10 @@ export async function up(database: Kysely<any>) {
     .addColumn('email_verified', 'boolean', c => c.notNull().defaultTo(false))
     .addColumn('image', 'text')
     .addColumn('created_at', 'timestamptz', c =>
-      c.notNull().defaultTo(sql`now()`)
+      c.notNull().defaultTo(sql`CURRENT_TIMESTAMP`)
     )
     .addColumn('updated_at', 'timestamptz', c =>
-      c.notNull().defaultTo(sql`now()`)
+      c.notNull().defaultTo(sql`CURRENT_TIMESTAMP`)
     )
     .execute();
 
@@ -27,10 +27,10 @@ export async function up(database: Kysely<any>) {
     .addColumn('ip_address', 'text')
     .addColumn('user_agent', 'text')
     .addColumn('created_at', 'timestamptz', col =>
-      col.notNull().defaultTo(sql`now()`)
+      col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`)
     )
     .addColumn('updated_at', 'timestamptz', col =>
-      col.notNull().defaultTo(sql`now()`)
+      col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`)
     )
     .execute();
 
@@ -50,10 +50,10 @@ export async function up(database: Kysely<any>) {
     .addColumn('id_token', 'text')
     .addColumn('password', 'text')
     .addColumn('created_at', 'timestamptz', col =>
-      col.notNull().defaultTo(sql`now()`)
+      col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`)
     )
     .addColumn('updated_at', 'timestamptz', col =>
-      col.notNull().defaultTo(sql`now()`)
+      col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`)
     )
     .execute();
 
@@ -64,27 +64,27 @@ export async function up(database: Kysely<any>) {
     .addColumn('value', 'text', col => col.notNull())
     .addColumn('expires_at', 'timestamptz', col => col.notNull())
     .addColumn('created_at', 'timestamptz', col =>
-      col.notNull().defaultTo(sql`now()`)
+      col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`)
     )
     .addColumn('updated_at', 'timestamptz', col =>
-      col.notNull().defaultTo(sql`now()`)
+      col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`)
     )
     .execute();
 
   await database.schema
     .createTable('recipes')
     .addColumn('id', 'integer', c => c.primaryKey().generatedAlwaysAsIdentity())
-    .addColumn('creator_id', 'text', c =>
+    .addColumn('user_id', 'text', c =>
       c.notNull().references('users.id').onDelete('cascade')
     )
     .addColumn('title', 'text', c => c.notNull())
     .addColumn('duration', 'integer', c => c.notNull())
     .addColumn('steps', 'text', c => c.notNull())
     .addColumn('created_at', 'timestamptz', c =>
-      c.notNull().defaultTo(sql`now()`)
+      c.notNull().defaultTo(sql`CURRENT_TIMESTAMP`)
     )
     .addColumn('updated_at', 'timestamptz', c =>
-      c.notNull().defaultTo(sql`now()`)
+      c.notNull().defaultTo(sql`CURRENT_TIMESTAMP`)
     )
     .execute();
 
@@ -97,7 +97,7 @@ export async function up(database: Kysely<any>) {
       c.notNull().references('users.id').onDelete('cascade')
     )
     .addColumn('saved_at', 'timestamptz', c =>
-      c.notNull().defaultTo(sql`now()`)
+      c.notNull().defaultTo(sql`CURRENT_TIMESTAMP`)
     )
     .addPrimaryKeyConstraint('saved_recipes_primary_key', [
       'recipe_id',
@@ -110,7 +110,7 @@ export async function up(database: Kysely<any>) {
     .addColumn('id', 'integer', c => c.primaryKey().generatedAlwaysAsIdentity())
     .addColumn('name', 'text', c => c.notNull().unique())
     .addColumn('created_at', 'timestamptz', c =>
-      c.notNull().defaultTo(sql`now()`)
+      c.notNull().defaultTo(sql`CURRENT_TIMESTAMP`)
     )
     .execute();
 
@@ -133,7 +133,7 @@ export async function up(database: Kysely<any>) {
     .addColumn('id', 'integer', c => c.primaryKey().generatedAlwaysAsIdentity())
     .addColumn('name', 'text', c => c.notNull().unique())
     .addColumn('created_at', 'timestamptz', c =>
-      c.notNull().defaultTo(sql`now()`)
+      c.notNull().defaultTo(sql`CURRENT_TIMESTAMP`)
     )
     .execute();
 

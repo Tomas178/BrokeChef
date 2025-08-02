@@ -36,12 +36,12 @@ export interface Ingredients {
 
 export interface Recipes {
   createdAt: Generated<Timestamp>;
-  creatorId: string;
   duration: number;
   id: Generated<number>;
   steps: string;
   title: string;
   updatedAt: Generated<Timestamp>;
+  userId: string;
 }
 
 export interface RecipesIngredients {
