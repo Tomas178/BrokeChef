@@ -1,0 +1,70 @@
+import { globalIgnores } from 'eslint/config';
+import pluginVue from 'eslint-plugin-vue';
+import {
+  configureVueProject,
+  defineConfigWithVueTs,
+  vueTsConfigs,
+} from '@vue/eslint-config-typescript';
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+import playwright from 'eslint-plugin-playwright';
+import vitest from '@vitest/eslint-plugin';
+
+configureVueProject({
+  tsSyntaxInTemplates: true,
+  scriptLangs: ['ts'],
+});
+
+export default defineConfigWithVueTs(
+  pluginVue.configs['flat/essential'],
+  vueTsConfigs.recommended,
+
+  {
+    rules: {
+      'vue/multi-word-component-names': 'off',
+      'import/no-relative-parent-imports': 'off',
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                'app',
+                'config',
+                'database',
+                'entities',
+                'modules',
+                'repositories',
+                'trpc',
+                'utils',
+              ].flatMap(path => [
+                `@server/${path}`,
+                `@mono/server/src/${path}`,
+              ]),
+              message:
+                'Please only import from @server/shared or @mono/server/src/shared.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  globalIgnores([
+    '**/node_modules/**',
+    '**/dist/**',
+    '**/dist-ssr/**',
+    '**/coverage/**',
+  ]),
+
+  {
+    ...playwright.configs['flat/recommended'],
+    files: ['e2e/**/*.{test,spec}.{js,ts,jsx,tsx}'],
+  },
+
+  {
+    ...vitest.configs.recommended,
+    files: ['src/**/__tests__/*'],
+  },
+
+  eslintPluginPrettierRecommended
+);
