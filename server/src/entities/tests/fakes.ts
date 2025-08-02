@@ -8,9 +8,11 @@ const randomIntegerId = () =>
     max: 100_000_0,
   });
 
-export const fakeUser = <T extends Partial<Insertable<Users>>>(overrides: T) =>
+export const fakeUser = <T extends Partial<Insertable<Users>>>(
+  overrides: T = {} as T
+) =>
   ({
-    id: 'a'.repeat(32),
+    id: random.string({ length: 32 }),
     name: random.name(),
     email: random.email(),
     emailVerified: random.bool(),
@@ -24,9 +26,9 @@ export const fakeRecipe = <T extends Partial<Insertable<Recipes>>>(
   overrides: T = {} as T
 ) =>
   ({
-    userId: 'a'.repeat(32),
+    userId: random.string({ length: 32 }),
     title: random.string(),
-    duration: random.integer(),
+    duration: randomIntegerId(),
     steps: random.paragraph(),
     ...overrides,
     createdAt: new Date(),

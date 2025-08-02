@@ -7,6 +7,7 @@ import {
 } from './shared';
 import type { Recipes } from '@server/database';
 import type { Selectable } from 'kysely';
+import type { UsersPublic } from './users';
 
 export const recipesSchema = z.object({
   id: integerIdSchema,
@@ -27,4 +28,4 @@ export const recipesKeysPublic = recipesKeysAll;
 export type RecipesPublic = Pick<
   Selectable<Recipes>,
   (typeof recipesKeysPublic)[number]
->;
+> & { author: UsersPublic };
