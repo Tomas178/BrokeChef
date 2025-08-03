@@ -1,22 +1,4 @@
-import { createAuth } from '@server/auth';
-import { clearPoolTables } from './utils/record';
-import { createTestPool } from './utils/pool';
-
-const pool = createTestPool();
-const auth = createAuth(pool);
-
-beforeEach(async () => {
-  await clearPoolTables(pool, [
-    'verifications',
-    'users',
-    'sessions',
-    'accounts',
-  ]);
-});
-
-afterAll(async () => {
-  await pool.end();
-});
+import { auth } from '@server/auth';
 
 describe('Better-auth configuration', () => {
   it('Should be initialized with the correct model names', () => {
