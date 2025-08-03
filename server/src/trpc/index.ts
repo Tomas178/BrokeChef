@@ -1,22 +1,18 @@
 import type { Database } from '@server/database';
+import type { AuthUser } from '@server/entities/users';
 import type { Repositories } from '@server/repositories';
 import { initTRPC } from '@trpc/server';
-import type { Session, User } from 'better-auth';
 import type { Request, Response } from 'express';
 import { SuperJSON } from 'superjson';
 import { ZodError } from 'zod';
 import { fromZodError } from 'zod-validation-error';
-
-export type SessionWithUser = Session & {
-  user: User;
-};
 
 export interface Context {
   db: Database;
   req?: Request;
   res?: Response;
   repos?: Partial<Repositories>;
-  session?: SessionWithUser | null;
+  authUser?: AuthUser;
 }
 
 export type ContextMinimal = Pick<Context, 'db'>;

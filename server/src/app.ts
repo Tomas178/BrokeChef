@@ -5,21 +5,16 @@ import {
   createExpressMiddleware,
   type CreateExpressContextOptions,
 } from '@trpc/server/adapters/express';
-import { fromNodeHeaders, toNodeHandler } from 'better-auth/node';
+import { toNodeHandler } from 'better-auth/node';
 import cors from 'cors';
 import { StatusCodes } from 'http-status-codes';
 import type { Database } from './database';
-import { createAuth } from './auth';
-import type { Context, SessionWithUser } from './trpc/index';
+import { auth } from './auth';
+import type { Context } from './trpc/index';
 import { appRouter } from './controllers';
-import { Pool } from 'pg';
-import config from './config';
 
-export default function createApp(database: Database) {
+export default function createApp(db: Database) {
   const app = express();
-
-  const pool = new Pool({ connectionString: config.database.connectionString });
-  const auth = createAuth(pool);
 
   app.use(
     cors({
@@ -39,28 +34,11 @@ export default function createApp(database: Database) {
   app.use(
     '/api/v1/trpc',
     createExpressMiddleware({
-      async createContext({
-        req,
-        res,
-      }: CreateExpressContextOptions): Promise<Context> {
-        const sessionResult = await auth.api.getSession({
-          headers: fromNodeHeaders(req.headers),
-        });
-
-        let session: SessionWithUser | undefined = undefined;
-
-        if (sessionResult?.session && sessionResult.user) {
-          session = {
-            ...sessionResult.session,
-            user: sessionResult.user,
-          };
-        }
-
+      createContext({ req, res }: CreateExpressContextOptions): Context {
         return {
-          db: database,
+          db,
           req,
           res,
-          session,
         };
       },
       router: appRouter,

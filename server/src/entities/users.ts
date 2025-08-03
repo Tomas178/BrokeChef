@@ -1,4 +1,4 @@
-import z, { email } from 'zod';
+import z from 'zod';
 import { oauthUserIdSchema } from './shared';
 import type { Users } from '@server/database';
 import type { Selectable } from 'kysely';
@@ -35,3 +35,6 @@ export type UsersPublic = Pick<
   Selectable<Users>,
   (typeof usersKeysPublic)[number]
 >;
+
+export const authUserSchema = usersSchema.pick({ id: true });
+export type AuthUser = z.infer<typeof authUserSchema>;

@@ -1,10 +1,8 @@
-import { router, publicProcedure } from '@server/trpc';
+import { router } from '@server/trpc';
+import { authenticatedProcedure } from '@server/trpc/authenticatedProcedure';
 
 export const authRouter = router({
-  me: publicProcedure.query(({ ctx }) => {
-    if (!ctx.session) {
-      throw new Error('Not authenticated');
-    }
-    return ctx.session;
+  me: authenticatedProcedure.query(({ ctx }) => {
+    return ctx.authUser;
   }),
 });
