@@ -2,7 +2,7 @@ import { createTestDatabase } from '@tests/utils/database';
 import { wrapInRollbacks } from '@tests/utils/transactions';
 import { ingredientsRepository } from '../ingredientsRepository';
 import { insertAll } from '@tests/utils/record';
-import { fakeIngredient, fakeUser } from '@server/entities/tests/fakes';
+import { fakeIngredient } from '@server/entities/tests/fakes';
 import { omit, pick } from 'lodash-es';
 import { ingredientsKeysPublic } from '@server/entities/ingredients';
 
