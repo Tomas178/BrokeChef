@@ -62,13 +62,3 @@ export const fakeTool = <T extends Partial<Insertable<Tools>>>(
   ...overrides,
   createdAt: new Date(),
 });
-
-export const fakeRecipeIngredient = <
-  T extends Partial<Insertable<RecipesIngredients>>,
->(
-  overrides: T = {} as T
-) => ({
-  recipeId: randomIntegerId(),
-  ingredientId: randomIntegerId(),
-  ...overrides,
-});
