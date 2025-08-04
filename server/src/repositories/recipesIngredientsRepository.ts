@@ -16,7 +16,7 @@ export function recipesIngredientsRepository(db: Database) {
         .executeTakeFirstOrThrow();
     },
 
-    async findByIdRecipeId(
+    async findByRecipeId(
       recipeId: number
     ): Promise<recipesIngredientsPublic | undefined> {
       return db

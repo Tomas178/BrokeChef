@@ -33,18 +33,17 @@ describe('create', () => {
 
 describe('findByRecipeId', () => {
   it('Should return undefined by given recipe ID', async () => {
-    const linkByRecipeId = await repository.findByIdRecipeId(recipe.id + 1);
+    const linkByRecipeId = await repository.findByRecipeId(recipe.id + 1);
 
     expect(linkByRecipeId).toBeUndefined();
   });
 
   it('Should return a link', async () => {
-    await repository.create({
-      recipeId: recipe.id,
-      ingredientId: ingredient.id,
-    });
+    await insertAll(db, 'recipesIngredients', [
+      { recipeId: recipe.id, ingredientId: ingredient.id },
+    ]);
 
-    const linkByRecipeId = await repository.findByIdRecipeId(recipe.id);
+    const linkByRecipeId = await repository.findByRecipeId(recipe.id);
 
     expect(linkByRecipeId).toEqual({
       recipeId: recipe.id,
