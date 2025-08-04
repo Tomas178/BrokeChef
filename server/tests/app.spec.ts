@@ -1,4 +1,3 @@
-// starts with the real database configuration
 import createApp from '@server/app';
 import supertest from 'supertest';
 import { createTestDatabase } from './utils/database';
