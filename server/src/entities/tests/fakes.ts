@@ -1,4 +1,4 @@
-import type { Recipes, Users } from '@server/database';
+import type { Ingredients, Recipes, Users } from '@server/database';
 import { random } from '@tests/utils/random';
 import type { Insertable } from 'kysely';
 import type { AuthUser } from '../users';
@@ -42,3 +42,11 @@ export const fakeRecipe = <T extends Partial<Insertable<Recipes>>>(
     createdAt: new Date(),
     updatedAt: new Date(),
   }) satisfies Insertable<Recipes>;
+
+export const fakeIngredient = <T extends Partial<Insertable<Ingredients>>>(
+  overrides: T = {} as T
+) => ({
+  name: random.string(),
+  ...overrides,
+  createdAt: new Date(),
+});
