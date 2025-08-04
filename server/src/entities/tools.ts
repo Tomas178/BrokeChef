@@ -1,11 +1,15 @@
 import z from 'zod';
-import { createdAtSchema, integerIdSchema } from './shared';
+import {
+  createdAtSchema,
+  ingredientToolNameSchema,
+  integerIdSchema,
+} from './shared';
 import type { Tools } from '@server/database';
 import type { Selectable } from 'kysely';
 
 export const toolsSchema = z.object({
   id: integerIdSchema,
-  name: z.string().nonempty(),
+  name: ingredientToolNameSchema,
   createdAt: createdAtSchema,
 });
 

@@ -13,8 +13,8 @@ export const recipesSchema = z.object({
   id: integerIdSchema,
   userId: oauthUserIdSchema,
   title: z.string().nonempty(),
-  duration: z.number().int().positive(),
-  steps: z.string().nonempty(),
+  duration: z.string().nonempty(),
+  steps: z.array(z.string().min(1)),
   createdAt: createdAtSchema,
   updatedAt: updatedAtSchema,
 });
