@@ -1,4 +1,6 @@
 import { auth } from '@server/auth';
+import { fakeUser } from '@server/entities/tests/fakes';
+import * as sendEmailModule from '@server/utils/sendEmail';
 
 describe('Better-auth configuration', () => {
   it('Should be initialized with the correct model names', () => {
@@ -73,4 +75,29 @@ describe('Social sign-ins', async () => {
     expect(response).toHaveProperty('url');
     expect(response.url).toContain('https://github.com/login/oauth/authorize');
   });
+});
+
+it('Email verification', async () => {
+  const sendEmailSpy = vi
+    .spyOn(sendEmailModule, 'sendEmail')
+    .mockResolvedValueOnce();
+
+  const user = fakeUser();
+  const fakeVerificationUrl = 'http://localhost:5173/verify-email';
+
+  await auth.options.emailVerification.sendVerificationEmail({
+    user,
+    url: fakeVerificationUrl,
+    token: 'fake-token',
+  });
+
+  expect(sendEmailSpy).toHaveBeenCalledWith({
+    to: user.email,
+    subject: expect.stringMatching(/Verify/i),
+    text: expect.stringMatching(
+      new RegExp(`Click.*${fakeVerificationUrl}`, 'i')
+    ),
+  });
+
+  sendEmailSpy.mockRestore();
 });

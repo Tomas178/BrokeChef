@@ -1,6 +1,7 @@
 import { betterAuth } from 'better-auth';
 import config from './config';
 import { Pool } from 'pg';
+import { sendEmail } from './utils/sendEmail';
 
 const createdAndUpdated = {
   createdAt: 'created_at',
@@ -53,6 +54,23 @@ export const auth = betterAuth({
   database: new Pool({
     connectionString: config.database.connectionString,
   }),
+
+  emailAndPassword: {
+    enabled: true,
+    minPasswordLength: 8,
+    requireEmailVerification: true,
+  },
+
+  emailVerification: {
+    autoSignInAfterVerification: true,
+    sendVerificationEmail: async ({ user, url }) => {
+      await sendEmail({
+        to: user.email,
+        subject: 'Verify your email address',
+        text: `Click the link to verify your email: ${url}`,
+      });
+    },
+  },
 
   socialProviders: {
     google: {

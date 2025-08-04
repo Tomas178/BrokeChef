@@ -29,6 +29,11 @@ const schema = z
       }),
       expiresIn: z.string().default('7d'),
 
+      gmail: z.object({
+        email: z.email(),
+        pass: z.string(),
+      }),
+
       google: z.object({
         clientId: z.string(),
         clientSecret: z.string(),
@@ -68,6 +73,11 @@ const config = schema.parse({
     tokenKey: env.TOKEN_KEY,
     expiresIn: env.TOKEN_EXPIRES_IN,
 
+    gmail: {
+      email: env.EMAIL,
+      pass: env.EMAIL_APP_PASS,
+    },
+
     google: {
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
@@ -80,7 +90,6 @@ const config = schema.parse({
 
     betterAuth: {
       secret: env.BETTER_AUTH_SECRET,
-
       url: env.BETTER_AUTH_URL,
     },
   },
