@@ -12,9 +12,9 @@ export const recipesToolsKeysAll = Object.keys(
   recipesToolsSchema.shape
 ) as (keyof RecipesTools)[];
 
-export const recipesToolsPublic = recipesToolsKeysAll;
+export const recipesToolsKeysPublic = recipesToolsKeysAll;
 
 export type recipesToolsPublic = Pick<
   Selectable<RecipesTools>,
-  (typeof recipesToolsPublic)[number]
+  (typeof recipesToolsKeysPublic)[number]
 >;

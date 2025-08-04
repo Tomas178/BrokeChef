@@ -1,5 +1,8 @@
 import type { Database, RecipesTools } from '@server/database';
-import { recipesToolsPublic } from '@server/entities/recipesTools';
+import {
+  recipesToolsKeysPublic,
+  type recipesToolsPublic,
+} from '@server/entities/recipesTools';
 import type { Insertable } from 'kysely';
 
 const TABLE = 'recipesTools';
@@ -10,7 +13,7 @@ export function recipesToolsRepository(db: Database) {
       return db
         .insertInto(TABLE)
         .values(link)
-        .returning(recipesToolsPublic)
+        .returning(recipesToolsKeysPublic)
         .executeTakeFirstOrThrow();
     },
 
@@ -19,7 +22,7 @@ export function recipesToolsRepository(db: Database) {
     ): Promise<recipesToolsPublic | undefined> {
       return db
         .selectFrom(TABLE)
-        .select(recipesToolsPublic)
+        .select(recipesToolsKeysPublic)
         .where('recipeId', '=', recipeId)
         .executeTakeFirst();
     },

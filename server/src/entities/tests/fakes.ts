@@ -1,13 +1,8 @@
-import type {
-  Ingredients,
-  Recipes,
-  RecipesIngredients,
-  Tools,
-  Users,
-} from '@server/database';
+import type { Ingredients, Recipes, Tools, Users } from '@server/database';
 import { random } from '@tests/utils/random';
 import type { Insertable } from 'kysely';
 import type { AuthUser } from '../users';
+import type { createRecipeInput } from '@server/controllers/recipes/create';
 
 const randomOAuthId = () => random.string({ length: 32 });
 const randomIntegerId = () => random.integer({ min: 1, max: 100_00_0 });
@@ -61,4 +56,17 @@ export const fakeTool = <T extends Partial<Insertable<Tools>>>(
   name: random.string(),
   ...overrides,
   createdAt: new Date(),
+});
+
+export const fakeCreateRecipeData = <
+  T extends Partial<Insertable<createRecipeInput>>,
+>(
+  overrides: T = {} as T
+) => ({
+  title: random.string(),
+  duration: random.string(),
+  steps: [random.string(), random.string()],
+  ingredients: [random.word(), random.word()],
+  tools: [random.word(), random.word()],
+  ...overrides,
 });
