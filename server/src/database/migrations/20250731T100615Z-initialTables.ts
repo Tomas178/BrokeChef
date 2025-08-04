@@ -78,7 +78,7 @@ export async function up(database: Kysely<any>) {
       c.notNull().references('users.id').onDelete('cascade')
     )
     .addColumn('title', 'text', c => c.notNull())
-    .addColumn('duration', 'integer', c => c.notNull())
+    .addColumn('duration', 'text', c => c.notNull())
     .addColumn('steps', 'text', c => c.notNull())
     .addColumn('created_at', 'timestamptz', c =>
       c.notNull().defaultTo(sql`CURRENT_TIMESTAMP`)

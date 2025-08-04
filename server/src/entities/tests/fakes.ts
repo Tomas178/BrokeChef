@@ -33,10 +33,7 @@ export const fakeRecipe = <T extends Partial<Insertable<Recipes>>>(
   ({
     userId: randomOAuthId(),
     title: random.string(),
-    duration: random.integer({
-      min: 1,
-      max: 100_000_0,
-    }),
+    duration: random.string(),
     steps: random.paragraph(),
     ...overrides,
     createdAt: new Date(),
