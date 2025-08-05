@@ -63,6 +63,14 @@ export default tseslint.config(
 
       'unicorn/better-regex': 'warn',
       'import/no-unresolved': 'off',
+      'unicorn/filename-case': [
+        'error',
+        {
+          cases: {
+            camelCase: true,
+          },
+        },
+      ],
     },
   },
 
@@ -70,10 +78,12 @@ export default tseslint.config(
     files: [
       'src/database/migrate/latest.ts',
       'src/database/migrations/**/*.ts',
+      '**/*.spec.ts',
     ],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       'unicorn/filename-case': 'off',
+      'unicorn/no-useless-undefined': 'off',
     },
   },
 
