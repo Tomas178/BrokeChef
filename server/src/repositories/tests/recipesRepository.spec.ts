@@ -1,7 +1,11 @@
 import { createTestDatabase } from '@tests/utils/database';
 import { wrapInRollbacks } from '@tests/utils/transactions';
 import { insertAll, selectAll } from '@tests/utils/record';
-import { fakeRecipe, fakeUser } from '@server/entities/tests/fakes';
+import {
+  fakeRecipe,
+  fakeSavedRecipe,
+  fakeUser,
+} from '@server/entities/tests/fakes';
 import { pick } from 'lodash-es';
 import {
   recipesKeysPublic,
@@ -81,21 +85,47 @@ describe('findCreated', () => {
     expect(recipes).toEqual([]);
   });
 
-  it('Should return a recipe', async () => {
+  it('Should return a recipe that user has created', async () => {
     const [createdRecipes] = await insertAll(
       db,
       'recipes',
       fakeRecipe({ userId: userThree.id })
     );
 
-    const [recipesByUser] = await repository.findCreated(
+    const [createdRecipesByUser] = await repository.findCreated(
       userThree.id,
       initialPage
     );
 
-    expect(recipesByUser).toEqual({
+    expect(createdRecipesByUser).toEqual({
       ...pick(createdRecipes, recipesKeysPublic),
       author: pick(userThree, usersKeysPublic),
+    });
+  });
+});
+
+describe('findSaved', () => {
+  it('Should return an empty array when there is no recipe saved by user', async () => {
+    const savedRecipes = await repository.findSaved(userThree.id, initialPage);
+
+    expect(savedRecipes).toEqual([]);
+  });
+
+  it('Should return a recipe that user has saved', async () => {
+    const [savedRecipes] = await insertAll(
+      db,
+      'savedRecipes',
+      fakeSavedRecipe({ userId: userOne.id, recipeId: recipeOne.id })
+    );
+
+    const [savedRecipesByUser] = await repository.findSaved(
+      savedRecipes.userId,
+      initialPage
+    );
+
+    expect(savedRecipesByUser).toEqual({
+      ...pick(recipeOne, recipesKeysPublic),
+      author: pick(userOne, usersKeysPublic),
     });
   });
 });

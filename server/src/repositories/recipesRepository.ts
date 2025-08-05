@@ -5,6 +5,7 @@ import {
 } from '@server/entities/recipes';
 import { usersKeysPublic, type UsersPublic } from '@server/entities/users';
 import type { Pagination } from '@server/shared/types';
+import { prefixTable } from '@server/utils/strings';
 import type { AliasedRawBuilder, ExpressionBuilder, Insertable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 
@@ -39,6 +40,22 @@ export function recipesRepository(db: Database) {
         .select(recipesKeysPublic)
         .select(withAuthor)
         .where('userId', '=', userId)
+        .orderBy('id', 'desc')
+        .offset(offset)
+        .limit(limit)
+        .execute();
+    },
+
+    async findSaved(
+      userId: string,
+      { offset, limit }: Pagination
+    ): Promise<RecipesPublic[]> {
+      return db
+        .selectFrom(TABLE)
+        .innerJoin('savedRecipes', 'savedRecipes.recipeId', 'recipes.id')
+        .select(prefixTable(TABLE, recipesKeysPublic))
+        .select(withAuthor)
+        .where('savedRecipes.userId', '=', userId)
         .orderBy('id', 'desc')
         .offset(offset)
         .limit(limit)
