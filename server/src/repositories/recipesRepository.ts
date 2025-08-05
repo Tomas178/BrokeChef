@@ -30,7 +30,7 @@ export function recipesRepository(db: Database) {
         .executeTakeFirst();
     },
 
-    async findByUserId(
+    async findCreated(
       userId: string,
       { offset, limit }: Pagination
     ): Promise<RecipesPublic[]> {

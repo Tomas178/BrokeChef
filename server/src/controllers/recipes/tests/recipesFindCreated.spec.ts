@@ -14,16 +14,16 @@ const [userOne, userTwo] = await insertAll(db, 'users', [
   fakeUser(),
 ]);
 
-const { findByUserId } = createCaller({ db });
+const { findCreated } = createCaller({ db });
 
 it('Should return an empty list if there are no recipes created by user', async () => {
-  expect(await findByUserId({ userId: userOne.id })).toHaveLength(0);
+  expect(await findCreated({ userId: userOne.id })).toHaveLength(0);
 });
 
 it('Should return a list of recipes', async () => {
   await insertAll(db, 'recipes', fakeRecipe({ userId: userOne.id }));
 
-  const recipes = await findByUserId({ userId: userOne.id });
+  const recipes = await findCreated({ userId: userOne.id });
 
   expect(recipes).toHaveLength(1);
 });
@@ -41,7 +41,7 @@ it('Should return the latest recipes first', async () => {
     fakeRecipe({ userId: userOne.id })
   );
 
-  const recipes = await findByUserId({ userId: userOne.id });
+  const recipes = await findCreated({ userId: userOne.id });
 
   expect(recipes[0]).toMatchObject(recipeNew);
   expect(recipes[1]).toMatchObject(recipeOld);

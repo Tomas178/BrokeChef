@@ -14,10 +14,13 @@ export default publicProcedure
   .use(provideRepos({ recipesRepository }))
   .input(userWithPaginationSchema)
   .query(async ({ input: { userId, offset, limit }, ctx: { repos } }) => {
-    const recipes = await repos.recipesRepository.findByUserId(userId, {
-      offset,
-      limit,
-    });
+    const recipes = await repos.recipesRepository.findCreatedRecipesByUserId(
+      userId,
+      {
+        offset,
+        limit,
+      }
+    );
 
     return recipes;
   });
