@@ -10,15 +10,15 @@ import {
 import { usersKeysPublic, type UsersPublic } from '@server/entities/users';
 import { recipesRepository } from '../recipesRepository';
 
-const database = await wrapInRollbacks(createTestDatabase());
-const repository = recipesRepository(database);
+const db = await wrapInRollbacks(createTestDatabase());
+const repository = recipesRepository(db);
 
-const [userOne, userTwo] = await insertAll(database, 'users', [
+const [userOne, userTwo] = await insertAll(db, 'users', [
   fakeUser(),
   fakeUser(),
 ]);
 
-const defaultRecipes = await insertAll(database, 'recipes', [
+const defaultRecipes = await insertAll(db, 'recipes', [
   fakeRecipe({
     userId: userOne.id,
   }),
@@ -81,7 +81,7 @@ describe('findAll', () => {
   });
 
   it('Should return 5 recipes ordered descendingly by ID', async () => {
-    await insertAll(database, 'recipes', [
+    await insertAll(db, 'recipes', [
       fakeRecipe({
         userId: userOne.id,
       }),
@@ -96,13 +96,10 @@ describe('findAll', () => {
       }),
     ]);
 
-    const usersNotFromRepo = (await selectAll(
-      database,
-      'users'
-    )) as UsersPublic[];
+    const usersNotFromRepo = (await selectAll(db, 'users')) as UsersPublic[];
 
     const recipesNotFromRepo = (await selectAll(
-      database,
+      db,
       'recipes'
     )) as RecipesPublic[];
     recipesNotFromRepo.sort((a, b) => b.id - a.id);
@@ -124,7 +121,7 @@ describe('findAll', () => {
 
 describe('delete', () => {
   it('Should delete a recipe', async () => {
-    const deletedRecipe = await repository.delete(recipeOne.id);
+    const deletedRecipe = await repository.remove(recipeOne.id);
 
     expect(deletedRecipe).toEqual({
       ...pick(deletedRecipe, recipesKeysPublic),
@@ -135,6 +132,6 @@ describe('delete', () => {
   it('Should throw an error if recipe does not exist', async () => {
     const nonExistantId = recipeOne.id + recipeTwo.id;
 
-    await expect(repository.delete(nonExistantId)).rejects.toThrow();
+    await expect(repository.remove(nonExistantId)).rejects.toThrow();
   });
 });

@@ -45,7 +45,7 @@ export function recipesRepository(db: Database) {
         .execute();
     },
 
-    async delete(id: number): Promise<RecipesPublic> {
+    async remove(id: number): Promise<RecipesPublic> {
       return db
         .deleteFrom(TABLE)
         .where('id', '=', id)
