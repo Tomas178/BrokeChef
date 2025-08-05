@@ -55,8 +55,8 @@ export interface RecipesTools {
 }
 
 export interface SavedRecipes {
+  createdAt: Generated<Timestamp>;
   recipeId: number;
-  savedAt: Generated<Timestamp>;
   userId: string;
 }
 

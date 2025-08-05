@@ -96,7 +96,7 @@ export async function up(database: Kysely<any>) {
     .addColumn('user_id', 'text', c =>
       c.notNull().references('users.id').onDelete('cascade')
     )
-    .addColumn('saved_at', 'timestamptz', c =>
+    .addColumn('created_at', 'timestamptz', c =>
       c.notNull().defaultTo(sql`CURRENT_TIMESTAMP`)
     )
     .addPrimaryKeyConstraint('saved_recipes_primary_key', [
