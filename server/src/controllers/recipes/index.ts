@@ -4,6 +4,7 @@ import findAll from './findAll';
 import findById from './findById';
 import remove from './remove';
 import findCreated from './findCreated';
+import findSaved from './findSaved';
 
 export default router({
   create,
@@ -11,4 +12,5 @@ export default router({
   findById,
   remove,
   findCreated,
+  findSaved,
 });
