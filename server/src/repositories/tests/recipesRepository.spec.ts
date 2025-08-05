@@ -76,7 +76,7 @@ describe('findById', () => {
 
 describe('findByUser', () => {
   it('Should return undefined when there is no recipe craeted by user', async () => {
-    const recipes = await repository.findByUser(userThree.id, initialPage);
+    const recipes = await repository.findByUserId(userThree.id, initialPage);
 
     expect(recipes).toEqual([]);
   });
@@ -88,7 +88,7 @@ describe('findByUser', () => {
       fakeRecipe({ userId: userThree.id })
     );
 
-    const [recipesByUser] = await repository.findByUser(
+    const [recipesByUser] = await repository.findByUserId(
       userThree.id,
       initialPage
     );

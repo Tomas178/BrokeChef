@@ -14,7 +14,7 @@ export default publicProcedure
   .use(provideRepos({ recipesRepository }))
   .input(userWithPaginationSchema)
   .query(async ({ input: { userId, offset, limit }, ctx: { repos } }) => {
-    const recipes = await repos.recipesRepository.findByUser(userId, {
+    const recipes = await repos.recipesRepository.findByUserId(userId, {
       offset,
       limit,
     });
