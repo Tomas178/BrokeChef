@@ -74,8 +74,8 @@ describe('findById', () => {
   });
 });
 
-describe('findByUser', () => {
-  it('Should return undefined when there is no recipe craeted by user', async () => {
+describe('findCreated', () => {
+  it('Should return an empty array when there is no recipe created by user', async () => {
     const recipes = await repository.findCreated(userThree.id, initialPage);
 
     expect(recipes).toEqual([]);
