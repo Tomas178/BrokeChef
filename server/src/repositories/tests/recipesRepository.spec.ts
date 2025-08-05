@@ -121,3 +121,20 @@ describe('findAll', () => {
     expect(recipesFromRepo).toEqual(recipesNotFromRepoWithAuthor.slice(0, 5));
   });
 });
+
+describe('delete', () => {
+  it('Should delete a recipe', async () => {
+    const deletedRecipe = await repository.delete(recipeOne.id);
+
+    expect(deletedRecipe).toEqual({
+      ...pick(deletedRecipe, recipesKeysPublic),
+      author: pick(userOne, usersKeysPublic),
+    });
+  });
+
+  it('Should throw an error if recipe does not exist', async () => {
+    const nonExistantId = recipeOne.id + recipeTwo.id;
+
+    await expect(repository.delete(nonExistantId)).rejects.toThrow();
+  });
+});

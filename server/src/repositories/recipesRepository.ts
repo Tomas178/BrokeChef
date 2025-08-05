@@ -14,10 +14,10 @@ interface Pagination {
   offset: number;
 }
 
-export function recipesRepository(database: Database) {
+export function recipesRepository(db: Database) {
   return {
     async create(recipe: Insertable<Recipes>): Promise<RecipesPublic> {
-      return database
+      return db
         .insertInto(TABLE)
         .values(recipe)
         .returning(recipesKeysPublic)
@@ -25,17 +25,17 @@ export function recipesRepository(database: Database) {
         .executeTakeFirstOrThrow();
     },
 
-    async findById(RecipeId: number): Promise<RecipesPublic | undefined> {
-      return database
+    async findById(id: number): Promise<RecipesPublic | undefined> {
+      return db
         .selectFrom(TABLE)
         .select(recipesKeysPublic)
         .select(withAuthor)
-        .where('id', '=', RecipeId)
+        .where('id', '=', id)
         .executeTakeFirst();
     },
 
     async findAll({ offset, limit }: Pagination): Promise<RecipesPublic[]> {
-      return database
+      return db
         .selectFrom(TABLE)
         .select(recipesKeysPublic)
         .select(withAuthor)
@@ -43,6 +43,15 @@ export function recipesRepository(database: Database) {
         .offset(offset)
         .limit(limit)
         .execute();
+    },
+
+    async delete(id: number): Promise<RecipesPublic> {
+      return db
+        .deleteFrom(TABLE)
+        .where('id', '=', id)
+        .returning(recipesKeysPublic)
+        .returning(withAuthor)
+        .executeTakeFirstOrThrow();
     },
   };
 }
