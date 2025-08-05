@@ -1,15 +1,17 @@
 import { createTestDatabase } from '@tests/utils/database';
 import { wrapInRollbacks } from '@tests/utils/transactions';
-import { ingredientsRepository } from '../ingredientsRepository';
 import { insertAll } from '@tests/utils/record';
 import { fakeIngredient } from '@server/entities/tests/fakes';
 import { omit, pick } from 'lodash-es';
 import { ingredientsKeysPublic } from '@server/entities/ingredients';
+import { ingredientsRepository } from '../ingredientsRepository';
 
-const db = await wrapInRollbacks(createTestDatabase());
-const repository = ingredientsRepository(db);
+const database = await wrapInRollbacks(createTestDatabase());
+const repository = ingredientsRepository(database);
 
-const [ingredient] = await insertAll(db, 'ingredients', [fakeIngredient()]);
+const [ingredient] = await insertAll(database, 'ingredients', [
+  fakeIngredient(),
+]);
 
 describe('create', () => {
   it('Should create a new ingredient', async () => {
@@ -24,7 +26,9 @@ describe('create', () => {
   });
 
   it('Should throw an error if ingredient with the given name exists', async () => {
-    const [ingredient] = await insertAll(db, 'ingredients', [fakeIngredient()]);
+    const [ingredient] = await insertAll(database, 'ingredients', [
+      fakeIngredient(),
+    ]);
 
     const ingredientToInsert = omit(ingredient, 'id');
 

@@ -1,11 +1,11 @@
-import z from 'zod';
+import * as z from 'zod';
+import type { Selectable } from 'kysely';
+import type { Ingredients } from '../database/types';
 import {
   createdAtSchema,
   ingredientToolNameSchema,
   integerIdSchema,
 } from './shared';
-import type { Ingredients } from '../database/types';
-import type { Selectable } from 'kysely';
 
 export const ingredientsSchema = z.object({
   id: integerIdSchema,

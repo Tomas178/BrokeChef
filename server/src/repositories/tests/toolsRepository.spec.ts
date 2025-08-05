@@ -1,15 +1,15 @@
 import { createTestDatabase } from '@tests/utils/database';
 import { wrapInRollbacks } from '@tests/utils/transactions';
-import { toolsRepository } from '../toolsRepository';
 import { insertAll } from '@tests/utils/record';
 import { fakeTool } from '@server/entities/tests/fakes';
 import { omit, pick } from 'lodash-es';
 import { toolsKeysPublic } from '@server/entities/tools';
+import { toolsRepository } from '../toolsRepository';
 
-const db = await wrapInRollbacks(createTestDatabase());
-const repository = toolsRepository(db);
+const database = await wrapInRollbacks(createTestDatabase());
+const repository = toolsRepository(database);
 
-const [tool] = await insertAll(db, 'tools', [fakeTool()]);
+const [tool] = await insertAll(database, 'tools', [fakeTool()]);
 
 describe('create', () => {
   it('Should create a new tool', async () => {
@@ -24,7 +24,7 @@ describe('create', () => {
   });
 
   it('Should throw an error if tool with the given name exists', async () => {
-    const [tool] = await insertAll(db, 'tools', [fakeTool()]);
+    const [tool] = await insertAll(database, 'tools', [fakeTool()]);
 
     const toolToInsert = omit(tool, 'id');
 

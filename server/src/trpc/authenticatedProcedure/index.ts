@@ -1,8 +1,8 @@
 import { auth } from '@server/auth';
-import { publicProcedure } from '..';
 import { TRPCError } from '@trpc/server';
 import config from '@server/config';
 import { fromNodeHeaders } from 'better-auth/node';
+import { publicProcedure } from '..';
 
 export const authenticatedProcedure = publicProcedure.use(
   async ({ ctx, next }) => {

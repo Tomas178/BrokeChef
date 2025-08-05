@@ -1,17 +1,17 @@
 import { createTestDatabase } from '@tests/utils/database';
 import { wrapInRollbacks } from '@tests/utils/transactions';
-import { recipesToolsRepository } from '../recipesToolsRepository';
 import { insertAll } from '@tests/utils/record';
 import { fakeRecipe, fakeTool, fakeUser } from '@server/entities/tests/fakes';
+import { recipesToolsRepository } from '../recipesToolsRepository';
 
-const db = await wrapInRollbacks(createTestDatabase());
-const repository = recipesToolsRepository(db);
+const database = await wrapInRollbacks(createTestDatabase());
+const repository = recipesToolsRepository(database);
 
-const [user] = await insertAll(db, 'users', [fakeUser()]);
-const [recipe] = await insertAll(db, 'recipes', [
+const [user] = await insertAll(database, 'users', [fakeUser()]);
+const [recipe] = await insertAll(database, 'recipes', [
   fakeRecipe({ userId: user.id }),
 ]);
-const [tool] = await insertAll(db, 'tools', [fakeTool()]);
+const [tool] = await insertAll(database, 'tools', [fakeTool()]);
 
 describe('create', () => {
   it('Should create a new link in recipesTools table', async () => {
@@ -35,7 +35,7 @@ describe('findByToolId', () => {
   });
 
   it('Should return a link', async () => {
-    await insertAll(db, 'recipesTools', [
+    await insertAll(database, 'recipesTools', [
       { recipeId: recipe.id, toolId: tool.id },
     ]);
 

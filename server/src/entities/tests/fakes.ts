@@ -1,11 +1,10 @@
 import type { Ingredients, Recipes, Tools, Users } from '@server/database';
 import { random } from '@tests/utils/random';
 import type { Insertable } from 'kysely';
-import type { AuthUser } from '../users';
 import type { createRecipeInput } from '@server/controllers/recipes/create';
+import type { AuthUser } from '../users';
 
 const randomOAuthId = () => random.string({ length: 32 });
-const randomIntegerId = () => random.integer({ min: 1, max: 100_00_0 });
 
 export const fakeUser = <T extends Partial<Insertable<Users>>>(
   overrides: T = {} as T

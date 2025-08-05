@@ -1,12 +1,12 @@
-import z from 'zod';
+import * as z from 'zod';
+import type { Recipes } from '@server/database';
+import type { Selectable } from 'kysely';
 import {
   createdAtSchema,
   integerIdSchema,
   oauthUserIdSchema,
   updatedAtSchema,
 } from './shared';
-import type { Recipes } from '@server/database';
-import type { Selectable } from 'kysely';
 import type { UsersPublic } from './users';
 
 export const recipesSchema = z.object({

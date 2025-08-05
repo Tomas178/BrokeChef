@@ -1,6 +1,6 @@
 import { betterAuth } from 'better-auth';
-import config from './config';
 import { Pool } from 'pg';
+import config from './config';
 import { sendEmail } from './utils/sendEmail';
 
 const createdAndUpdated = {

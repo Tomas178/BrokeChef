@@ -8,8 +8,8 @@ vi.mock('@server/auth', () => ({
 
 const { auth } = await import('@server/auth');
 import { authContext, requestContext } from '@tests/utils/context';
-import { authenticatedProcedure } from '.';
 import { createCallerFactory, router } from '..';
+import { authenticatedProcedure } from '.';
 
 const successLog = 'passed';
 
@@ -19,9 +19,9 @@ const routes = router({
 
 const createCaller = createCallerFactory(routes);
 
-const db = {} as any;
+const database = {} as any;
 
-const authenticated = createCaller(authContext({ db }));
+const authenticated = createCaller(authContext({ db: database }));
 
 const VALID_TOKEN = 'valid-token';
 
@@ -37,7 +37,7 @@ it('Should pass if user is logged in but not yet authenticated', async () => {
   });
 
   const usingValidLogin = createCaller({
-    db,
+    db: database,
     req: {
       headers: {
         authorization: `Bearer ${VALID_TOKEN}`,
@@ -55,7 +55,7 @@ it('Should throw an error if user is not logged in', async () => {
     undefined
   );
 
-  const unauthenticated = createCaller(requestContext({ db }));
+  const unauthenticated = createCaller(requestContext({ db: database }));
 
   await expect(unauthenticated.testCall()).rejects.toThrow(
     /login|log in|logged in|authenticate|unauthorized/i
@@ -64,9 +64,9 @@ it('Should throw an error if user is not logged in', async () => {
 
 it('Should throw an error if it is run without access to headers', async () => {
   const invalidHeaders = createCaller({
-    db,
+    db: database,
     req: undefined as any,
   });
 
-  await expect(invalidHeaders.testCall()).rejects.toThrow(/Express/i);
+  await expect(invalidHeaders.testCall()).rejects.toThrow(/express/i);
 });

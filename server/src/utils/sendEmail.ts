@@ -1,12 +1,12 @@
 import config from '@server/config';
 import nodemailer from 'nodemailer';
 
-type SendEmailOptions = {
+interface SendEmailOptions {
   to: string;
   subject: string;
   text: string;
   html?: string;
-};
+}
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',

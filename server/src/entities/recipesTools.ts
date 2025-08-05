@@ -1,7 +1,7 @@
-import z from 'zod';
-import { integerIdSchema } from './shared';
+import * as z from 'zod';
 import type { RecipesTools } from '@server/database';
 import type { Selectable } from 'kysely';
+import { integerIdSchema } from './shared';
 
 export const recipesToolsSchema = z.object({
   recipeId: integerIdSchema,

@@ -9,15 +9,15 @@ import { jsonObjectFrom } from 'kysely/helpers/postgres';
 
 const TABLE = 'recipes';
 
-type Pagination = {
+interface Pagination {
   limit: number;
   offset: number;
-};
+}
 
-export function recipesRepository(db: Database) {
+export function recipesRepository(database: Database) {
   return {
     async create(recipe: Insertable<Recipes>): Promise<RecipesPublic> {
-      return db
+      return database
         .insertInto(TABLE)
         .values(recipe)
         .returning(recipesKeysPublic)
@@ -26,7 +26,7 @@ export function recipesRepository(db: Database) {
     },
 
     async findById(RecipeId: number): Promise<RecipesPublic | undefined> {
-      return db
+      return database
         .selectFrom(TABLE)
         .select(recipesKeysPublic)
         .select(withAuthor)
@@ -35,7 +35,7 @@ export function recipesRepository(db: Database) {
     },
 
     async findAll({ offset, limit }: Pagination): Promise<RecipesPublic[]> {
-      return db
+      return database
         .selectFrom(TABLE)
         .select(recipesKeysPublic)
         .select(withAuthor)

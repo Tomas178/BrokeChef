@@ -1,9 +1,11 @@
-import z from 'zod';
-import provideServices from '.';
+import * as z from 'zod';
 import { createCallerFactory, publicProcedure, router } from '..';
+import provideServices from '.';
 
-const db = {} as any;
-const recipesServiceBuilder = vi.fn(() => {}) as any;
+const database = {} as any;
+const recipesServiceBuilder = vi.fn(() => {
+  // Intentionally left blank for mocking
+}) as any;
 
 const routes = router({
   testCall: publicProcedure
@@ -17,27 +19,27 @@ afterEach(() => {
 });
 
 it('Provides services', async () => {
-  const ctx = {
-    db,
+  const context = {
+    db: database,
   };
 
   const caller = createCallerFactory(routes);
-  const { testCall } = caller(ctx as any);
+  const { testCall } = caller(context as any);
 
   expect(await testCall({})).toEqual('ok');
-  expect(recipesServiceBuilder).toHaveBeenCalledWith(db);
+  expect(recipesServiceBuilder).toHaveBeenCalledWith(database);
 });
 
 it('Skips providing services if they are already in the context', async () => {
-  const ctx = {
-    db,
+  const context = {
+    db: database,
     services: {
       recipesService: {},
     },
   };
 
   const caller = createCallerFactory(routes);
-  const { testCall } = caller(ctx as any);
+  const { testCall } = caller(context as any);
 
   expect(await testCall({})).toEqual('ok');
   expect(recipesServiceBuilder).not.toHaveBeenCalled();

@@ -1,13 +1,13 @@
-import z from 'zod';
-import { oauthUserIdSchema } from './shared';
+import * as z from 'zod';
 import type { Users } from '@server/database';
 import type { Selectable } from 'kysely';
+import { oauthUserIdSchema } from './shared';
 
 const imageUrlSchema = z.url().refine(
   url => {
     return (
       /^https:\/\/avatars\.githubusercontent\.com\/u\/\d+\?v=\d+$/.test(url) ||
-      /^https:\/\/lh3\.googleusercontent\.com\/a\/[A-Za-z0-9_-]+(?:=[A-Za-z0-9-]+)?$/.test(
+      /^https:\/\/lh3\.googleusercontent\.com\/a\/[\w-]+(?:=[\dA-Za-z-]+)?$/.test(
         url
       )
     );

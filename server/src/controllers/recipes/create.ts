@@ -2,7 +2,7 @@ import { recipesSchema } from '@server/entities/recipes';
 import { ingredientToolNameSchema } from '@server/entities/shared';
 import { authenticatedProcedure } from '@server/trpc/authenticatedProcedure';
 import provideServices from '@server/trpc/provideServices';
-import z from 'zod';
+import * as z from 'zod';
 import { recipesService } from '@server/services/recipesService';
 
 const createRecipeInputSchema = recipesSchema
