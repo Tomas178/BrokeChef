@@ -38,7 +38,7 @@ const fakeRecipeDefault = (recipe: Parameters<typeof fakeRecipe>[0] = {}) =>
 
 const initialPage = {
   offset: 0,
-  limit: 10,
+  limit: 5,
 };
 
 describe('create', () => {
@@ -139,7 +139,7 @@ describe('findAll', () => {
       ),
     }));
 
-    const recipesFromRepo = await repository.findAll({ offset: 0, limit: 5 });
+    const recipesFromRepo = await repository.findAll(initialPage);
 
     expect(recipesFromRepo).toHaveLength(5);
     expect(recipesFromRepo).toEqual(recipesNotFromRepoWithAuthor.slice(0, 5));
