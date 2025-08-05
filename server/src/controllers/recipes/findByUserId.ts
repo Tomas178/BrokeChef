@@ -1,6 +1,6 @@
 import { publicProcedure } from '@server/trpc';
 import provideRepos from '@server/trpc/provideRepos';
-import { recipesRepository } from '../../repositories/recipesRepository';
+import { recipesRepository } from '@server/repositories/recipesRepository';
 import { oauthUserIdSchema, paginationSchema } from '@server/entities/shared';
 import * as z from 'zod';
 
