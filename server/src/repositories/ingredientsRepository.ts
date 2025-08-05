@@ -7,12 +7,12 @@ import type { Insertable } from 'kysely';
 
 const TABLE = 'ingredients';
 
-export function ingredientsRepository(database: Database) {
+export function ingredientsRepository(db: Database) {
   return {
     async create(
       ingredient: Insertable<Ingredients>
     ): Promise<IngredientsPublic> {
-      return database
+      return db
         .insertInto(TABLE)
         .values(ingredient)
         .returning(ingredientsKeysPublic)
@@ -20,7 +20,7 @@ export function ingredientsRepository(database: Database) {
     },
 
     async findById(id: number): Promise<IngredientsPublic | undefined> {
-      return database
+      return db
         .selectFrom(TABLE)
         .select(ingredientsKeysPublic)
         .where('id', '=', id)
@@ -28,7 +28,7 @@ export function ingredientsRepository(database: Database) {
     },
 
     async findByName(name: string): Promise<IngredientsPublic | undefined> {
-      return database
+      return db
         .selectFrom(TABLE)
         .select(ingredientsKeysPublic)
         .where('name', '=', name)
