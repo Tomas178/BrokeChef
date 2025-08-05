@@ -1,4 +1,4 @@
-import joinStepsToSingleString from './joinStepsToSingleString';
+import { joinStepsToSingleString } from './joinStepsToSingleString';
 
 it('Should return single string with NO newlines when given array of 1 step', () => {
   const singleString = joinStepsToSingleString(['step1']);

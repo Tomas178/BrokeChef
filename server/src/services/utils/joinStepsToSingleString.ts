@@ -1,1 +1,1 @@
-export default (steps: string[]) => steps.join('\n');
+export const joinStepsToSingleString = (steps: string[]) => steps.join('\n');

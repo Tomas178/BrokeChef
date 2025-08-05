@@ -6,14 +6,15 @@ import { ingredientsRepository as buildIngredientsRepository } from '@server/rep
 import { recipesIngredientsRepository as buildRecipesIngredientsRepository } from '@server/repositories/recipesIngredientsRepository';
 import { toolsRepository as buildToolsRepository } from '@server/repositories/toolsRepository';
 import { recipesToolsRepository as buildRecipesToolsRepository } from '@server/repositories/recipesToolsRepository';
-import joinStepsToSingleString from './utils/joinStepsToSingleString';
+import { joinStepsToSingleString } from './utils/joinStepsToSingleString';
 
-export function recipesService(db: Database) {
-  const recipesRepository = buildRecipesRepository(db);
-  const ingredientsRepository = buildIngredientsRepository(db);
-  const recipesIngredientsRepository = buildRecipesIngredientsRepository(db);
-  const toolsRepository = buildToolsRepository(db);
-  const recipesToolsRepository = buildRecipesToolsRepository(db);
+export function recipesService(database: Database) {
+  const recipesRepository = buildRecipesRepository(database);
+  const ingredientsRepository = buildIngredientsRepository(database);
+  const recipesIngredientsRepository =
+    buildRecipesIngredientsRepository(database);
+  const toolsRepository = buildToolsRepository(database);
+  const recipesToolsRepository = buildRecipesToolsRepository(database);
 
   return {
     async createRecipe(

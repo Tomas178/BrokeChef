@@ -1,18 +1,17 @@
 import { createTestDatabase } from '@tests/utils/database';
 import { wrapInRollbacks } from '@tests/utils/transactions';
-import { recipesService } from '../recipesService';
 import { insertAll } from '@tests/utils/record';
-import { fakeUser } from '@server/entities/tests/fakes';
-import { fakeCreateRecipeData } from '@server/entities/tests/fakes';
+import { fakeUser, fakeCreateRecipeData } from '@server/entities/tests/fakes';
 import { pick } from 'lodash-es';
 import { recipesKeysPublic } from '@server/entities/recipes';
 import { usersKeysPublic } from '@server/entities/users';
-import joinStepsToSingleString from '../utils/joinStepsToSingleString';
+import { recipesService } from '../recipesService';
+import { joinStepsToSingleString } from '../utils/joinStepsToSingleString';
 
-const db = await wrapInRollbacks(createTestDatabase());
-const service = recipesService(db);
+const database = await wrapInRollbacks(createTestDatabase());
+const service = recipesService(database);
 
-const [user] = await insertAll(db, 'users', [fakeUser()]);
+const [user] = await insertAll(database, 'users', [fakeUser()]);
 
 describe('createRecipe', () => {
   it('Should create a new recipe', async () => {
