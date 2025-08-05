@@ -16,3 +16,9 @@ export const paginationSchema = z.object({
   offset: z.number().int().min(0).max(POSTGRES_INT_MAX),
   limit: z.number().int().min(1).max(100),
 });
+
+export const userWithPaginationSchema = z.object({
+  userId: oauthUserIdSchema,
+  offset: paginationSchema.shape.offset.default(0),
+  limit: paginationSchema.shape.limit.default(5),
+});
