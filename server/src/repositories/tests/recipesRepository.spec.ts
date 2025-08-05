@@ -13,7 +13,8 @@ import { recipesRepository } from '../recipesRepository';
 const db = await wrapInRollbacks(createTestDatabase());
 const repository = recipesRepository(db);
 
-const [userOne, userTwo] = await insertAll(db, 'users', [
+const [userOne, userTwo, userThree] = await insertAll(db, 'users', [
+  fakeUser(),
   fakeUser(),
   fakeUser(),
 ]);
@@ -69,6 +70,32 @@ describe('findById', () => {
     expect(recipeById).toEqual({
       ...pick(recipeById, recipesKeysPublic),
       author: pick(userOne, usersKeysPublic),
+    });
+  });
+});
+
+describe('findByUser', () => {
+  it('Should return undefined when there is no recipe craeted by user', async () => {
+    const recipes = await repository.findByUser(userThree.id, initialPage);
+
+    expect(recipes).toEqual([]);
+  });
+
+  it('Should return a recipe', async () => {
+    const [createdRecipes] = await insertAll(
+      db,
+      'recipes',
+      fakeRecipe({ userId: userThree.id })
+    );
+
+    const [recipesByUser] = await repository.findByUser(
+      userThree.id,
+      initialPage
+    );
+
+    expect(recipesByUser).toEqual({
+      ...pick(createdRecipes, recipesKeysPublic),
+      author: pick(userThree, usersKeysPublic),
     });
   });
 });

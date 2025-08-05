@@ -34,6 +34,21 @@ export function recipesRepository(db: Database) {
         .executeTakeFirst();
     },
 
+    async findByUser(
+      userId: string,
+      { offset, limit }: Pagination
+    ): Promise<RecipesPublic[]> {
+      return db
+        .selectFrom(TABLE)
+        .select(recipesKeysPublic)
+        .select(withAuthor)
+        .where('userId', '=', userId)
+        .orderBy('id', 'desc')
+        .offset(offset)
+        .limit(limit)
+        .execute();
+    },
+
     async findAll({ offset, limit }: Pagination): Promise<RecipesPublic[]> {
       return db
         .selectFrom(TABLE)
