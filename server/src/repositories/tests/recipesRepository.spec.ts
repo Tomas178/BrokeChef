@@ -56,10 +56,9 @@ describe('create', () => {
 
 describe('findById', () => {
   it('Should return undefined when there is no recipe', async () => {
-    const maxId = Math.max(recipeOne.id, recipeTwo.id);
-    const invalidId = maxId + 1;
+    const nonExistantId = recipeOne.id + recipeTwo.id;
 
-    const recipe = await repository.findById(invalidId);
+    const recipe = await repository.findById(nonExistantId);
 
     expect(recipe).toBeUndefined();
   });
