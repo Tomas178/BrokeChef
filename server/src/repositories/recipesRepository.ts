@@ -4,15 +4,11 @@ import {
   type RecipesPublic,
 } from '@server/entities/recipes';
 import { usersKeysPublic, type UsersPublic } from '@server/entities/users';
+import type { Pagination } from '@server/shared/types';
 import type { AliasedRawBuilder, ExpressionBuilder, Insertable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 
 const TABLE = 'recipes';
-
-interface Pagination {
-  limit: number;
-  offset: number;
-}
 
 export function recipesRepository(db: Database) {
   return {
