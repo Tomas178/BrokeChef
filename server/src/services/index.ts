@@ -1,9 +1,10 @@
 import type { Database } from '@server/database';
 import { recipesService } from './recipesService';
+import { savedRecipesService } from './savedRecipesService';
 
 export type ServiceFactory = <T>(database: Database) => T;
 
-const services = { recipesService };
+const services = { recipesService, savedRecipesService };
 
 export type ServicesFactories = typeof services;
 export type Services = {
