@@ -1,5 +1,4 @@
 import { createCallerFactory } from '@server/trpc';
-import savedRecipesRouter from '..';
 import { wrapInRollbacks } from '@tests/utils/transactions';
 import { createTestDatabase } from '@tests/utils/database';
 import { clearTables, insertAll } from '@tests/utils/record';
@@ -9,6 +8,7 @@ import {
   fakeSavedRecipe,
   fakeUser,
 } from '@server/entities/tests/fakes';
+import savedRecipesRouter from '..';
 
 const createCaller = createCallerFactory(savedRecipesRouter);
 const database = await wrapInRollbacks(createTestDatabase());
@@ -18,7 +18,7 @@ await clearTables(database, ['savedRecipes']);
 it('Should throw an error if user is not authenticated', async () => {
   const { unsave } = createCaller(requestContext({ db: database }));
 
-  await expect(unsave(1)).rejects.toThrow(/Unauthenticated/i);
+  await expect(unsave(1)).rejects.toThrow(/unauthenticated/i);
 });
 
 it('Should unsave a recipe', async () => {

@@ -1,16 +1,16 @@
 import { createTestDatabase } from '@tests/utils/database';
 import { wrapInRollbacks } from '@tests/utils/transactions';
-import { usersService } from '../usersService';
 import { clearTables, insertAll } from '@tests/utils/record';
 import {
   fakeRecipe,
   fakeSavedRecipe,
   fakeUser,
 } from '@server/entities/tests/fakes';
-import { initialPage } from '@tests/utils/constants';
+import { initialPage } from '@server/shared/pagination';
 import { pick } from 'lodash-es';
 import { recipesKeysPublic } from '@server/entities/recipes';
 import { usersKeysPublic } from '@server/entities/users';
+import { usersService } from '../usersService';
 
 const database = await wrapInRollbacks(createTestDatabase());
 const service = usersService(database);

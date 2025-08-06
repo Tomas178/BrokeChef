@@ -1,12 +1,12 @@
 import { createTestDatabase } from '@tests/utils/database';
 import { wrapInRollbacks } from '@tests/utils/transactions';
-import { savedRecipesService } from '../savedRecipesService';
 import { insertAll } from '@tests/utils/record';
 import {
   fakeRecipe,
   fakeSavedRecipe,
   fakeUser,
 } from '@server/entities/tests/fakes';
+import { savedRecipesService } from '../savedRecipesService';
 
 const database = await wrapInRollbacks(createTestDatabase());
 const service = savedRecipesService(database);
@@ -54,6 +54,6 @@ describe('remove', () => {
 
     await expect(
       service.remove(savedRecipe.recipeId, nonExistantUserId)
-    ).rejects.toThrow(/Failed/i);
+    ).rejects.toThrow(/failed/i);
   });
 });

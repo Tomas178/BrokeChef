@@ -2,9 +2,9 @@ import { fakeUser } from '@server/entities/tests/fakes';
 import { createTestDatabase } from '@tests/utils/database';
 import { insertAll } from '@tests/utils/record';
 import { wrapInRollbacks } from '@tests/utils/transactions';
-import { usersRepository } from '../usersRepository';
 import { pick } from 'lodash-es';
 import { usersKeysPublic } from '@server/entities/users';
+import { usersRepository } from '../usersRepository';
 
 const database = await wrapInRollbacks(createTestDatabase());
 const repository = usersRepository(database);
