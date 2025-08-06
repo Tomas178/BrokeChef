@@ -25,6 +25,20 @@ const [createdRecipeOne, createdRecipeTwo] = await insertAll(
   [fakeRecipe({ userId: user.id }), fakeRecipe({ userId: user.id })]
 );
 
+describe('findById', () => {
+  it('Should return a user', async () => {
+    const userById = await service.findById(user.id);
+
+    expect(userById).toEqual({ ...pick(user, usersKeysPublic) });
+  });
+
+  it('Should throw an error if user is missing', async () => {
+    const nonExistantId = user.id + 'a';
+
+    await expect(service.findById(nonExistantId)).rejects.toThrow(/not found/i);
+  });
+});
+
 describe('getRecipes', () => {
   it('Should return created and saved recipes by user', async () => {
     await insertAll(database, 'savedRecipes', [
