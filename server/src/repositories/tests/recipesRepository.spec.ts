@@ -12,6 +12,7 @@ import {
   type RecipesPublic,
 } from '@server/entities/recipes';
 import { usersKeysPublic, type UsersPublic } from '@server/entities/users';
+import { initialPage } from '@server/shared/pagination';
 import { recipesRepository } from '../recipesRepository';
 
 const database = await wrapInRollbacks(createTestDatabase());
@@ -39,11 +40,6 @@ const fakeRecipeDefault = (recipe: Parameters<typeof fakeRecipe>[0] = {}) =>
     userId: userOne.id,
     ...recipe,
   });
-
-const initialPage = {
-  offset: 0,
-  limit: 5,
-};
 
 describe('create', () => {
   it('Should create a new recipe', async () => {
