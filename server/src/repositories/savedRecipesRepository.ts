@@ -19,10 +19,14 @@ export function savedRecipesRepository(database: Database) {
         .executeTakeFirstOrThrow();
     },
 
-    async remove(recipeId: number): Promise<savedRecipesPublic> {
+    async remove(
+      recipeId: number,
+      userId: string
+    ): Promise<savedRecipesPublic> {
       return database
         .deleteFrom(TABLE)
         .where('recipeId', '=', recipeId)
+        .where('userId', '=', userId)
         .returning(savedRecipesKeysPublic)
         .executeTakeFirstOrThrow();
     },

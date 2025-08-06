@@ -58,15 +58,18 @@ describe('remove', async () => {
     );
 
     const removedSavedRecipe = await repository.remove(
-      createdSavedRecipe.recipeId
+      createdSavedRecipe.recipeId,
+      createdSavedRecipe.userId
     );
 
     expect(removedSavedRecipe).toEqual(createdSavedRecipe);
   });
 
   it('Should throw an error if saved recipe record does not exist', async () => {
-    const nonExistantId = recipe.id + 1;
+    const nonExistantRecipeId = recipe.id + 1;
 
-    await expect(repository.remove(nonExistantId)).rejects.toThrow();
+    await expect(
+      repository.remove(nonExistantRecipeId, user.id)
+    ).rejects.toThrow();
   });
 });
