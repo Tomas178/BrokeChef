@@ -1,25 +1,25 @@
 import { createCallerFactory } from '@server/trpc';
-import recipesRouter from '..';
 import { wrapInRollbacks } from '@tests/utils/transactions';
 import { createTestDatabase } from '@tests/utils/database';
 import { insertAll } from '@tests/utils/record';
 import { fakeRecipe, fakeUser } from '@server/entities/tests/fakes';
 import { authContext } from '@tests/utils/context';
+import recipesRouter from '..';
 
 const createCaller = createCallerFactory(recipesRouter);
-const db = await wrapInRollbacks(createTestDatabase());
+const database = await wrapInRollbacks(createTestDatabase());
 
-const [user, userOther] = await insertAll(db, 'users', [
+const [user, userOther] = await insertAll(database, 'users', [
   fakeUser(),
   fakeUser(),
 ]);
 
-const [recipe, recipeOther] = await insertAll(db, 'recipes', [
+const [recipe, recipeOther] = await insertAll(database, 'recipes', [
   fakeRecipe({ userId: user.id }),
   fakeRecipe({ userId: userOther.id }),
 ]);
 
-const { findById } = createCaller(authContext({ db }, user));
+const { findById } = createCaller(authContext({ db: database }, user));
 
 it('Should return a recipe', async () => {
   const recipeResponse = await findById(recipe.id);

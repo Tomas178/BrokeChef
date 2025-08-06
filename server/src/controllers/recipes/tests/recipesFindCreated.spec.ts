@@ -1,47 +1,44 @@
 import { createCallerFactory } from '@server/trpc';
-import recipesRouter from '..';
 import { wrapInRollbacks } from '@tests/utils/transactions';
 import { createTestDatabase } from '@tests/utils/database';
 import { clearTables, insertAll } from '@tests/utils/record';
 import { fakeRecipe, fakeUser } from '@server/entities/tests/fakes';
+import recipesRouter from '..';
 
 const createCaller = createCallerFactory(recipesRouter);
-const db = await wrapInRollbacks(createTestDatabase());
+const database = await wrapInRollbacks(createTestDatabase());
 
-await clearTables(db, ['recipes']);
-const [userOne, userTwo] = await insertAll(db, 'users', [
-  fakeUser(),
-  fakeUser(),
-]);
+await clearTables(database, ['recipes']);
+const [user] = await insertAll(database, 'users', [fakeUser(), fakeUser()]);
 
-const { findCreated } = createCaller({ db });
+const { findCreated } = createCaller({ db: database });
 
 it('Should return an empty list if there are no recipes created by user', async () => {
-  expect(await findCreated({ userId: userOne.id })).toHaveLength(0);
+  expect(await findCreated({ userId: user.id })).toHaveLength(0);
 });
 
 it('Should return a list of recipes', async () => {
-  await insertAll(db, 'recipes', fakeRecipe({ userId: userOne.id }));
+  await insertAll(database, 'recipes', fakeRecipe({ userId: user.id }));
 
-  const recipes = await findCreated({ userId: userOne.id });
+  const recipes = await findCreated({ userId: user.id });
 
   expect(recipes).toHaveLength(1);
 });
 
 it('Should return the latest recipes first', async () => {
   const [recipeOld] = await insertAll(
-    db,
+    database,
     'recipes',
-    fakeRecipe({ userId: userOne.id })
+    fakeRecipe({ userId: user.id })
   );
 
   const [recipeNew] = await insertAll(
-    db,
+    database,
     'recipes',
-    fakeRecipe({ userId: userOne.id })
+    fakeRecipe({ userId: user.id })
   );
 
-  const recipes = await findCreated({ userId: userOne.id });
+  const recipes = await findCreated({ userId: user.id });
 
   expect(recipes[0]).toMatchObject(recipeNew);
   expect(recipes[1]).toMatchObject(recipeOld);

@@ -1,24 +1,24 @@
 import { createCallerFactory } from '@server/trpc';
-import recipesRouter from '..';
 import { wrapInRollbacks } from '@tests/utils/transactions';
 import { createTestDatabase } from '@tests/utils/database';
 import { clearTables, insertAll } from '@tests/utils/record';
 import { fakeRecipe, fakeUser } from '@server/entities/tests/fakes';
+import recipesRouter from '..';
 
 const createCaller = createCallerFactory(recipesRouter);
-const db = await wrapInRollbacks(createTestDatabase());
+const database = await wrapInRollbacks(createTestDatabase());
 
-await clearTables(db, ['recipes']);
-const [user] = await insertAll(db, 'users', fakeUser());
+await clearTables(database, ['recipes']);
+const [user] = await insertAll(database, 'users', fakeUser());
 
-const { findAll } = createCaller({ db });
+const { findAll } = createCaller({ db: database });
 
 it('Should return an empty list if there are no recipes', async () => {
   expect(await findAll()).toHaveLength(0);
 });
 
 it('Should return a list of recipes', async () => {
-  await insertAll(db, 'recipes', fakeRecipe({ userId: user.id }));
+  await insertAll(database, 'recipes', fakeRecipe({ userId: user.id }));
 
   const recipes = await findAll();
 
@@ -27,13 +27,13 @@ it('Should return a list of recipes', async () => {
 
 it('Should return the latest recipe first', async () => {
   const [recipeOld] = await insertAll(
-    db,
+    database,
     'recipes',
     fakeRecipe({ userId: user.id })
   );
 
   const [recipeNew] = await insertAll(
-    db,
+    database,
     'recipes',
     fakeRecipe({ userId: user.id })
   );

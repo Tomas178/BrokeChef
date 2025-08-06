@@ -1,28 +1,23 @@
 import { createTestDatabase } from '@tests/utils/database';
 import { wrapInRollbacks } from '@tests/utils/transactions';
-import { savedRecipesRepository } from '../savedRecipesRepository';
 import { insertAll } from '@tests/utils/record';
 import {
   fakeRecipe,
   fakeSavedRecipe,
   fakeUser,
 } from '@server/entities/tests/fakes';
+import { savedRecipesRepository } from '../savedRecipesRepository';
 
-const db = await wrapInRollbacks(createTestDatabase());
-const repository = savedRecipesRepository(db);
+const database = await wrapInRollbacks(createTestDatabase());
+const repository = savedRecipesRepository(database);
 
-const [user] = await insertAll(db, 'users', fakeUser());
+const [user] = await insertAll(database, 'users', fakeUser());
 
 const [recipe] = await insertAll(
-  db,
+  database,
   'recipes',
   fakeRecipe({ userId: user.id })
 );
-
-const initialPage = {
-  offset: 0,
-  limit: 5,
-};
 
 describe('create', () => {
   it('Should create a new save recipe', async () => {
@@ -57,7 +52,7 @@ describe('create', () => {
 describe('remove', async () => {
   it('Should remove saved recipe', async () => {
     const [createdSavedRecipe] = await insertAll(
-      db,
+      database,
       'savedRecipes',
       fakeSavedRecipe({ userId: user.id, recipeId: recipe.id })
     );

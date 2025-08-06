@@ -14,16 +14,16 @@ import {
 import { usersKeysPublic, type UsersPublic } from '@server/entities/users';
 import { recipesRepository } from '../recipesRepository';
 
-const db = await wrapInRollbacks(createTestDatabase());
-const repository = recipesRepository(db);
+const database = await wrapInRollbacks(createTestDatabase());
+const repository = recipesRepository(database);
 
-const [userOne, userTwo, userThree] = await insertAll(db, 'users', [
+const [userOne, userTwo, userThree] = await insertAll(database, 'users', [
   fakeUser(),
   fakeUser(),
   fakeUser(),
 ]);
 
-const defaultRecipes = await insertAll(db, 'recipes', [
+const defaultRecipes = await insertAll(database, 'recipes', [
   fakeRecipe({
     userId: userOne.id,
   }),
@@ -87,7 +87,7 @@ describe('findCreated', () => {
 
   it('Should return a recipe that user has created', async () => {
     const [createdRecipes] = await insertAll(
-      db,
+      database,
       'recipes',
       fakeRecipe({ userId: userThree.id })
     );
@@ -113,7 +113,7 @@ describe('findSaved', () => {
 
   it('Should return a recipe that user has saved', async () => {
     const [savedRecipes] = await insertAll(
-      db,
+      database,
       'savedRecipes',
       fakeSavedRecipe({ userId: userOne.id, recipeId: recipeOne.id })
     );
@@ -138,7 +138,7 @@ describe('findAll', () => {
   });
 
   it('Should return 5 recipes ordered descendingly by ID', async () => {
-    await insertAll(db, 'recipes', [
+    await insertAll(database, 'recipes', [
       fakeRecipe({
         userId: userOne.id,
       }),
@@ -153,10 +153,13 @@ describe('findAll', () => {
       }),
     ]);
 
-    const usersNotFromRepo = (await selectAll(db, 'users')) as UsersPublic[];
+    const usersNotFromRepo = (await selectAll(
+      database,
+      'users'
+    )) as UsersPublic[];
 
     const recipesNotFromRepo = (await selectAll(
-      db,
+      database,
       'recipes'
     )) as RecipesPublic[];
     recipesNotFromRepo.sort((a, b) => b.id - a.id);

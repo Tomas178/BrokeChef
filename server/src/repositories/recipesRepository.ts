@@ -11,10 +11,10 @@ import { jsonObjectFrom } from 'kysely/helpers/postgres';
 
 const TABLE = 'recipes';
 
-export function recipesRepository(db: Database) {
+export function recipesRepository(database: Database) {
   return {
     async create(recipe: Insertable<Recipes>): Promise<RecipesPublic> {
-      return db
+      return database
         .insertInto(TABLE)
         .values(recipe)
         .returning(recipesKeysPublic)
@@ -23,7 +23,7 @@ export function recipesRepository(db: Database) {
     },
 
     async findById(id: number): Promise<RecipesPublic | undefined> {
-      return db
+      return database
         .selectFrom(TABLE)
         .select(recipesKeysPublic)
         .select(withAuthor)
@@ -35,7 +35,7 @@ export function recipesRepository(db: Database) {
       userId: string,
       { offset, limit }: Pagination
     ): Promise<RecipesPublic[]> {
-      return db
+      return database
         .selectFrom(TABLE)
         .select(recipesKeysPublic)
         .select(withAuthor)
@@ -50,7 +50,7 @@ export function recipesRepository(db: Database) {
       userId: string,
       { offset, limit }: Pagination
     ): Promise<RecipesPublic[]> {
-      return db
+      return database
         .selectFrom(TABLE)
         .innerJoin('savedRecipes', 'savedRecipes.recipeId', 'recipes.id')
         .select(prefixTable(TABLE, recipesKeysPublic))
@@ -63,7 +63,7 @@ export function recipesRepository(db: Database) {
     },
 
     async findAll({ offset, limit }: Pagination): Promise<RecipesPublic[]> {
-      return db
+      return database
         .selectFrom(TABLE)
         .select(recipesKeysPublic)
         .select(withAuthor)
@@ -74,7 +74,7 @@ export function recipesRepository(db: Database) {
     },
 
     async remove(id: number): Promise<RecipesPublic> {
-      return db
+      return database
         .deleteFrom(TABLE)
         .where('id', '=', id)
         .returning(recipesKeysPublic)

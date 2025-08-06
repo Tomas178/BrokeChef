@@ -1,7 +1,7 @@
 import * as z from 'zod';
-import { createdAtSchema, integerIdSchema, oauthUserIdSchema } from './shared';
 import type { SavedRecipes } from '@server/database';
 import type { Selectable } from 'kysely';
+import { createdAtSchema, integerIdSchema, oauthUserIdSchema } from './shared';
 
 export const savedRecipesSchema = z.object({
   recipeId: integerIdSchema,

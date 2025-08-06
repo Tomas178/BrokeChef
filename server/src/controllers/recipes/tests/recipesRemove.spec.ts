@@ -1,5 +1,4 @@
 import { createCallerFactory } from '@server/trpc';
-import recipesRouter from '..';
 import { wrapInRollbacks } from '@tests/utils/transactions';
 import { createTestDatabase } from '@tests/utils/database';
 import { insertAll } from '@tests/utils/record';
@@ -8,19 +7,20 @@ import { authContext } from '@tests/utils/context';
 import { pick } from 'lodash-es';
 import { recipesKeysPublic } from '@server/entities/recipes';
 import { usersKeysPublic } from '@server/entities/users';
+import recipesRouter from '..';
 
 const createCaller = createCallerFactory(recipesRouter);
-const db = await wrapInRollbacks(createTestDatabase());
+const database = await wrapInRollbacks(createTestDatabase());
 
-const [user] = await insertAll(db, 'users', fakeUser());
+const [user] = await insertAll(database, 'users', fakeUser());
 
 const [recipe] = await insertAll(
-  db,
+  database,
   'recipes',
   fakeRecipe({ userId: user.id })
 );
 
-const { remove } = createCaller(authContext({ db }, user));
+const { remove } = createCaller(authContext({ db: database }, user));
 
 it('Should remove a recipe', async () => {
   const removedRecipe = await remove(recipe.id);

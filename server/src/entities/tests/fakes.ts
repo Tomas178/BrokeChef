@@ -79,7 +79,7 @@ export const fakeCreateRecipeData = <
 export const fakeSavedRecipe = <T extends Partial<Insertable<SavedRecipes>>>(
   overrides: T = {} as T
 ) => ({
-  recipeId: random.integer({ min: 1, max: 1_000_000_0 }),
+  recipeId: random.integer({ min: 1, max: 10_000_000 }),
   userId: randomOAuthId(),
   ...overrides,
   createdAt: new Date(),

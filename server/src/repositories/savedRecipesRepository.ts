@@ -3,17 +3,16 @@ import {
   savedRecipesKeysPublic,
   type savedRecipesPublic,
 } from '@server/entities/savedRecipes';
-import type { Pagination } from '@server/shared/types';
 import type { Insertable } from 'kysely';
 
 const TABLE = 'savedRecipes';
 
-export function savedRecipesRepository(db: Database) {
+export function savedRecipesRepository(database: Database) {
   return {
     async create(
       recipeToSave: Insertable<SavedRecipes>
     ): Promise<savedRecipesPublic> {
-      return db
+      return database
         .insertInto(TABLE)
         .values(recipeToSave)
         .returning(savedRecipesKeysPublic)
@@ -21,7 +20,7 @@ export function savedRecipesRepository(db: Database) {
     },
 
     async remove(recipeId: number): Promise<savedRecipesPublic> {
-      return db
+      return database
         .deleteFrom(TABLE)
         .where('recipeId', '=', recipeId)
         .returning(savedRecipesKeysPublic)
