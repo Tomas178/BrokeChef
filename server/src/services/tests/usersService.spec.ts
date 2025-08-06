@@ -25,17 +25,14 @@ const [createdRecipeOne, createdRecipeTwo] = await insertAll(
   [fakeRecipe({ userId: user.id }), fakeRecipe({ userId: user.id })]
 );
 
-describe('getUsersRecipes', () => {
+describe('getRecipes', () => {
   it('Should return created and saved recipes by user', async () => {
     await insertAll(database, 'savedRecipes', [
       fakeSavedRecipe({ userId: user.id, recipeId: createdRecipeOne.id }),
       fakeSavedRecipe({ userId: user.id, recipeId: createdRecipeTwo.id }),
     ]);
 
-    const { saved, created } = await service.getUsersRecipes(
-      user.id,
-      initialPage
-    );
+    const { saved, created } = await service.getRecipes(user.id, initialPage);
 
     const [createdNew, createdOld] = created;
     const [savedNew, savedOld] = saved;

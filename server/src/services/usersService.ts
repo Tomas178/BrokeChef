@@ -6,7 +6,7 @@ export function usersService(database: Database) {
   const recipesRepository = buildRecipesRepository(database);
 
   return {
-    async getUsersRecipes(userId: string, pagination: Pagination) {
+    async getRecipes(userId: string, pagination: Pagination) {
       const [created, saved] = await Promise.all([
         recipesRepository.findCreated(userId, pagination),
         recipesRepository.findSaved(userId, pagination),
