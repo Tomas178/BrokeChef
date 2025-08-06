@@ -25,12 +25,23 @@ export function savedRecipesService(database: Database) {
         });
       }
 
-      const createdRecipe = await savedRecipesRepository.create({
-        userId,
-        recipeId,
-      });
+      try {
+        const createdRecipe = await savedRecipesRepository.create({
+          userId,
+          recipeId,
+        });
 
-      return createdRecipe;
+        return createdRecipe;
+      } catch (error) {
+        assertError(error);
+
+        if (error.message.includes('duplicate key')) {
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: 'Recipe is already saved!',
+          });
+        }
+      }
     },
 
     async remove(recipeId: number, userId: string) {

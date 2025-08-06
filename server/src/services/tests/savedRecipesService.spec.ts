@@ -34,6 +34,18 @@ describe('create', () => {
     });
   });
 
+  it('Should throw an error of duplicate', async () => {
+    const [savedRecipe] = await insertAll(
+      database,
+      'savedRecipes',
+      fakeSavedRecipe({ userId: userSaver.id, recipeId: recipe.id })
+    );
+
+    await expect(
+      service.create(savedRecipe.userId, savedRecipe.recipeId)
+    ).rejects.toThrow(/saved/i);
+  });
+
   it('Should throw an error that recipe does not exist', async () => {
     await expect(
       service.create(userSaver.id, nonExistantRecipeId)
