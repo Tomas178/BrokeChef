@@ -11,20 +11,48 @@ import { savedRecipesService } from '../savedRecipesService';
 const database = await wrapInRollbacks(createTestDatabase());
 const service = savedRecipesService(database);
 
-const [user] = await insertAll(database, 'users', fakeUser());
+const [userCreator, userSaver] = await insertAll(database, 'users', [
+  fakeUser(),
+  fakeUser(),
+]);
 
 const [recipe] = await insertAll(
   database,
   'recipes',
-  fakeRecipe({ userId: user.id })
+  fakeRecipe({ userId: userCreator.id })
 );
 
-describe('remove', () => {
+const nonExistantRecipeId = recipe.id + 1;
+
+describe('create', () => {
   it('Should create a new saved recipe', async () => {
+    const savedRecipe = await service.create(userSaver.id, recipe.id);
+
+    expect(savedRecipe).toMatchObject({
+      userId: userSaver.id,
+      recipeId: recipe.id,
+    });
+  });
+
+  it('Should throw an error that recipe does not exist', async () => {
+    await expect(
+      service.create(userSaver.id, nonExistantRecipeId)
+    ).rejects.toThrow(/recipe.*not found|not found.* recipe/i);
+  });
+
+  it('Should throw an error because user tries to save his own recipe', async () => {
+    await expect(service.create(userCreator.id, recipe.id)).rejects.toThrow(
+      /own.*save|save.*own/i
+    );
+  });
+});
+
+describe('remove', () => {
+  it('Should unsave a recipe', async () => {
     const [savedRecipe] = await insertAll(
       database,
       'savedRecipes',
-      fakeSavedRecipe({ userId: user.id, recipeId: recipe.id })
+      fakeSavedRecipe({ userId: userSaver.id, recipeId: recipe.id })
     );
 
     const unsavedRecipe = await service.remove(
@@ -36,10 +64,14 @@ describe('remove', () => {
   });
 
   it('Should throw an error that recipe does not exist', async () => {
-    const nonExistantId = recipe.id + 1;
+    await expect(
+      service.remove(nonExistantRecipeId, userSaver.id)
+    ).rejects.toThrow(/recipe.*not found|not found.*recipe/i);
+  });
 
-    await expect(service.remove(nonExistantId, user.id)).rejects.toThrow(
-      /recipe.*not found|not found.*recipe/i
+  it('Should throw an error because user tries to unsave his own recipe', async () => {
+    await expect(service.remove(recipe.id, userCreator.id)).rejects.toThrow(
+      /own.*save|save.*own/i
     );
   });
 
@@ -47,10 +79,10 @@ describe('remove', () => {
     const [savedRecipe] = await insertAll(
       database,
       'savedRecipes',
-      fakeSavedRecipe({ userId: user.id, recipeId: recipe.id })
+      fakeSavedRecipe({ userId: userSaver.id, recipeId: recipe.id })
     );
 
-    const nonExistantUserId = user.id + 'a';
+    const nonExistantUserId = userSaver.id + 'a';
 
     await expect(
       service.remove(savedRecipe.recipeId, nonExistantUserId)
