@@ -175,6 +175,20 @@ describe('findAll', () => {
   });
 });
 
+describe('isAuthor', () => {
+  it('Should return true', async () => {
+    const isAuthor = await repository.isAuthor(recipeOne.id, userOne.id);
+
+    expect(isAuthor).toBeTruthy();
+  });
+
+  it('Should return false', async () => {
+    const isAuthor = await repository.isAuthor(recipeOne.id, userTwo.id);
+
+    expect(isAuthor).toBeFalsy();
+  });
+});
+
 describe('delete', () => {
   it('Should delete a recipe', async () => {
     const deletedRecipe = await repository.remove(recipeOne.id);

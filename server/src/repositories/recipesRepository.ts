@@ -73,6 +73,16 @@ export function recipesRepository(database: Database) {
         .execute();
     },
 
+    async isAuthor(recipeId: number, userId: string): Promise<boolean> {
+      const recipe = await database
+        .selectFrom(TABLE)
+        .select('userId')
+        .where('id', '=', recipeId)
+        .executeTakeFirst();
+
+      return recipe?.userId === userId;
+    },
+
     async remove(id: number): Promise<RecipesPublic> {
       return database
         .deleteFrom(TABLE)
