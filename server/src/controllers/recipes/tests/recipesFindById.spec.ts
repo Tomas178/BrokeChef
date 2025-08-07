@@ -3,7 +3,6 @@ import { wrapInRollbacks } from '@tests/utils/transactions';
 import { createTestDatabase } from '@tests/utils/database';
 import { insertAll } from '@tests/utils/record';
 import { fakeRecipe, fakeUser } from '@server/entities/tests/fakes';
-import { authContext } from '@tests/utils/context';
 import recipesRouter from '..';
 
 const createCaller = createCallerFactory(recipesRouter);
@@ -19,7 +18,7 @@ const [recipe, recipeOther] = await insertAll(database, 'recipes', [
   fakeRecipe({ userId: userOther.id }),
 ]);
 
-const { findById } = createCaller(authContext({ db: database }, user));
+const { findById } = createCaller({ db: database });
 
 it('Should return a recipe', async () => {
   const recipeResponse = await findById(recipe.id);
