@@ -1,38 +1,53 @@
 import { createCallerFactory } from '@server/trpc';
-import { wrapInRollbacks } from '@tests/utils/transactions';
-import { createTestDatabase } from '@tests/utils/database';
-import { insertAll } from '@tests/utils/record';
+import type { RecipesRepository } from '@server/repositories/recipesRepository';
 import { fakeRecipe, fakeUser } from '@server/entities/tests/fakes';
-import { authContext } from '@tests/utils/context';
+import { NoResultError } from 'kysely';
 import { pick } from 'lodash-es';
-import { recipesKeysPublic } from '@server/entities/recipes';
 import { usersKeysPublic } from '@server/entities/users';
 import recipesRouter from '..';
 
 const createCaller = createCallerFactory(recipesRouter);
-const database = await wrapInRollbacks(createTestDatabase());
 
-const [user] = await insertAll(database, 'users', fakeUser());
+const authUser = {
+  id: 'a'.repeat(32),
+};
 
-const [recipe] = await insertAll(
-  database,
-  'recipes',
-  fakeRecipe({ userId: user.id })
-);
+const repos = {
+  recipesRepository: {
+    isAuthor: vi.fn(async (): Promise<boolean> => true),
+    remove: vi.fn(async (id: number) =>
+      fakeRecipe({
+        id,
+        userId: authUser.id,
+        author: pick(fakeUser({ id: authUser.id + 1 }), usersKeysPublic),
+      })
+    ),
+  } satisfies Partial<RecipesRepository>,
+};
 
-const { remove } = createCaller(authContext({ db: database }, user));
+const { remove } = createCaller({ repos, authUser } as any);
+
+const recipe = { id: 26 };
 
 it('Should remove a recipe', async () => {
-  const removedRecipe = await remove(recipe.id);
+  const removedRecipe = await remove(recipe);
 
-  expect(removedRecipe).toEqual({
-    ...pick(recipe, recipesKeysPublic),
-    author: pick(user, usersKeysPublic),
+  expect(removedRecipe).toMatchObject({
+    id: recipe.id,
+    userId: authUser.id,
   });
 });
 
 it('Should throw an error if recipe does not exist', async () => {
-  const nonExistantId = recipe.id + 1;
+  repos.recipesRepository.remove.mockRejectedValueOnce(
+    new NoResultError({} as any)
+  );
 
-  await expect(remove(nonExistantId)).rejects.toThrow(/not found/i);
+  await expect(remove(recipe)).rejects.toThrow(/not found/i);
+});
+
+it('Should throw an error if user is not an owner of recipe', async () => {
+  repos.recipesRepository.isAuthor.mockResolvedValueOnce(false);
+
+  await expect(remove(recipe)).rejects.toThrow(/recipe/i);
 });

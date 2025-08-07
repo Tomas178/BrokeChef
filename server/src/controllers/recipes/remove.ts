@@ -1,16 +1,21 @@
 import { integerIdSchema } from '@server/entities/shared';
-import { authenticatedProcedure } from '@server/trpc/authenticatedProcedure';
 import provideRepos from '@server/trpc/provideRepos';
 import { recipesRepository } from '@server/repositories/recipesRepository';
 import { TRPCError } from '@trpc/server';
 import { assertError } from '@server/utils/errors';
+import { recipeAuthorProcedure } from '@server/trpc/recipeAuthorProcedure';
+import * as z from 'zod';
 
-export default authenticatedProcedure
+export default recipeAuthorProcedure
   .use(provideRepos({ recipesRepository }))
-  .input(integerIdSchema)
-  .query(async ({ input: recipeId, ctx: { repos } }) => {
+  .input(
+    z.object({
+      id: integerIdSchema,
+    })
+  )
+  .query(async ({ input: { id }, ctx: { repos } }) => {
     try {
-      const recipe = await repos.recipesRepository.remove(recipeId);
+      const recipe = await repos.recipesRepository.remove(id);
 
       return recipe;
     } catch (error) {
