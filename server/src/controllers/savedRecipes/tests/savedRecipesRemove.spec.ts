@@ -22,20 +22,23 @@ it('Should throw an error if user is not authenticated', async () => {
 });
 
 it('Should unsave a recipe', async () => {
-  const [user] = await insertAll(database, 'users', fakeUser());
+  const [userCreator, userSaver] = await insertAll(database, 'users', [
+    fakeUser(),
+    fakeUser(),
+  ]);
 
-  const { unsave } = createCaller(authContext({ db: database }, user));
+  const { unsave } = createCaller(authContext({ db: database }, userSaver));
 
   const [recipe] = await insertAll(
     database,
     'recipes',
-    fakeRecipe({ userId: user.id })
+    fakeRecipe({ userId: userCreator.id })
   );
 
   const [savedRecipe] = await insertAll(
     database,
     'savedRecipes',
-    fakeSavedRecipe({ userId: user.id, recipeId: recipe.id })
+    fakeSavedRecipe({ userId: userSaver.id, recipeId: recipe.id })
   );
 
   const unsavedRecipe = await unsave(savedRecipe.recipeId);

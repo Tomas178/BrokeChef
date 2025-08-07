@@ -9,12 +9,15 @@ import savedRecipesRouter from '..';
 const createCaller = createCallerFactory(savedRecipesRouter);
 const database = await wrapInRollbacks(createTestDatabase());
 
-const [user] = await insertAll(database, 'users', fakeUser());
+const [userCreator, userSaver] = await insertAll(database, 'users', [
+  fakeUser(),
+  fakeUser(),
+]);
 
 const [recipe] = await insertAll(
   database,
   'recipes',
-  fakeRecipe({ userId: user.id })
+  fakeRecipe({ userId: userCreator.id })
 );
 
 it('Should thrown an error if user is not authenticated', async () => {
@@ -22,22 +25,22 @@ it('Should thrown an error if user is not authenticated', async () => {
 
   await expect(
     save({
-      userId: user.id,
+      userId: userSaver.id,
       recipeId: recipe.id,
     })
   ).rejects.toThrow(/unauthenticated/i);
 });
 
 it('Should create a saved recipe record', async () => {
-  const { save } = createCaller(authContext({ db: database }, user));
+  const { save } = createCaller(authContext({ db: database }, userSaver));
 
   const savedRecipe = await save({
-    userId: user.id,
+    userId: userSaver.id,
     recipeId: recipe.id,
   });
 
   expect(savedRecipe).toMatchObject({
-    userId: user.id,
+    userId: userSaver.id,
     recipeId: recipe.id,
   });
 });
