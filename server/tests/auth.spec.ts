@@ -93,7 +93,7 @@ it('Email verification', async () => {
 
   expect(sendEmailSpy).toHaveBeenCalledWith({
     to: user.email,
-    subject: expect.stringMatching(/Verify/i),
+    subject: expect.stringMatching(/verify/i),
     text: expect.stringMatching(
       new RegExp(`Click.*${fakeVerificationUrl}`, 'i')
     ),
