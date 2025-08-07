@@ -9,14 +9,11 @@ export const recipeAuthorProcedure = authenticatedProcedure
   .use(provideRepos({ recipesRepository }))
   .input(
     z.object({
-      recipeId: integerIdSchema,
+      id: integerIdSchema,
     })
   )
-  .use(async ({ input: { recipeId }, ctx: { authUser, repos }, next }) => {
-    const isAuthor = await repos.recipesRepository.isAuthor(
-      recipeId,
-      authUser.id
-    );
+  .use(async ({ input: { id }, ctx: { authUser, repos }, next }) => {
+    const isAuthor = await repos.recipesRepository.isAuthor(id, authUser.id);
 
     if (!isAuthor) {
       throw new TRPCError({
