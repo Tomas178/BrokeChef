@@ -31,41 +31,46 @@ export function recipesService(database: Database) {
         userId,
       };
 
-      const createdRecipe = await recipesRepository.create(recipeToInsert);
-      const recipeId = createdRecipe.id;
+      try {
+        const createdRecipe = await recipesRepository.create(recipeToInsert);
+        const recipeId = createdRecipe.id;
 
-      await Promise.all([
-        (async () => {
-          for (const ingredient of ingredients) {
-            const existing = await ingredientsRepository.findByName(ingredient);
+        await Promise.all([
+          (async () => {
+            for (const ingredient of ingredients) {
+              const existing =
+                await ingredientsRepository.findByName(ingredient);
 
-            const ingredientRecord =
-              existing ??
-              (await ingredientsRepository.create({ name: ingredient }));
+              const ingredientRecord =
+                existing ??
+                (await ingredientsRepository.create({ name: ingredient }));
 
-            await recipesIngredientsRepository.create({
-              recipeId,
-              ingredientId: ingredientRecord.id,
-            });
-          }
-        })(),
+              await recipesIngredientsRepository.create({
+                recipeId,
+                ingredientId: ingredientRecord.id,
+              });
+            }
+          })(),
 
-        (async () => {
-          for (const tool of tools) {
-            const existing = await toolsRepository.findByName(tool);
+          (async () => {
+            for (const tool of tools) {
+              const existing = await toolsRepository.findByName(tool);
 
-            const toolRecord =
-              existing ?? (await toolsRepository.create({ name: tool }));
+              const toolRecord =
+                existing ?? (await toolsRepository.create({ name: tool }));
 
-            await recipesToolsRepository.create({
-              recipeId,
-              toolId: toolRecord.id,
-            });
-          }
-        })(),
-      ]);
+              await recipesToolsRepository.create({
+                recipeId,
+                toolId: toolRecord.id,
+              });
+            }
+          })(),
+        ]);
 
-      return createdRecipe;
+        return createdRecipe;
+      } catch {
+        throw new Error('Failed to create recipe');
+      }
     },
   };
 }

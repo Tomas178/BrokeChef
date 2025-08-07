@@ -28,4 +28,12 @@ describe('createRecipe', () => {
       author: pick(user, usersKeysPublic),
     });
   });
+
+  it('Should throw an error if recipe with invalid data is given', async () => {
+    const invalidRecipeData = fakeCreateRecipeData({ title: undefined });
+
+    await expect(
+      service.createRecipe(invalidRecipeData, user.id)
+    ).rejects.toThrow(/recipe/i);
+  });
 });
