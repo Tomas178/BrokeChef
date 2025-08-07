@@ -24,7 +24,7 @@ export default tseslint.config(
     languageOptions: {
       parserOptions: {
         project: './tsconfig.eslint.json',
-        tsconfigRootDir: new URL('.', import.meta.url).pathname,
+        tsconfigRootDir: __dirname,
         sourceType: 'module',
         ecmaVersion: 'latest',
       },
