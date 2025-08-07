@@ -102,3 +102,5 @@ function withAuthor(eb: ExpressionBuilder<DB, 'recipes'>) {
       .whereRef('users.id', '=', 'recipes.userId')
   ).as('author') as AliasedRawBuilder<UsersPublic, 'author'>;
 }
+
+export type RecipesRepository = ReturnType<typeof recipesRepository>;
