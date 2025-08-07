@@ -19,6 +19,12 @@ export default defineConfigWithVueTs(
   vueTsConfigs.recommended,
 
   {
+    languageOptions: {
+      parserOptions: {
+        tsconfigRootDir: __dirname,
+      },
+    },
+
     rules: {
       'vue/multi-word-component-names': 'off',
       'import/no-relative-parent-imports': 'off',
@@ -36,7 +42,7 @@ export default defineConfigWithVueTs(
                 'repositories',
                 'trpc',
                 'utils',
-              ].flatMap(path => [
+              ].flatMap((path) => [
                 `@server/${path}`,
                 `@mono/server/src/${path}`,
               ]),

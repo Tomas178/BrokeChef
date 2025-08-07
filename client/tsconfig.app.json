@@ -8,9 +8,11 @@
   ],
   "exclude": ["src/**/__tests__/*"],
   "compilerOptions": {
-    "baseUrl": ".",
+    "rootDir": "..",
     "composite": true,
     "strict": true,
+    "baseUrl": ".",
+    "preserveSymlinks": true,
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "paths": {
       "@/*": ["./src/*"],
