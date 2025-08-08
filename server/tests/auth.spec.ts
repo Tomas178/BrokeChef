@@ -1,6 +1,6 @@
 import { auth } from '@server/auth';
 import { fakeUser } from '@server/entities/tests/fakes';
-import * as sendEmailModule from '@server/utils/sendEmail';
+import * as sendMailModule from '@server/utils/sendMail';
 
 describe('Better-auth configuration', () => {
   it('Should be initialized with the correct model names', () => {
@@ -79,7 +79,7 @@ describe('Social sign-ins', async () => {
 
 it('Email verification', async () => {
   const sendEmailSpy = vi
-    .spyOn(sendEmailModule, 'sendEmail')
+    .spyOn(sendMailModule, 'sendMail')
     .mockResolvedValueOnce();
 
   const user = fakeUser();
@@ -91,7 +91,7 @@ it('Email verification', async () => {
     token: 'fake-token',
   });
 
-  expect(sendEmailSpy).toHaveBeenCalledWith({
+  expect(sendEmailSpy).toHaveBeenCalledWith(expect.any(Object), {
     to: user.email,
     subject: expect.stringMatching(/verify/i),
     text: expect.stringMatching(

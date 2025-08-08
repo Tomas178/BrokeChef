@@ -1,7 +1,8 @@
 import { betterAuth } from 'better-auth';
 import { Pool } from 'pg';
 import config from './config';
-import { sendEmail } from './utils/sendEmail';
+import { sendMail } from './utils/sendMail';
+import { transporter } from './utils/emailClient';
 
 const createdAndUpdated = {
   createdAt: 'created_at',
@@ -64,7 +65,7 @@ export const auth = betterAuth({
   emailVerification: {
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }) => {
-      await sendEmail({
+      await sendMail(transporter, {
         to: user.email,
         subject: 'Verify your email address',
         text: `Click the link to verify your email: ${url}`,
