@@ -11,6 +11,9 @@ const createdAndUpdated = {
 
 export const auth = betterAuth({
   user: {
+    deleteUser: {
+      enabled: true,
+    },
     modelName: 'users',
     fields: {
       emailVerified: 'email_verified',
