@@ -14,8 +14,8 @@ const createRecipeInputSchema = recipesSchema
     steps: true,
   })
   .extend({
-    ingredients: z.array(ingredientToolNameSchema),
-    tools: z.array(ingredientToolNameSchema),
+    ingredients: ingredientToolNameSchema,
+    tools: ingredientToolNameSchema,
   });
 
 export type createRecipeInput = z.infer<typeof createRecipeInputSchema>;

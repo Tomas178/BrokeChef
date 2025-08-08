@@ -1,7 +1,7 @@
 import * as z from 'zod';
 import type { Users } from '@server/database';
 import type { Selectable } from 'kysely';
-import { oauthUserIdSchema } from './shared';
+import { createdAtSchema, oauthUserIdSchema, updatedAtSchema } from './shared';
 
 const imageUrlSchema = z.url().refine(
   url => {
@@ -21,10 +21,10 @@ export const usersSchema = z.object({
   id: oauthUserIdSchema,
   name: z.string().nonempty(),
   email: z.email(),
-  emailVerified: z.boolean(),
+  emailVerified: z.boolean().default(false),
   image: imageUrlSchema,
-  createdAt: z.date().default(() => new Date()),
-  updatedAt: z.date().default(() => new Date()),
+  createdAt: createdAtSchema,
+  updatedAt: updatedAtSchema,
 });
 
 export const usersKeysAll = Object.keys(usersSchema.shape) as (keyof Users)[];

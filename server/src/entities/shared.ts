@@ -4,7 +4,7 @@ export const integerIdSchema = z.number().int().positive();
 
 export const oauthUserIdSchema = z.string().length(32);
 
-export const ingredientToolNameSchema = z.string().nonempty();
+export const ingredientToolNameSchema = z.array(z.string().nonempty());
 
 export const createdAtSchema = z.date().default(() => new Date());
 export const updatedAtSchema = z.date().default(() => new Date());
@@ -19,6 +19,6 @@ export const paginationSchema = z.object({
 
 export const userWithPaginationSchema = z.object({
   userId: oauthUserIdSchema,
-  offset: paginationSchema.shape.offset.default(0),
-  limit: paginationSchema.shape.limit.default(5),
+  offset: z.number().int().min(0).max(POSTGRES_INT_MAX).default(0),
+  limit: z.number().int().min(1).max(100).default(5),
 });
