@@ -1,6 +1,6 @@
 import { createTestDatabase } from '@tests/utils/database';
 import { wrapInRollbacks } from '@tests/utils/transactions';
-import { insertAll, selectAll } from '@tests/utils/record';
+import { clearTables, insertAll, selectAll } from '@tests/utils/record';
 import {
   fakeRecipe,
   fakeSavedRecipe,
@@ -17,6 +17,8 @@ import { recipesRepository } from '../recipesRepository';
 
 const database = await wrapInRollbacks(createTestDatabase());
 const repository = recipesRepository(database);
+
+await clearTables(database, ['recipes', 'tools', 'ingredients']);
 
 const [userOne, userTwo, userThree] = await insertAll(database, 'users', [
   fakeUser(),
