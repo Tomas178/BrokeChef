@@ -1,5 +1,5 @@
 import { recipesSchema } from '@server/entities/recipes';
-import { ingredientToolNameSchema } from '@server/entities/shared';
+import { arrayStringSchema } from '@server/entities/shared';
 import { authenticatedProcedure } from '@server/trpc/authenticatedProcedure';
 import provideServices from '@server/trpc/provideServices';
 import * as z from 'zod';
@@ -14,8 +14,8 @@ const createRecipeInputSchema = recipesSchema
     steps: true,
   })
   .extend({
-    ingredients: ingredientToolNameSchema,
-    tools: ingredientToolNameSchema,
+    ingredients: arrayStringSchema,
+    tools: arrayStringSchema,
   });
 
 export type createRecipeInput = z.infer<typeof createRecipeInputSchema>;

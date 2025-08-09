@@ -4,7 +4,7 @@ export const integerIdSchema = z.number().int().positive();
 
 export const oauthUserIdSchema = z.string().length(32);
 
-export const ingredientToolNameSchema = z.array(z.string().nonempty());
+export const arrayStringSchema = z.array(z.string().nonempty().trim());
 
 export const createdAtSchema = z.date().default(() => new Date());
 export const updatedAtSchema = z.date().default(() => new Date());
