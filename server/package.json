@@ -41,6 +41,7 @@
     "prettier": "^3.6.2",
     "tsc-alias": "^1.8.16",
     "tsx": "^4.20.3",
+    "trpc-ui": "https://gitpkg.vercel.app/jrhe/trpc-ui/packages/trpc-ui?feature/zod-v4-support&scripts.postinstall=%26%26%20npm%20install%20pnpm%20%26%26%20npm%20install%20--ignore-scripts%20%26%26%20npm%20run%20build",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
     "vite": "^7.0.6",
@@ -59,7 +60,6 @@
     "pg": "^8.16.3",
     "superjson": "^2.2.2",
     "supertest": "^7.1.4",
-    "trpc-ui": "https://gitpkg.vercel.app/jrhe/trpc-ui/packages/trpc-ui?feature/zod-v4-support&scripts.postinstall=%26%26%20npm%20install%20pnpm%20%26%26%20npm%20install%20--ignore-scripts%20%26%26%20npm%20run%20build",
     "zod": "^4.0.14",
     "zod-validation-error": "^4.0.1"
   }
