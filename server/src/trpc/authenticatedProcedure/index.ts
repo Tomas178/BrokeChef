@@ -30,7 +30,7 @@ export const authenticatedProcedure = publicProcedure.use(
       headers: fromNodeHeaders(ctx.req.headers),
     });
 
-    if (!session?.user.id) {
+    if (!session) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
         message: 'Unauthenticated. Please log in.',
@@ -39,7 +39,9 @@ export const authenticatedProcedure = publicProcedure.use(
 
     return next({
       ctx: {
-        authUser: session.user.id,
+        authUser: {
+          id: session.user.id,
+        },
       },
     });
   }
