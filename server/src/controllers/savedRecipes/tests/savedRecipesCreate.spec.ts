@@ -23,21 +23,13 @@ const [recipe] = await insertAll(
 it('Should thrown an error if user is not authenticated', async () => {
   const { save } = createCaller(requestContext({ db: database }));
 
-  await expect(
-    save({
-      userId: userSaver.id,
-      recipeId: recipe.id,
-    })
-  ).rejects.toThrow(/unauthenticated/i);
+  await expect(save(recipe.id)).rejects.toThrow(/unauthenticated/i);
 });
 
 it('Should create a saved recipe record', async () => {
   const { save } = createCaller(authContext({ db: database }, userSaver));
 
-  const savedRecipe = await save({
-    userId: userSaver.id,
-    recipeId: recipe.id,
-  });
+  const savedRecipe = await save(recipe.id);
 
   expect(savedRecipe).toMatchObject({
     userId: userSaver.id,
