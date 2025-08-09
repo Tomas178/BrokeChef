@@ -1,16 +1,16 @@
 import { authenticatedProcedure } from '@server/trpc/authenticatedProcedure';
-import provideRepos from '@server/trpc/provideRepos';
-import { savedRecipesRepository } from '@server/repositories/savedRecipesRepository';
 import { integerIdSchema } from '@server/entities/shared';
+import { savedRecipesService } from '@server/services/savedRecipesService';
+import provideServices from '@server/trpc/provideServices';
 
 export default authenticatedProcedure
-  .use(provideRepos({ savedRecipesRepository }))
+  .use(provideServices({ savedRecipesService }))
   .input(integerIdSchema)
-  .mutation(async ({ input: recipeId, ctx: { repos, authUser } }) => {
-    const savedRecipe = repos.savedRecipesRepository.create({
-      recipeId,
-      userId: authUser.id,
-    });
+  .mutation(async ({ input: recipeId, ctx: { services, authUser } }) => {
+    const savedRecipe = services.savedRecipesService.create(
+      authUser.id,
+      recipeId
+    );
 
     return savedRecipe;
   });
