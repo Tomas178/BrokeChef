@@ -7,7 +7,7 @@ export default authenticatedProcedure
   .use(provideServices({ savedRecipesService }))
   .input(integerIdSchema)
   .mutation(async ({ input: recipeId, ctx: { services, authUser } }) => {
-    const savedRecipe = services.savedRecipesService.create(
+    const savedRecipe = await services.savedRecipesService.create(
       authUser.id,
       recipeId
     );
