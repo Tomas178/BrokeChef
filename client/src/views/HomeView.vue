@@ -10,6 +10,41 @@ const signUpPassword = ref('');
 const signInEmail = ref('');
 const signInPassword = ref('');
 
+const userId = ref('');
+
+const newPassword = ref('');
+
+const resetPassword = async (newPass: string) => {
+  const token = new URLSearchParams(window.location.search).get('token');
+
+  if (!token) {
+    console.log('No token!');
+    return;
+  }
+
+  await authClient.resetPassword({
+    newPassword: newPass,
+    token,
+    fetchOptions: {
+      onSuccess: () => console.log('Password is resetted'),
+    },
+  });
+};
+
+const sendPasswordResetLink = async () => {
+  const user = await trpc.users.findById.query(userId.value);
+
+  await authClient.requestPasswordReset({
+    email: user.email,
+    redirectTo: 'http://localhost:5173',
+    fetchOptions: {
+      onSuccess: () => {
+        console.log(`Password reset link sent to: ${user.email}`);
+      },
+    },
+  });
+};
+
 const loginWithSocials = async (providerName: string) => {
   await authClient.signIn.social({
     provider: providerName,
@@ -34,6 +69,11 @@ const checkSession = async () => {
   } catch (err) {
     console.error('Not authenticated:', err);
   }
+};
+
+const checkUserById = async (id: string) => {
+  const user = await trpc.users.findById.query(id);
+  console.log({ user });
 };
 
 const signUp = async () => {
@@ -89,7 +129,17 @@ const signIn = async () => {
     Login with Google
   </button>
   <button @click="checkSession">Check Session</button>
+
+  <input type="text" v-model="userId" placeholder="UserId:" />
+  <button @click="checkUserById(userId)">Check user by id</button>
+
   <button @click="logout">Logout</button>
+
+  <div id="reset-password">
+    <input type="password" v-model="newPassword" placeholder="new password:" />
+    <button @click="sendPasswordResetLink">Get Link For Password Reset</button>
+    <button @click="resetPassword(newPassword)">Reset Password</button>
+  </div>
 </template>
 
 <style>
