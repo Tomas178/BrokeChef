@@ -16,5 +16,4 @@ coverage
 
 data/database*
 
-coverage
 .env
