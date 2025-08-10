@@ -30,6 +30,8 @@ export async function resolve(specifier, context, next) {
     return next(specifier, context);
   }
 
+  // special case for the better-auth module to fix the module resolution
+  // when importing its internal or related packages.
   if (
     specifier.startsWith('better-auth') ||
     specifier.startsWith('better-') ||
