@@ -13,7 +13,7 @@ Recipe sharing app primarily orientied for students. Users can look for various 
 ### Setup
 
 1. `npm install`
-2. Create a PostgreSQL database, or use an existing one from the previous exercises.
+2. Create a PostgreSQL database.
 3. Setup `.env` file based on `.env.example` files.
 
 #### Environment variables
