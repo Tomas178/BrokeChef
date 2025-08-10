@@ -20,15 +20,6 @@ const schema = z
     port: z.coerce.number().default(3000),
 
     auth: z.object({
-      tokenKey: z.string().default(() => {
-        if (isDevelopmentTest) {
-          return 'supersecretkey';
-        }
-
-        throw new Error('You must provide a TOKEN_KEY in a production env!');
-      }),
-      expiresIn: z.string().default('7d'),
-
       gmail: z.object({
         email: z.email(),
         pass: z.string(),
@@ -70,9 +61,6 @@ const config = schema.parse({
   isCi: env.CI,
 
   auth: {
-    tokenKey: env.TOKEN_KEY,
-    expiresIn: env.TOKEN_EXPIRES_IN,
-
     gmail: {
       email: env.EMAIL,
       pass: env.EMAIL_APP_PASS,
