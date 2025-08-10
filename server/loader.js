@@ -1,5 +1,5 @@
 import { isBuiltin } from 'node:module';
-import dirname from 'node:path';
+import path from 'node:path';
 import { cwd } from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { promisify } from 'node:util';
@@ -33,7 +33,6 @@ export async function resolve(specifier, context, next) {
   // special case for the better-auth module to fix the module resolution
   // when importing its internal or related packages.
   if (
-    specifier.startsWith('better-auth') ||
     specifier.startsWith('better-') ||
     specifier.startsWith('@better-auth') ||
     specifier.startsWith('jose')
@@ -50,7 +49,7 @@ export async function resolve(specifier, context, next) {
   let url;
   try {
     const resolution = await resolveAsync(specifier, {
-      basedir: dirname(parentPath),
+      basedir: path.dirname(parentPath),
       extensions: ['.js', '.json', '.node', '.mjs'],
     });
     url = pathToFileURL(resolution).href;
