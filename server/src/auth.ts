@@ -1,5 +1,5 @@
 import { betterAuth } from 'better-auth';
-import { Pool } from 'pg';
+import pg from 'pg';
 import config from './config';
 import { sendMail } from './utils/sendMail';
 import { transporter } from './utils/emailClient';
@@ -55,7 +55,7 @@ export const auth = betterAuth({
     },
   },
 
-  database: new Pool({
+  database: new pg.Pool({
     connectionString: config.database.connectionString,
   }),
 

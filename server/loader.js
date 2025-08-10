@@ -1,5 +1,5 @@
 import { isBuiltin } from 'node:module';
-import { dirname } from 'node:path';
+import dirname from 'node:path';
 import { cwd } from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { promisify } from 'node:util';
@@ -27,6 +27,15 @@ export async function resolve(specifier, context, next) {
   // special case for the kysely module to fix the module resolution
   // for built dist migration files
   if (specifier === 'kysely') {
+    return next(specifier, context);
+  }
+
+  if (
+    specifier.startsWith('better-auth') ||
+    specifier.startsWith('better-') ||
+    specifier.startsWith('@better-auth') ||
+    specifier.startsWith('jose')
+  ) {
     return next(specifier, context);
   }
 
