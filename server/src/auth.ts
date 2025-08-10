@@ -1,8 +1,12 @@
 import { betterAuth } from 'better-auth';
 import pg from 'pg';
 import config from './config';
-import { sendMail } from './utils/sendMail';
-import { transporter } from './utils/emailClient';
+import { sendMail } from './utils/sendMail/sendMail';
+import { transporter } from './utils/sendMail/client';
+import {
+  getEmailVerifyHtml,
+  getPasswordResetHtml,
+} from './utils/sendMail/templates';
 
 const createdAndUpdated = {
   createdAt: 'created_at',
@@ -60,15 +64,26 @@ export const auth = betterAuth({
     enabled: true,
     minPasswordLength: 8,
     requireEmailVerification: true,
+    sendResetPassword: async ({ user, url }) => {
+      const htmlContent = await getPasswordResetHtml(user.name, url);
+      await sendMail(transporter, {
+        to: user.email,
+        subject: 'Password reset',
+        html: htmlContent,
+      });
+    },
+    onPasswordReset: async ({ user }) =>
+      console.log(`Password for the user: ${user.email} has been reset`),
   },
 
   emailVerification: {
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }) => {
+      const htmlContent = await getEmailVerifyHtml(user.name, url);
       await sendMail(transporter, {
         to: user.email,
         subject: 'Verify your email address',
-        text: `Click the link to verify your email: ${url}`,
+        html: htmlContent,
       });
     },
   },

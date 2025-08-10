@@ -1,6 +1,7 @@
 import { auth } from '@server/auth';
 import { fakeUser } from '@server/entities/tests/fakes';
-import * as sendMailModule from '@server/utils/sendMail';
+import * as sendMailModule from '@server/utils/sendMail/sendMail';
+import { getEmailVerifyHtml } from '@server/utils/sendMail/templates';
 
 describe('Better-auth configuration', () => {
   it('Should be initialized with the correct model names', () => {
@@ -84,6 +85,7 @@ it('Email verification', async () => {
 
   const user = fakeUser();
   const fakeVerificationUrl = 'http://localhost:5173/verify-email';
+  const htmlContent = await getEmailVerifyHtml(user.name, fakeVerificationUrl);
 
   await auth.options.emailVerification.sendVerificationEmail({
     user,
@@ -94,9 +96,7 @@ it('Email verification', async () => {
   expect(sendEmailSpy).toHaveBeenCalledWith(expect.any(Object), {
     to: user.email,
     subject: expect.stringMatching(/verify/i),
-    text: expect.stringMatching(
-      new RegExp(`Click.*${fakeVerificationUrl}`, 'i')
-    ),
+    html: htmlContent,
   });
 
   sendEmailSpy.mockRestore();
