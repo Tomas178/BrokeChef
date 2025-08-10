@@ -1,7 +1,10 @@
 import { auth } from '@server/auth';
 import { fakeUser } from '@server/entities/tests/fakes';
 import * as sendMailModule from '@server/utils/sendMail/sendMail';
-import { getEmailVerifyHtml } from '@server/utils/sendMail/templates';
+import {
+  getEmailVerifyHtml,
+  getPasswordResetHtml,
+} from '@server/utils/sendMail/templates';
 
 describe('Better-auth configuration', () => {
   it('Should be initialized with the correct model names', () => {
@@ -96,6 +99,33 @@ it('Email verification', async () => {
   expect(sendEmailSpy).toHaveBeenCalledWith(expect.any(Object), {
     to: user.email,
     subject: expect.stringMatching(/verify/i),
+    html: htmlContent,
+  });
+
+  sendEmailSpy.mockRestore();
+});
+
+it('Password reset email', async () => {
+  const sendEmailSpy = vi
+    .spyOn(sendMailModule, 'sendMail')
+    .mockResolvedValueOnce();
+
+  const user = fakeUser();
+  const fakePasswordResetUrl = 'http://localhost:5173/reset-password';
+  const htmlContent = await getPasswordResetHtml(
+    user.name,
+    fakePasswordResetUrl
+  );
+
+  await auth.options.emailAndPassword.sendResetPassword({
+    user,
+    url: fakePasswordResetUrl,
+    token: 'fake-token',
+  });
+
+  expect(sendEmailSpy).toHaveBeenCalledWith(expect.any(Object), {
+    to: user.email,
+    subject: expect.stringMatching(/reset/i),
     html: htmlContent,
   });
 
