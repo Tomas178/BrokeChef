@@ -144,9 +144,7 @@ _Example usage:_
 
 ```json
 {
-  "json": {
-    "id": 3334
-  }
+  "json": 3336
 }
 ```
 
