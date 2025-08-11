@@ -4,7 +4,7 @@ import {
   type RecipesPublic,
 } from '@server/entities/recipes';
 import { usersKeysPublic, type UsersPublic } from '@server/entities/users';
-import type { Pagination } from '@server/shared/types';
+import type { Pagination } from '@server/shared/pagination';
 import { prefixTable } from '@server/utils/strings';
 import type { AliasedRawBuilder, ExpressionBuilder, Insertable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';

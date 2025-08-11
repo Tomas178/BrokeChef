@@ -1,6 +1,6 @@
 import type { Database } from '@server/database';
 import { recipesRepository as buildRecipesRepository } from '@server/repositories/recipesRepository';
-import type { Pagination } from '@server/shared/types';
+import type { Pagination } from '@server/shared/pagination';
 import { TRPCError } from '@trpc/server';
 import { usersRepository as buildUsersRepository } from '../repositories/usersRepository';
 
