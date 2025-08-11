@@ -27,13 +27,13 @@ const repos = {
 
 const { remove } = createCaller({ repos, authUser } as any);
 
-const recipe = { id: 26 };
+const recipeId = 26;
 
 it('Should remove a recipe', async () => {
-  const removedRecipe = await remove(recipe);
+  const removedRecipe = await remove(recipeId);
 
   expect(removedRecipe).toMatchObject({
-    id: recipe.id,
+    id: recipeId,
     userId: authUser.id,
   });
 });
@@ -43,11 +43,11 @@ it('Should throw an error if recipe does not exist', async () => {
     new NoResultError({} as any)
   );
 
-  await expect(remove(recipe)).rejects.toThrow(/not found/i);
+  await expect(remove(recipeId)).rejects.toThrow(/not found/i);
 });
 
 it('Should throw an error if user is not an owner of recipe', async () => {
   repos.recipesRepository.isAuthor.mockResolvedValueOnce(false);
 
-  await expect(remove(recipe)).rejects.toThrow(/recipe/i);
+  await expect(remove(recipeId)).rejects.toThrow(/recipe/i);
 });
