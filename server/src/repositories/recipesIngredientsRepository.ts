@@ -7,7 +7,7 @@ import type { Insertable } from 'kysely';
 
 const TABLE = 'recipesIngredients';
 
-interface RecipesIngredientsRepository {
+export interface RecipesIngredientsRepository {
   create: (
     link: Insertable<RecipesIngredients>
   ) => Promise<recipesIngredientsPublic>;
