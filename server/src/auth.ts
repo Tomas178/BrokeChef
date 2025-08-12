@@ -101,5 +101,5 @@ export const auth = betterAuth({
 
   secret: config.auth.betterAuth.secret,
 
-  trustedOrigins: ['http://localhost:3000', 'http://localhost:5173'],
+  trustedOrigins: config.auth.betterAuth.trustedOrigins,
 });

@@ -7,7 +7,7 @@ export async function sendMail(
 ) {
   try {
     await transporter.sendMail({
-      from: config.auth.gmail.email,
+      from: config.mail.email,
       ...options,
     });
   } catch {

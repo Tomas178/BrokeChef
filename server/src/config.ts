@@ -18,13 +18,19 @@ const schema = z
       .default('development'),
     isCi: z.preprocess(coerceBoolean, z.boolean().default(false)),
     port: z.coerce.number().default(3000),
+    cors: z.object({
+      origin: z.array(z.url()),
+    }),
+
+    mail: z.object({
+      service: z.string().default('gmail'),
+      port: z.coerce.number().default(465),
+      secure: z.coerce.boolean().default(true),
+      email: z.email(),
+      pass: z.string(),
+    }),
 
     auth: z.object({
-      gmail: z.object({
-        email: z.email(),
-        pass: z.string(),
-      }),
-
       google: z.object({
         clientId: z.string(),
         clientSecret: z.string(),
@@ -46,6 +52,7 @@ const schema = z
           );
         }),
         url: z.url(),
+        trustedOrigins: z.array(z.url()),
       }),
     }),
 
@@ -59,13 +66,19 @@ const config = schema.parse({
   env: env.NODE_ENV,
   port: env.PORT,
   isCi: env.CI,
+  cors: {
+    origin: [env.FRONT_END_URL, env.FRONT_END_FULL_URL],
+  },
+
+  mail: {
+    service: env.MAIL_SERVICE,
+    port: env.MAIL_PORT,
+    secure: env.MAIL_SECURE,
+    email: env.EMAIL,
+    pass: env.EMAIL_APP_PASS,
+  },
 
   auth: {
-    gmail: {
-      email: env.EMAIL,
-      pass: env.EMAIL_APP_PASS,
-    },
-
     google: {
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
@@ -79,6 +92,7 @@ const config = schema.parse({
     betterAuth: {
       secret: env.BETTER_AUTH_SECRET,
       url: env.BETTER_AUTH_URL,
+      trustedOrigins: [env.BETTER_AUTH_URL, env.FRONT_END_URL],
     },
   },
 

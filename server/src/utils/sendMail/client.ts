@@ -2,12 +2,12 @@ import config from '@server/config';
 import * as nodemailer from 'nodemailer';
 
 export const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  port: 465,
-  secure: true,
+  service: config.mail.service,
+  port: config.mail.port,
+  secure: config.mail.secure,
   auth: {
-    user: config.auth.gmail.email,
-    pass: config.auth.gmail.pass,
+    user: config.mail.email,
+    pass: config.mail.pass,
   },
 });
 

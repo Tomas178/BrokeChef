@@ -4,11 +4,12 @@ vi.mock('nodemailer', () => ({
 
 vi.mock('@server/config', () => ({
   default: {
-    auth: {
-      gmail: {
-        email: 'test@gmail.com',
-        pass: 'abcdefghijklmnop',
-      },
+    mail: {
+      service: 'gmail',
+      port: 465,
+      secure: true,
+      email: 'test@gmail.com',
+      pass: 'abcdefghijklmnop',
     },
   },
 }));
