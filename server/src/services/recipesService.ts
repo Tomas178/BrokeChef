@@ -2,10 +2,22 @@ import type { createRecipeInput } from '@server/controllers/recipes/create';
 import type { Database } from '@server/database';
 import type { RecipesPublic } from '@server/entities/recipes';
 import { recipesRepository as buildRecipesRepository } from '@server/repositories/recipesRepository';
-import { ingredientsRepository as buildIngredientsRepository } from '@server/repositories/ingredientsRepository';
-import { recipesIngredientsRepository as buildRecipesIngredientsRepository } from '@server/repositories/recipesIngredientsRepository';
-import { toolsRepository as buildToolsRepository } from '@server/repositories/toolsRepository';
-import { recipesToolsRepository as buildRecipesToolsRepository } from '@server/repositories/recipesToolsRepository';
+import {
+  ingredientsRepository as buildIngredientsRepository,
+  type IngredientsRepository,
+} from '@server/repositories/ingredientsRepository';
+import {
+  recipesIngredientsRepository as buildRecipesIngredientsRepository,
+  type RecipesIngredientsRepository,
+} from '@server/repositories/recipesIngredientsRepository';
+import {
+  toolsRepository as buildToolsRepository,
+  type ToolsRepository,
+} from '@server/repositories/toolsRepository';
+import {
+  recipesToolsRepository as buildRecipesToolsRepository,
+  type RecipesToolsRepository,
+} from '@server/repositories/recipesToolsRepository';
 import { joinStepsToSingleString } from './utils/joinStepsToSingleString';
 
 export function recipesService(database: Database) {
@@ -36,35 +48,14 @@ export function recipesService(database: Database) {
         const recipeId = createdRecipe.id;
 
         await Promise.all([
-          (async () => {
-            for (const ingredient of ingredients) {
-              const existing =
-                await ingredientsRepository.findByName(ingredient);
+          insertIngredients(
+            recipeId,
+            ingredients,
+            ingredientsRepository,
+            recipesIngredientsRepository
+          ),
 
-              const ingredientRecord =
-                existing ??
-                (await ingredientsRepository.create({ name: ingredient }));
-
-              await recipesIngredientsRepository.create({
-                recipeId,
-                ingredientId: ingredientRecord.id,
-              });
-            }
-          })(),
-
-          (async () => {
-            for (const tool of tools) {
-              const existing = await toolsRepository.findByName(tool);
-
-              const toolRecord =
-                existing ?? (await toolsRepository.create({ name: tool }));
-
-              await recipesToolsRepository.create({
-                recipeId,
-                toolId: toolRecord.id,
-              });
-            }
-          })(),
+          insertTools(recipeId, tools, toolsRepository, recipesToolsRepository),
         ]);
 
         return createdRecipe;
@@ -73,4 +64,35 @@ export function recipesService(database: Database) {
       }
     },
   };
+}
+
+async function insertIngredients(
+  recipeId: number,
+  ingredients: string[],
+  repo: IngredientsRepository,
+  linkRepo: RecipesIngredientsRepository
+): Promise<void> {
+  for (const ingredient of ingredients) {
+    const existing = await repo.findByName(ingredient);
+
+    const ingredientRecord =
+      existing ?? (await repo.create({ name: ingredient }));
+
+    await linkRepo.create({ recipeId, ingredientId: ingredientRecord.id });
+  }
+}
+
+async function insertTools(
+  recipeId: number,
+  tools: string[],
+  repo: ToolsRepository,
+  linkRepo: RecipesToolsRepository
+): Promise<void> {
+  for (const tool of tools) {
+    const existing = await repo.findByName(tool);
+
+    const toolRecord = existing ?? (await repo.create({ name: tool }));
+
+    await linkRepo.create({ recipeId, toolId: toolRecord.id });
+  }
 }
