@@ -4,9 +4,15 @@ import type { Insertable } from 'kysely';
 
 const TABLE = 'tools';
 
-export function toolsRepository(database: Database) {
+export interface ToolsRepository {
+  create: (tool: Insertable<Tools>) => Promise<ToolsPublic>;
+  findById: (id: number) => Promise<ToolsPublic | undefined>;
+  findByName: (name: string) => Promise<ToolsPublic | undefined>;
+}
+
+export function toolsRepository(database: Database): ToolsRepository {
   return {
-    async create(tool: Insertable<Tools>): Promise<ToolsPublic> {
+    async create(tool) {
       return database
         .insertInto(TABLE)
         .values(tool)
@@ -14,7 +20,7 @@ export function toolsRepository(database: Database) {
         .executeTakeFirstOrThrow();
     },
 
-    async findById(id: number): Promise<ToolsPublic | undefined> {
+    async findById(id) {
       return database
         .selectFrom(TABLE)
         .select(toolsKeysPublic)
@@ -22,7 +28,7 @@ export function toolsRepository(database: Database) {
         .executeTakeFirst();
     },
 
-    async findByName(name: string): Promise<ToolsPublic | undefined> {
+    async findByName(name) {
       return database
         .selectFrom(TABLE)
         .select(toolsKeysPublic)

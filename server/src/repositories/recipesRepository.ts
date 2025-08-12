@@ -11,9 +11,25 @@ import { jsonObjectFrom } from 'kysely/helpers/postgres';
 
 const TABLE = 'recipes';
 
-export function recipesRepository(database: Database) {
+export interface RecipesRepository {
+  create: (recipe: Insertable<Recipes>) => Promise<RecipesPublic>;
+  findById: (id: number) => Promise<RecipesPublic | undefined>;
+  findCreated: (
+    userId: string,
+    { offset, limit }: Pagination
+  ) => Promise<RecipesPublic[]>;
+  findSaved: (
+    userId: string,
+    { offset, limit }: Pagination
+  ) => Promise<RecipesPublic[]>;
+  findAll: ({ offset, limit }: Pagination) => Promise<RecipesPublic[]>;
+  isAuthor: (recipeId: number, userId: string) => Promise<boolean>;
+  remove: (id: number) => Promise<RecipesPublic>;
+}
+
+export function recipesRepository(database: Database): RecipesRepository {
   return {
-    async create(recipe: Insertable<Recipes>): Promise<RecipesPublic> {
+    async create(recipe) {
       return database
         .insertInto(TABLE)
         .values(recipe)
@@ -31,10 +47,7 @@ export function recipesRepository(database: Database) {
         .executeTakeFirst();
     },
 
-    async findCreated(
-      userId: string,
-      { offset, limit }: Pagination
-    ): Promise<RecipesPublic[]> {
+    async findCreated(userId, { offset, limit }) {
       return database
         .selectFrom(TABLE)
         .select(recipesKeysPublic)
@@ -46,10 +59,7 @@ export function recipesRepository(database: Database) {
         .execute();
     },
 
-    async findSaved(
-      userId: string,
-      { offset, limit }: Pagination
-    ): Promise<RecipesPublic[]> {
+    async findSaved(userId, { offset, limit }) {
       return database
         .selectFrom(TABLE)
         .innerJoin('savedRecipes', 'savedRecipes.recipeId', 'recipes.id')
@@ -62,7 +72,7 @@ export function recipesRepository(database: Database) {
         .execute();
     },
 
-    async findAll({ offset, limit }: Pagination): Promise<RecipesPublic[]> {
+    async findAll({ offset, limit }) {
       return database
         .selectFrom(TABLE)
         .select(recipesKeysPublic)
@@ -73,7 +83,7 @@ export function recipesRepository(database: Database) {
         .execute();
     },
 
-    async isAuthor(recipeId: number, userId: string): Promise<boolean> {
+    async isAuthor(recipeId, userId) {
       const recipe = await database
         .selectFrom(TABLE)
         .select('userId')
@@ -83,7 +93,7 @@ export function recipesRepository(database: Database) {
       return recipe?.userId === userId;
     },
 
-    async remove(id: number): Promise<RecipesPublic> {
+    async remove(id) {
       return database
         .deleteFrom(TABLE)
         .where('id', '=', id)
@@ -102,5 +112,3 @@ function withAuthor(eb: ExpressionBuilder<DB, 'recipes'>) {
       .whereRef('users.id', '=', 'recipes.userId')
   ).as('author') as AliasedRawBuilder<UsersPublic, 'author'>;
 }
-
-export type RecipesRepository = ReturnType<typeof recipesRepository>;

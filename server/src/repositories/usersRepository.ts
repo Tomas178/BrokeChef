@@ -3,9 +3,13 @@ import { usersKeysPublic, type UsersPublic } from '@server/entities/users';
 
 const TABLE = 'users';
 
-export function usersRepository(database: Database) {
+interface UsersRepository {
+  findById: (id: string) => Promise<UsersPublic | undefined>;
+}
+
+export function usersRepository(database: Database): UsersRepository {
   return {
-    async findById(id: string): Promise<UsersPublic | undefined> {
+    async findById(id) {
       return database
         .selectFrom(TABLE)
         .select(usersKeysPublic)

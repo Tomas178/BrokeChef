@@ -7,11 +7,18 @@ import type { Insertable } from 'kysely';
 
 const TABLE = 'savedRecipes';
 
-export function savedRecipesRepository(database: Database) {
+interface SavedRecipesRepository {
+  create: (
+    recipeToSave: Insertable<SavedRecipes>
+  ) => Promise<savedRecipesPublic>;
+  remove: (recipeId: number, userId: string) => Promise<savedRecipesPublic>;
+}
+
+export function savedRecipesRepository(
+  database: Database
+): SavedRecipesRepository {
   return {
-    async create(
-      recipeToSave: Insertable<SavedRecipes>
-    ): Promise<savedRecipesPublic> {
+    async create(recipeToSave) {
       return database
         .insertInto(TABLE)
         .values(recipeToSave)
@@ -19,10 +26,7 @@ export function savedRecipesRepository(database: Database) {
         .executeTakeFirstOrThrow();
     },
 
-    async remove(
-      recipeId: number,
-      userId: string
-    ): Promise<savedRecipesPublic> {
+    async remove(recipeId, userId) {
       return database
         .deleteFrom(TABLE)
         .where('recipeId', '=', recipeId)
