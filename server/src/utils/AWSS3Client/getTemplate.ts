@@ -1,6 +1,8 @@
 import type { Readable } from 'node:stream';
 import { GetObjectCommand, type S3Client } from '@aws-sdk/client-s3';
 
+type EmailTemplates = 'verifyEmail.html' | 'resetPassword.html';
+
 async function streamToString(stream: Readable): Promise<string> {
   const chunks: Uint8Array[] = [];
   for await (const chunk of stream) {
@@ -12,7 +14,7 @@ async function streamToString(stream: Readable): Promise<string> {
 export async function getTemplate(
   s3Client: S3Client,
   bucketName: string,
-  key: string
+  key: EmailTemplates
 ) {
   const command = new GetObjectCommand({
     Bucket: bucketName,
