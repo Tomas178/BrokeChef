@@ -54,6 +54,17 @@ const schema = z
         url: z.url(),
         trustedOrigins: z.array(z.url()),
       }),
+
+      aws: z.object({
+        accessIdKey: z.string().trim(),
+        secretAccessKey: z.string().trim(),
+        s3: z.object({
+          region: z.string().trim(),
+          buckets: z.object({
+            emailTemplates: z.string().trim(),
+          }),
+        }),
+      }),
     }),
 
     database: z.object({
@@ -93,6 +104,17 @@ const config = schema.parse({
       secret: env.BETTER_AUTH_SECRET,
       url: env.BETTER_AUTH_URL,
       trustedOrigins: [env.BETTER_AUTH_URL, env.FRONT_END_URL],
+    },
+
+    aws: {
+      accessIdKey: env.AWS_ACCESS_ID_KEY,
+      secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
+      s3: {
+        region: env.AWS_S3_REGION,
+        buckets: {
+          emailTemplates: env.AWS_S3_EMAIL_TEMPLATES_BUCKET_NAME,
+        },
+      },
     },
   },
 
