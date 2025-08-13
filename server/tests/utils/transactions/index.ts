@@ -28,30 +28,30 @@ type DatabaseProxy<T, N extends T = any> = T & {
  * rollbacked after the test suite.
  */
 export async function wrapInRollbacks<T = any, K extends Kysely<T> = any>(
-  db: K
+  database: K
 ): Promise<K> {
-  const dbProxy = wrapInProxy(db);
-  const transaction = await beginTransaction(dbProxy[symbolOriginal]);
+  const databaseProxy = wrapInProxy(database);
+  const transaction = await beginTransaction(databaseProxy[symbolOriginal]);
 
   // Swap out the database instance with the transaction instance.
-  dbProxy[symbolSetInstance](transaction.trx);
+  databaseProxy[symbolSetInstance](transaction.trx);
 
   beforeEach(async () => {
-    const preTestState = createSavePoint(dbProxy);
+    const preTestState = createSavePoint(databaseProxy);
 
     await preTestState.save();
 
     // Override the transaction method to use savepoints for nested transactions.
     // This allows using transactions inside our application code without
     // worrying about the test suite's transaction.
-    dbProxy[symbolOverride]('transaction', () => ({
+    databaseProxy[symbolOverride]('transaction', () => ({
       isTransaction: () => true,
-      execute: async <N>(fn: (trx: Transaction<T>) => N) => {
-        const innerState = createSavePoint(dbProxy);
+      execute: async <N>(function_: (trx: Transaction<T>) => N) => {
+        const innerState = createSavePoint(databaseProxy);
         await innerState.save();
 
         try {
-          const result = await fn(dbProxy as any);
+          const result = await function_(databaseProxy as any);
           await innerState.release();
           return result;
         } catch (error) {
@@ -67,7 +67,7 @@ export async function wrapInRollbacks<T = any, K extends Kysely<T> = any>(
 
   afterAll(transaction.rollback);
 
-  return dbProxy;
+  return databaseProxy;
 }
 
 /**
@@ -77,32 +77,32 @@ export async function wrapInRollbacks<T = any, K extends Kysely<T> = any>(
  * without having to create a new instance for each test.
  */
 function wrapInProxy<T extends object, N extends T>(
-  dbBase: T
+  databaseBase: T
 ): DatabaseProxy<T> {
-  let instance = dbBase;
+  let instance = databaseBase;
   const overrides = new Map();
 
   return new Proxy(instance, {
-    get(_, prop) {
-      if (prop === symbolOriginal) {
-        return dbBase;
+    get(_, property) {
+      if (property === symbolOriginal) {
+        return databaseBase;
       }
 
-      if (prop === symbolSetInstance) {
+      if (property === symbolSetInstance) {
         return (instanceNew: N) => {
           instance = instanceNew;
         };
       }
 
-      if (prop === symbolOverride) {
+      if (property === symbolOverride) {
         return overrides.set.bind(overrides);
       }
 
-      if (overrides.has(prop)) {
-        return overrides.get(prop);
+      if (overrides.has(property)) {
+        return overrides.get(property);
       }
 
-      const value = instance[prop as keyof typeof instance];
+      const value = instance[property as keyof typeof instance];
 
       return typeof value === 'function' ? value.bind(instance) : value;
     },

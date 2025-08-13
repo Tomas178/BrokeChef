@@ -25,14 +25,14 @@ export const clearTables = async <
   N extends keyof DB,
   T extends DatabaseTypes<N>,
 >(
-  db: Kysely<T>,
+  database: Kysely<T>,
   tableNames: N[]
 ): Promise<void> => {
   // if SQLite, just delete all records
-  if (db.getExecutor().adapter instanceof SqliteAdapter) {
+  if (database.getExecutor().adapter instanceof SqliteAdapter) {
     await Promise.all(
       tableNames.map(tableName =>
-        sql`DELETE FROM ${sql.table(tableName)};`.execute(db)
+        sql`DELETE FROM ${sql.table(tableName)};`.execute(database)
       )
     );
 
@@ -42,7 +42,7 @@ export const clearTables = async <
   // assume PostgreSQL, truncate all tables
   const tableNamesSql = sql.join(tableNames.map(sql.table), sql.raw(', '));
 
-  await sql`TRUNCATE TABLE ${tableNamesSql} CASCADE;`.execute(db);
+  await sql`TRUNCATE TABLE ${tableNamesSql} CASCADE;`.execute(database);
 };
 
 /**
@@ -51,11 +51,11 @@ export const clearTables = async <
  * @param tableName Name of the table
  */
 export const insertAll = <N extends keyof DB, T extends DatabaseTypes<N>>(
-  db: Kysely<T>,
+  database: Kysely<T>,
   tableName: N,
   records: Insertable<DB[N]> | Insertable<DB[N]>[]
 ) =>
-  db
+  database
     .insertInto(tableName)
     .values(records as any)
     .returningAll()
@@ -67,11 +67,11 @@ export const insertAll = <N extends keyof DB, T extends DatabaseTypes<N>>(
  * @param tableName Name of the table
  */
 export const selectAll = <N extends keyof DB, T extends DatabaseTypes<N>>(
-  db: Kysely<T>,
+  database: Kysely<T>,
   tableName: N,
   expression?: ExpressionOrFactory<DB, N, SqlBool>
 ) => {
-  const query = db.selectFrom(tableName).selectAll();
+  const query = database.selectFrom(tableName).selectAll();
 
   return expression
     ? (query.where as any)(expression).execute()
