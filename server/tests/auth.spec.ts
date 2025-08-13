@@ -1,10 +1,14 @@
-import { auth } from '@server/auth';
 import { fakeUser } from '@server/entities/tests/fakes';
 import * as sendMailModule from '@server/utils/sendMail/sendMail';
-import {
-  getEmailVerifyHtml,
-  getPasswordResetHtml,
-} from '@server/utils/sendMail/templates';
+
+vi.mock('@server/utils/AWSS3Client/getTemplate', () => ({
+  getTemplate: vi.fn(() => 'hello {{username}} click this: {{url}}'),
+}));
+
+import { auth } from '@server/auth';
+import { getTemplate } from '@server/utils/AWSS3Client/getTemplate';
+import { formEmailTemplate } from '@server/utils/sendMail/formEmailTemplate';
+import type { S3Client } from '@aws-sdk/client-s3';
 
 describe('Better-auth configuration', () => {
   it('Should be initialized with the correct model names', () => {
@@ -88,7 +92,14 @@ it('Email verification', async () => {
 
   const user = fakeUser();
   const fakeVerificationUrl = 'http://localhost:5173/verify-email';
-  const htmlContent = await getEmailVerifyHtml(user.name, fakeVerificationUrl);
+
+  const expectedHtml = await formEmailTemplate(
+    await getTemplate({} as S3Client, '', ''),
+    {
+      username: user.name,
+      url: fakeVerificationUrl,
+    }
+  );
 
   await auth.options.emailVerification.sendVerificationEmail({
     user,
@@ -99,7 +110,7 @@ it('Email verification', async () => {
   expect(sendEmailSpy).toHaveBeenCalledWith(expect.any(Object), {
     to: user.email,
     subject: expect.stringMatching(/verify/i),
-    html: htmlContent,
+    html: expectedHtml,
   });
 
   sendEmailSpy.mockRestore();
@@ -112,9 +123,10 @@ it('Password reset email', async () => {
 
   const user = fakeUser();
   const fakePasswordResetUrl = 'http://localhost:5173/reset-password';
-  const htmlContent = await getPasswordResetHtml(
-    user.name,
-    fakePasswordResetUrl
+
+  const expectedHtml = await formEmailTemplate(
+    await getTemplate({} as S3Client, '', ''),
+    { username: user.name, url: fakePasswordResetUrl }
   );
 
   await auth.options.emailAndPassword.sendResetPassword({
@@ -126,7 +138,7 @@ it('Password reset email', async () => {
   expect(sendEmailSpy).toHaveBeenCalledWith(expect.any(Object), {
     to: user.email,
     subject: expect.stringMatching(/reset/i),
-    html: htmlContent,
+    html: expectedHtml,
   });
 
   sendEmailSpy.mockRestore();

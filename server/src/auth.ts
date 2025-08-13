@@ -3,10 +3,9 @@ import pg from 'pg';
 import config from './config';
 import { sendMail } from './utils/sendMail/sendMail';
 import { transporter } from './utils/sendMail/client';
-import {
-  getEmailVerifyHtml,
-  getPasswordResetHtml,
-} from './utils/sendMail/templates';
+import { s3Client } from './utils/AWSS3Client/client';
+import { formEmailTemplate } from './utils/sendMail/formEmailTemplate';
+import { getTemplate } from './utils/AWSS3Client/getTemplate';
 
 const createdAndUpdated = {
   createdAt: 'created_at',
@@ -65,7 +64,15 @@ export const auth = betterAuth({
     minPasswordLength: 8,
     requireEmailVerification: true,
     sendResetPassword: async ({ user, url }) => {
-      const htmlContent = await getPasswordResetHtml(user.name, url);
+      const resetPasswordTemplate = await getTemplate(
+        s3Client,
+        config.auth.aws.s3.buckets.emailTemplates,
+        'resetPassword.html'
+      );
+      const htmlContent = await formEmailTemplate(resetPasswordTemplate, {
+        username: user.name,
+        url,
+      });
       await sendMail(transporter, {
         to: user.email,
         subject: 'Password reset',
@@ -79,7 +86,15 @@ export const auth = betterAuth({
   emailVerification: {
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }) => {
-      const htmlContent = await getEmailVerifyHtml(user.name, url);
+      const verifyEmailTemplate = await getTemplate(
+        s3Client,
+        config.auth.aws.s3.buckets.emailTemplates,
+        'verifyEmail.html'
+      );
+      const htmlContent = await formEmailTemplate(verifyEmailTemplate, {
+        username: user.name,
+        url,
+      });
       await sendMail(transporter, {
         to: user.email,
         subject: 'Verify your email address',
