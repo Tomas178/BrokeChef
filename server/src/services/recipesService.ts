@@ -21,47 +21,54 @@ import {
 import { joinStepsToSingleString } from './utils/joinStepsToSingleString';
 
 export function recipesService(database: Database) {
-  const recipesRepository = buildRecipesRepository(database);
-  const ingredientsRepository = buildIngredientsRepository(database);
-  const recipesIngredientsRepository =
-    buildRecipesIngredientsRepository(database);
-  const toolsRepository = buildToolsRepository(database);
-  const recipesToolsRepository = buildRecipesToolsRepository(database);
-
   return {
     async createRecipe(
       recipe: createRecipeInput,
       userId: string
     ): Promise<RecipesPublic> {
-      const { ingredients, tools, ...recipeData } = recipe;
+      return await database.transaction().execute(async trx => {
+        const recipesRepository = buildRecipesRepository(trx);
+        const ingredientsRepository = buildIngredientsRepository(trx);
+        const recipesIngredientsRepository =
+          buildRecipesIngredientsRepository(trx);
+        const toolsRepository = buildToolsRepository(trx);
+        const recipesToolsRepository = buildRecipesToolsRepository(trx);
 
-      const stepsAsSingleString = joinStepsToSingleString(recipeData.steps);
+        const { ingredients, tools, ...recipeData } = recipe;
 
-      const recipeToInsert = {
-        ...recipeData,
-        steps: stepsAsSingleString,
-        userId,
-      };
+        const stepsAsSingleString = joinStepsToSingleString(recipeData.steps);
 
-      try {
-        const createdRecipe = await recipesRepository.create(recipeToInsert);
-        const recipeId = createdRecipe.id;
+        const recipeToInsert = {
+          ...recipeData,
+          steps: stepsAsSingleString,
+          userId,
+        };
 
-        await Promise.all([
-          insertIngredients(
-            recipeId,
-            ingredients,
-            ingredientsRepository,
-            recipesIngredientsRepository
-          ),
+        try {
+          const createdRecipe = await recipesRepository.create(recipeToInsert);
+          const recipeId = createdRecipe.id;
 
-          insertTools(recipeId, tools, toolsRepository, recipesToolsRepository),
-        ]);
+          await Promise.all([
+            insertIngredients(
+              recipeId,
+              ingredients,
+              ingredientsRepository,
+              recipesIngredientsRepository
+            ),
 
-        return createdRecipe;
-      } catch {
-        throw new Error('Failed to create recipe');
-      }
+            insertTools(
+              recipeId,
+              tools,
+              toolsRepository,
+              recipesToolsRepository
+            ),
+          ]);
+
+          return createdRecipe;
+        } catch {
+          throw new Error('Failed to create recipe');
+        }
+      });
     },
   };
 }

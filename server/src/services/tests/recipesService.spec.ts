@@ -1,6 +1,6 @@
 import { createTestDatabase } from '@tests/utils/database';
 import { wrapInRollbacks } from '@tests/utils/transactions';
-import { insertAll } from '@tests/utils/record';
+import { clearTables, insertAll, selectAll } from '@tests/utils/record';
 import { fakeUser, fakeCreateRecipeData } from '@server/entities/tests/fakes';
 import { pick } from 'lodash-es';
 import { recipesKeysPublic } from '@server/entities/recipes';
@@ -35,5 +35,18 @@ describe('createRecipe', () => {
     await expect(
       service.createRecipe(invalidRecipeData, user.id)
     ).rejects.toThrow(/recipe/i);
+  });
+
+  it('Should rollback if an error occurs', async () => {
+    await clearTables(database, ['recipes', 'ingredients', 'tools']);
+
+    const recipeData = fakeCreateRecipeData();
+    recipeData.ingredients.push('');
+
+    await expect(service.createRecipe(recipeData, user.id)).rejects.toThrow();
+
+    await expect(selectAll(database, 'recipes')).resolves.toHaveLength(0);
+    await expect(selectAll(database, 'ingredients')).resolves.toHaveLength(0);
+    await expect(selectAll(database, 'tools')).resolves.toHaveLength(0);
   });
 });
