@@ -37,7 +37,7 @@ it('Should create a persisted recipe', async () => {
   });
 });
 
-it('Should throw an error on failure to create recipe', async () => {
+it('Should throw an error on failure to create recipe when userId is not found', async () => {
   const { create } = createCaller(
     authContext(
       { db: database },
@@ -45,7 +45,5 @@ it('Should throw an error on failure to create recipe', async () => {
     )
   );
 
-  await expect(create(fakeCreateRecipeData())).rejects.toThrow(
-    /failed|recipe/i
-  );
+  await expect(create(fakeCreateRecipeData())).rejects.toThrow(/not found/i);
 });

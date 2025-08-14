@@ -5,7 +5,7 @@ import provideServices from '@server/trpc/provideServices';
 import * as z from 'zod';
 import { recipesService } from '@server/services/recipesService';
 import { TRPCError } from '@trpc/server';
-import { assertError } from '@server/utils/errors';
+import UserNotFound from '@server/utils/errors/users/UserNotFound';
 
 const createRecipeInputSchema = recipesSchema
   .pick({
@@ -32,12 +32,11 @@ export default authenticatedProcedure
 
       return recipeCreated;
     } catch (error) {
-      assertError(error);
-
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Failed to create recipe',
-        cause: error,
-      });
+      if (error instanceof UserNotFound) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: error.message,
+        });
+      }
     }
   });
