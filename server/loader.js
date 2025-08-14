@@ -40,6 +40,16 @@ export async function resolve(specifier, context, next) {
     return next(specifier, context);
   }
 
+  // special case for the pg-error-enum module to fix the module resolution
+  if (specifier === 'pg-error-enum') {
+    return next(specifier, context);
+  }
+
+  // special case for the pg module to fix the module resolution
+  if (specifier === 'pg') {
+    return next(specifier, context);
+  }
+
   // `resolveAsync` works with paths, not URLs
   if (specifier.startsWith('file://')) {
     specifier = fileURLToPath(specifier);
