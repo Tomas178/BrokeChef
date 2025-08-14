@@ -1,7 +1,7 @@
 import type { Database } from '@server/database';
 import { recipesRepository as buildRecipesRepository } from '@server/repositories/recipesRepository';
 import type { Pagination } from '@server/shared/pagination';
-import { TRPCError } from '@trpc/server';
+import UserNotFound from '@server/utils/errors/users/UserNotFound';
 import { usersRepository as buildUsersRepository } from '../repositories/usersRepository';
 
 export function usersService(database: Database) {
@@ -12,12 +12,7 @@ export function usersService(database: Database) {
     async findById(id: string) {
       const user = await usersRepository.findById(id);
 
-      if (!user) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'User was not found!',
-        });
-      }
+      if (!user) throw new UserNotFound(id);
 
       return user;
     },
