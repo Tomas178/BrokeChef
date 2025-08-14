@@ -191,12 +191,12 @@ describe('isAuthor', () => {
   });
 });
 
-describe('delete', () => {
-  it('Should delete a recipe', async () => {
-    const deletedRecipe = await repository.remove(recipeOne.id);
+describe('remove', () => {
+  it('Should remove a recipe', async () => {
+    const removedRecipe = await repository.remove(recipeOne.id);
 
-    expect(deletedRecipe).toEqual({
-      ...pick(deletedRecipe, recipesKeysPublic),
+    expect(removedRecipe).toEqual({
+      ...pick(removedRecipe, recipesKeysPublic),
       author: pick(userOne, usersKeysPublic),
     });
   });
@@ -204,6 +204,8 @@ describe('delete', () => {
   it('Should throw an error if recipe does not exist', async () => {
     const nonExistantId = recipeOne.id + recipeTwo.id;
 
-    await expect(repository.remove(nonExistantId)).rejects.toThrow();
+    await expect(repository.remove(nonExistantId)).rejects.toThrow(
+      /recipe.*not found|not found.*recipe/i
+    );
   });
 });

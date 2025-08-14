@@ -5,6 +5,7 @@ import {
 } from '@server/entities/recipes';
 import { usersKeysPublic, type UsersPublic } from '@server/entities/users';
 import type { Pagination } from '@server/shared/pagination';
+import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import { prefixTable } from '@server/utils/strings';
 import type { AliasedRawBuilder, ExpressionBuilder, Insertable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
@@ -99,7 +100,7 @@ export function recipesRepository(database: Database): RecipesRepository {
         .where('id', '=', id)
         .returning(recipesKeysPublic)
         .returning(withAuthor)
-        .executeTakeFirstOrThrow();
+        .executeTakeFirstOrThrow(() => new RecipeNotFound(id));
     },
   };
 }
