@@ -98,6 +98,6 @@ describe('remove', () => {
 
     await expect(
       service.remove(savedRecipe.recipeId, nonExistantUserId)
-    ).rejects.toThrow(/failed/i);
+    ).rejects.toThrow(/not found/i);
   });
 });
