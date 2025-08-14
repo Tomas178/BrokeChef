@@ -9,12 +9,7 @@ export default publicProcedure
       recipesRepository,
     })
   )
-  .input(
-    paginationSchema.default({
-      offset: 0,
-      limit: 5,
-    })
-  )
+  .input(paginationSchema)
   .query(async ({ input, ctx: { repos } }) => {
     const recipes = await repos.recipesRepository.findAll(input);
 

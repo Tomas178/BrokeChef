@@ -14,13 +14,13 @@ const [user] = await insertAll(database, 'users', fakeUser());
 const { findAll } = createCaller({ db: database });
 
 it('Should return an empty list if there are no recipes', async () => {
-  expect(await findAll()).toHaveLength(0);
+  expect(await findAll({})).toHaveLength(0);
 });
 
 it('Should return a list of recipes', async () => {
   await insertAll(database, 'recipes', fakeRecipe({ userId: user.id }));
 
-  const recipes = await findAll();
+  const recipes = await findAll({});
 
   expect(recipes).toHaveLength(1);
 });
@@ -38,7 +38,7 @@ it('Should return the latest recipe first', async () => {
     fakeRecipe({ userId: user.id })
   );
 
-  const recipes = await findAll();
+  const recipes = await findAll({});
 
   expect(recipes[0]).toMatchObject(recipeNew);
   expect(recipes[1]).toMatchObject(recipeOld);

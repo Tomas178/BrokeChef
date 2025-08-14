@@ -13,12 +13,10 @@ export const expiresAtSchema = z.date().default(() => new Date());
 const POSTGRES_INT_MAX = 2_141_483_647;
 
 export const paginationSchema = z.object({
-  offset: z.number().int().min(0).max(POSTGRES_INT_MAX),
-  limit: z.number().int().min(1).max(100),
-});
-
-export const userWithPaginationSchema = z.object({
-  userId: oauthUserIdSchema,
   offset: z.number().int().min(0).max(POSTGRES_INT_MAX).default(0),
   limit: z.number().int().min(1).max(100).default(5),
+});
+
+export const userWithPaginationSchema = paginationSchema.extend({
+  userId: oauthUserIdSchema,
 });
