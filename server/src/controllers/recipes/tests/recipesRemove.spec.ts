@@ -32,10 +32,7 @@ const recipeId = 26;
 it('Should remove a recipe', async () => {
   const removedRecipe = await remove(recipeId);
 
-  expect(removedRecipe).toMatchObject({
-    id: recipeId,
-    userId: authUser.id,
-  });
+  expect(removedRecipe).toBeUndefined();
 });
 
 it('Should throw an error if recipe does not exist', async () => {

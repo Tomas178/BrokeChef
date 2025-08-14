@@ -5,9 +5,9 @@ import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 export default recipeAuthorProcedure.mutation(
   async ({ input: recipeId, ctx: { repos } }) => {
     try {
-      const recipe = await repos.recipesRepository.remove(recipeId);
+      await repos.recipesRepository.remove(recipeId);
 
-      return recipe;
+      return;
     } catch (error) {
       if (error instanceof RecipeNotFound) {
         throw new TRPCError({
