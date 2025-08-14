@@ -14,6 +14,8 @@ export default defineConfig({
         '**/src/entities/**',
         '**/src/trpc/index.ts',
         '**/src/repositories/index.ts',
+        '**/src/services/index.ts',
+        'src/index.ts',
       ],
     },
 
