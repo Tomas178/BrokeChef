@@ -1,9 +1,9 @@
 import { createCallerFactory } from '@server/trpc';
 import type { RecipesRepository } from '@server/repositories/recipesRepository';
 import { fakeRecipe, fakeUser } from '@server/entities/tests/fakes';
-import { NoResultError } from 'kysely';
 import { pick } from 'lodash-es';
 import { usersKeysPublic } from '@server/entities/users';
+import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import recipesRouter from '..';
 
 const createCaller = createCallerFactory(recipesRouter);
@@ -39,11 +39,11 @@ it('Should remove a recipe', async () => {
 });
 
 it('Should throw an error if recipe does not exist', async () => {
-  repos.recipesRepository.remove.mockRejectedValueOnce(
-    new NoResultError({} as any)
-  );
+  repos.recipesRepository.remove.mockRejectedValueOnce(new RecipeNotFound(1));
 
-  await expect(remove(recipeId)).rejects.toThrow(/not found/i);
+  await expect(remove(recipeId)).rejects.toThrow(
+    /recipe.*not found|not found.*recipe/i
+  );
 });
 
 it('Should throw an error if user is not an owner of recipe', async () => {

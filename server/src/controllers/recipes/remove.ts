@@ -1,6 +1,6 @@
 import { TRPCError } from '@trpc/server';
-import { assertError } from '@server/utils/errors';
 import { recipeAuthorProcedure } from '@server/trpc/recipeAuthorProcedure';
+import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 
 export default recipeAuthorProcedure.mutation(
   async ({ input: recipeId, ctx: { repos } }) => {
@@ -9,9 +9,7 @@ export default recipeAuthorProcedure.mutation(
 
       return recipe;
     } catch (error) {
-      assertError(error);
-
-      if (error.message.includes('no result')) {
+      if (error instanceof RecipeNotFound) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: 'Recipe was not found',
