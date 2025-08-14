@@ -3,7 +3,10 @@ import {
   recipesKeysPublic,
   type RecipesPublic,
 } from '@server/entities/recipes';
-import { usersKeysPublic, type UsersPublic } from '@server/entities/users';
+import {
+  usersKeysPublicWithoutId,
+  type UsersPublicWithoutId,
+} from '@server/entities/users';
 import type { Pagination } from '@server/shared/pagination';
 import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import { prefixTable } from '@server/utils/strings';
@@ -109,7 +112,7 @@ function withAuthor(eb: ExpressionBuilder<DB, 'recipes'>) {
   return jsonObjectFrom(
     eb
       .selectFrom('users')
-      .select(usersKeysPublic)
+      .select(usersKeysPublicWithoutId)
       .whereRef('users.id', '=', 'recipes.userId')
-  ).as('author') as AliasedRawBuilder<UsersPublic, 'author'>;
+  ).as('author') as AliasedRawBuilder<UsersPublicWithoutId, 'author'>;
 }

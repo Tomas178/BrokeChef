@@ -7,7 +7,7 @@ import {
   oauthUserIdSchema,
   updatedAtSchema,
 } from './shared';
-import type { UsersPublic } from './users';
+import type { UsersPublicWithoutId } from './users';
 
 export const recipesSchema = z.object({
   id: integerIdSchema,
@@ -28,4 +28,4 @@ export const recipesKeysPublic = recipesKeysAll;
 export type RecipesPublic = Pick<
   Selectable<Recipes>,
   (typeof recipesKeysPublic)[number]
-> & { author: UsersPublic };
+> & { author: UsersPublicWithoutId };

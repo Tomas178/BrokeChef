@@ -31,10 +31,14 @@ export const usersKeysAll = Object.keys(usersSchema.shape) as (keyof Users)[];
 
 export const usersKeysPublic = ['id', 'name', 'email'] as const;
 
+export const usersKeysPublicWithoutId = ['name', 'email'] as const;
+
 export type UsersPublic = Pick<
   Selectable<Users>,
   (typeof usersKeysPublic)[number]
 >;
+
+export type UsersPublicWithoutId = Omit<UsersPublic, 'id'>;
 
 export const authUserSchema = usersSchema.pick({ id: true });
 export type AuthUser = z.infer<typeof authUserSchema>;
