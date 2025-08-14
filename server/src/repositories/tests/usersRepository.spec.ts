@@ -18,9 +18,11 @@ describe('findById', () => {
     expect(userById).toEqual({ ...pick(user, usersKeysPublic) });
   });
 
-  it('Should return undefined if user is not found', async () => {
+  it('Should throw an error if user is not found', async () => {
     const nonExistantId = user.id + 'a';
 
-    await expect(repository.findById(nonExistantId)).resolves.toBeUndefined();
+    await expect(repository.findById(nonExistantId)).rejects.toThrow(
+      /not found/i
+    );
   });
 });

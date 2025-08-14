@@ -1,10 +1,11 @@
 import type { Database } from '@server/database';
 import { usersKeysPublic, type UsersPublic } from '@server/entities/users';
+import UserNotFound from '@server/utils/errors/users/UserNotFound';
 
 const TABLE = 'users';
 
 interface UsersRepository {
-  findById: (id: string) => Promise<UsersPublic | undefined>;
+  findById: (id: string) => Promise<UsersPublic>;
 }
 
 export function usersRepository(database: Database): UsersRepository {
@@ -14,7 +15,7 @@ export function usersRepository(database: Database): UsersRepository {
         .selectFrom(TABLE)
         .select(usersKeysPublic)
         .where('id', '=', id)
-        .executeTakeFirst();
+        .executeTakeFirstOrThrow(() => new UserNotFound(id));
     },
   };
 }
