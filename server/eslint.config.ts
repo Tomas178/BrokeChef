@@ -66,9 +66,7 @@ export default tseslint.config(
       'unicorn/filename-case': [
         'error',
         {
-          cases: {
-            camelCase: true,
-          },
+          case: 'camelCase',
         },
       ],
     },
@@ -84,6 +82,18 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       'unicorn/filename-case': 'off',
       'unicorn/no-useless-undefined': 'off',
+    },
+  },
+
+  {
+    files: ['**/src/utils/errors/**'],
+    rules: {
+      'unicorn/filename-case': [
+        'error',
+        {
+          case: 'pascalCase',
+        },
+      ],
     },
   },
 
