@@ -2,7 +2,11 @@ import type { Database } from '@server/database';
 import { savedRecipesRepository as buildSavedRecipesRepository } from '@server/repositories/savedRecipesRepository';
 import { recipesRepository as buildRecipesRepository } from '@server/repositories/recipesRepository';
 import { TRPCError } from '@trpc/server';
-import { assertError } from '@server/utils/errors';
+import { assertError, assertPostgresError } from '@server/utils/errors';
+import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
+import RecipeAlreadySaved from '@server/utils/errors/recipes/RecipeAlreadySaved';
+import { PostgresError } from 'pg-error-enum';
+import CannotSaveOwnRecipe from '@server/utils/errors/recipes/CannotSaveOwnRecipe';
 
 export function savedRecipesService(database: Database) {
   const savedRecipesRepository = buildSavedRecipesRepository(database);
@@ -12,18 +16,9 @@ export function savedRecipesService(database: Database) {
     async create(userId: string, recipeId: number) {
       const recipeById = await recipesRepository.findById(recipeId);
 
-      if (!recipeById)
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Recipe was not found!',
-        });
+      if (!recipeById) throw new RecipeNotFound(recipeId);
 
-      if (recipeById.userId === userId) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'You cannot save your own recipe!',
-        });
-      }
+      if (recipeById.userId === userId) throw new CannotSaveOwnRecipe(recipeId);
 
       try {
         const createdRecipe = await savedRecipesRepository.create({
@@ -33,13 +28,10 @@ export function savedRecipesService(database: Database) {
 
         return createdRecipe;
       } catch (error) {
-        assertError(error);
+        assertPostgresError(error);
 
-        if (error.message.includes('duplicate key')) {
-          throw new TRPCError({
-            code: 'CONFLICT',
-            message: 'Recipe is already saved!',
-          });
+        if (error.code === PostgresError.UNIQUE_VIOLATION) {
+          throw new RecipeAlreadySaved(recipeId);
         }
       }
     },
