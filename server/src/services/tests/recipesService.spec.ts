@@ -4,7 +4,7 @@ import { clearTables, insertAll, selectAll } from '@tests/utils/record';
 import { fakeUser, fakeCreateRecipeData } from '@server/entities/tests/fakes';
 import { pick } from 'lodash-es';
 import { recipesKeysPublic } from '@server/entities/recipes';
-import { usersKeysPublic } from '@server/entities/users';
+import { usersKeysPublicWithoutId } from '@server/entities/users';
 import { recipesService } from '../recipesService';
 import { joinStepsToSingleString } from '../utils/joinStepsToSingleString';
 
@@ -25,7 +25,7 @@ describe('createRecipe', () => {
       id: expect.any(Number),
       ...pick(recipeData, recipesKeysPublic),
       steps: stepsInASingleString,
-      author: pick(user, usersKeysPublic),
+      author: pick(user, usersKeysPublicWithoutId),
     });
   });
 

@@ -9,7 +9,7 @@ import {
 import { initialPage } from '@server/shared/pagination';
 import { pick } from 'lodash-es';
 import { recipesKeysPublic } from '@server/entities/recipes';
-import { usersKeysPublic } from '@server/entities/users';
+import { usersKeysPublicWithoutId } from '@server/entities/users';
 import { usersService } from '../usersService';
 
 const database = await wrapInRollbacks(createTestDatabase());
@@ -40,23 +40,23 @@ describe('getRecipes', () => {
     // Check created recipes ordered descendingly by id
     expect(createdOld).toEqual({
       ...pick(createdRecipeOne, recipesKeysPublic),
-      author: pick(user, usersKeysPublic),
+      author: pick(user, usersKeysPublicWithoutId),
     });
 
     expect(createdNew).toEqual({
       ...pick(createdRecipeTwo, recipesKeysPublic),
-      author: pick(user, usersKeysPublic),
+      author: pick(user, usersKeysPublicWithoutId),
     });
 
     // Check saved recipes ordered descendingly by id
     expect(savedOld).toEqual({
       ...pick(createdRecipeOne, recipesKeysPublic),
-      author: pick(user, usersKeysPublic),
+      author: pick(user, usersKeysPublicWithoutId),
     });
 
     expect(savedNew).toEqual({
       ...pick(createdRecipeTwo, recipesKeysPublic),
-      author: pick(user, usersKeysPublic),
+      author: pick(user, usersKeysPublicWithoutId),
     });
   });
 });

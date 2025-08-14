@@ -9,7 +9,7 @@ import {
 import { wrapInRollbacks } from '@tests/utils/transactions';
 import { initialPage } from '@server/shared/pagination';
 import { pick } from 'lodash-es';
-import { usersKeysPublic } from '@server/entities/users';
+import { usersKeysPublicWithoutId } from '@server/entities/users';
 import { recipesKeysPublic } from '@server/entities/recipes';
 import usersRouter from '..';
 
@@ -43,22 +43,22 @@ it('Should return saved and created recipes', async () => {
   // Check created recipes ordered descendingly by id
   expect(createdOld).toEqual({
     ...pick(createdRecipeOne, recipesKeysPublic),
-    author: pick(user, usersKeysPublic),
+    author: pick(user, usersKeysPublicWithoutId),
   });
 
   expect(createdNew).toEqual({
     ...pick(createdRecipeTwo, recipesKeysPublic),
-    author: pick(user, usersKeysPublic),
+    author: pick(user, usersKeysPublicWithoutId),
   });
 
   // Check saved recipes ordered descendingly by id
   expect(savedOld).toEqual({
     ...pick(createdRecipeOne, recipesKeysPublic),
-    author: pick(user, usersKeysPublic),
+    author: pick(user, usersKeysPublicWithoutId),
   });
 
   expect(savedNew).toEqual({
     ...pick(createdRecipeTwo, recipesKeysPublic),
-    author: pick(user, usersKeysPublic),
+    author: pick(user, usersKeysPublicWithoutId),
   });
 });

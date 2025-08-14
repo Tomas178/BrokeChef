@@ -2,7 +2,7 @@ import { createCallerFactory } from '@server/trpc';
 import type { RecipesRepository } from '@server/repositories/recipesRepository';
 import { fakeRecipe, fakeUser } from '@server/entities/tests/fakes';
 import { pick } from 'lodash-es';
-import { usersKeysPublic } from '@server/entities/users';
+import { usersKeysPublicWithoutId } from '@server/entities/users';
 import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import recipesRouter from '..';
 
@@ -19,7 +19,10 @@ const repos = {
       fakeRecipe({
         id,
         userId: authUser.id,
-        author: pick(fakeUser({ id: authUser.id + 1 }), usersKeysPublic),
+        author: pick(
+          fakeUser({ id: authUser.id + 1 }),
+          usersKeysPublicWithoutId
+        ),
       })
     ),
   } satisfies Partial<RecipesRepository>,

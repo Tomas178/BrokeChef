@@ -11,7 +11,10 @@ import {
   recipesKeysPublic,
   type RecipesPublic,
 } from '@server/entities/recipes';
-import { usersKeysPublic, type UsersPublic } from '@server/entities/users';
+import {
+  usersKeysPublicWithoutId,
+  type UsersPublic,
+} from '@server/entities/users';
 import { initialPage } from '@server/shared/pagination';
 import { recipesRepository } from '../recipesRepository';
 
@@ -52,7 +55,7 @@ describe('create', () => {
     expect(createdRecipe).toEqual({
       id: expect.any(Number),
       ...pick(recipe, recipesKeysPublic),
-      author: pick(userOne, usersKeysPublic),
+      author: pick(userOne, usersKeysPublicWithoutId),
     });
   });
 });
@@ -71,7 +74,7 @@ describe('findById', () => {
 
     expect(recipeById).toEqual({
       ...pick(recipeById, recipesKeysPublic),
-      author: pick(userOne, usersKeysPublic),
+      author: pick(userOne, usersKeysPublicWithoutId),
     });
   });
 });
@@ -97,7 +100,7 @@ describe('findCreated', () => {
 
     expect(createdRecipesByUser).toEqual({
       ...pick(createdRecipes, recipesKeysPublic),
-      author: pick(userThree, usersKeysPublic),
+      author: pick(userThree, usersKeysPublicWithoutId),
     });
   });
 });
@@ -123,7 +126,7 @@ describe('findSaved', () => {
 
     expect(savedRecipesByUser).toEqual({
       ...pick(recipeOne, recipesKeysPublic),
-      author: pick(userOne, usersKeysPublic),
+      author: pick(userOne, usersKeysPublicWithoutId),
     });
   });
 });
@@ -166,7 +169,7 @@ describe('findAll', () => {
       ...recipe,
       author: pick(
         usersNotFromRepo.find(user => user.id === recipe.userId),
-        usersKeysPublic
+        usersKeysPublicWithoutId
       ),
     }));
 
@@ -197,7 +200,7 @@ describe('remove', () => {
 
     expect(removedRecipe).toEqual({
       ...pick(removedRecipe, recipesKeysPublic),
-      author: pick(userOne, usersKeysPublic),
+      author: pick(userOne, usersKeysPublicWithoutId),
     });
   });
 
