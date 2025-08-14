@@ -93,13 +93,16 @@ it('Email verification', async () => {
   const user = fakeUser();
   const fakeVerificationUrl = 'http://localhost:5173/verify-email';
 
-  const expectedHtml = await formEmailTemplate(
-    await getTemplate({} as S3Client, '', ''),
-    {
-      username: user.name,
-      url: fakeVerificationUrl,
-    }
+  const template = await getTemplate(
+    {} as S3Client,
+    'random',
+    'verifyEmail.html'
   );
+
+  const expectedHtml = await formEmailTemplate(template, {
+    username: user.name,
+    url: fakeVerificationUrl,
+  });
 
   await auth.options.emailVerification.sendVerificationEmail({
     user,
@@ -125,7 +128,7 @@ it('Password reset email', async () => {
   const fakePasswordResetUrl = 'http://localhost:5173/reset-password';
 
   const expectedHtml = await formEmailTemplate(
-    await getTemplate({} as S3Client, '', ''),
+    await getTemplate({} as S3Client, 'random', 'verifyEmail.html'),
     { username: user.name, url: fakePasswordResetUrl }
   );
 
