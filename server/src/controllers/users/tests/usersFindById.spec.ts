@@ -19,3 +19,11 @@ it('Should return user', async () => {
 
   expect(userById).toEqual(pick(user, usersKeysPublic));
 });
+
+it('Should throw an error if user is not found', async () => {
+  const user = fakeUser();
+
+  await expect(findById(user.id.replaceAll(/[a-z]/gi, 'a'))).rejects.toThrow(
+    /not found/i
+  );
+});
