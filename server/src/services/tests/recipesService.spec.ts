@@ -30,11 +30,12 @@ describe('createRecipe', () => {
   });
 
   it('Should throw an error if recipe with invalid data is given', async () => {
-    const invalidRecipeData = fakeCreateRecipeData({ title: undefined });
+    const invalidRecipeData = fakeCreateRecipeData();
+    const nonExistantUserId = user.id + 'a';
 
     await expect(
-      service.createRecipe(invalidRecipeData, user.id)
-    ).rejects.toThrow(/recipe/i);
+      service.createRecipe(invalidRecipeData, nonExistantUserId)
+    ).rejects.toThrow(/not found/i);
   });
 
   it('Should rollback if an error occurs', async () => {

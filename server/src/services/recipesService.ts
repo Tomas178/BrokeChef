@@ -1,6 +1,5 @@
 import type { createRecipeInput } from '@server/controllers/recipes/create';
 import type { Database } from '@server/database';
-import type { RecipesPublic } from '@server/entities/recipes';
 import { recipesRepository as buildRecipesRepository } from '@server/repositories/recipesRepository';
 import {
   ingredientsRepository as buildIngredientsRepository,
@@ -18,14 +17,14 @@ import {
   recipesToolsRepository as buildRecipesToolsRepository,
   type RecipesToolsRepository,
 } from '@server/repositories/recipesToolsRepository';
+import { assertPostgresError } from '@server/utils/errors';
+import { PostgresError } from 'pg-error-enum';
+import UserNotFound from '@server/utils/errors/users/UserNotFound';
 import { joinStepsToSingleString } from './utils/joinStepsToSingleString';
 
 export function recipesService(database: Database) {
   return {
-    async createRecipe(
-      recipe: createRecipeInput,
-      userId: string
-    ): Promise<RecipesPublic> {
+    async createRecipe(recipe: createRecipeInput, userId: string) {
       return await database.transaction().execute(async trx => {
         const recipesRepository = buildRecipesRepository(trx);
         const ingredientsRepository = buildIngredientsRepository(trx);
@@ -65,8 +64,12 @@ export function recipesService(database: Database) {
           ]);
 
           return createdRecipe;
-        } catch {
-          throw new Error('Failed to create recipe');
+        } catch (error) {
+          assertPostgresError(error);
+
+          if (error.code === PostgresError.FOREIGN_KEY_VIOLATION) {
+            throw new UserNotFound(userId);
+          }
         }
       });
     },
