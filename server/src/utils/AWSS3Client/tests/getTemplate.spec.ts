@@ -1,4 +1,3 @@
-import { Readable } from 'node:stream';
 import type { S3Client } from '@aws-sdk/client-s3';
 import { getTemplate } from '../getTemplate';
 
@@ -12,12 +11,16 @@ const bucket = 'test-bucket';
 const key = 'verifyEmail.html';
 const htmlContent = '<p>Hello {{username}}, verify at {{url}}</p>';
 
+const mockTransformToString = vi.fn(() => htmlContent);
+
 describe('getTemplates', () => {
   beforeEach(() => mockSend.mockReset());
 
   it('Should return template content', async () => {
     mockSend.mockResolvedValueOnce({
-      Body: Readable.from([htmlContent]),
+      Body: {
+        transformToString: mockTransformToString,
+      },
     });
 
     const result = await getTemplate(mockS3Client, bucket, key);
