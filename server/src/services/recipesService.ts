@@ -20,6 +20,8 @@ import {
 import { assertPostgresError } from '@server/utils/errors';
 import { PostgresError } from 'pg-error-enum';
 import UserNotFound from '@server/utils/errors/users/UserNotFound';
+import type { ToolsPublic } from '@server/entities/tools';
+import type { IngredientsPublic } from '@server/entities/ingredients';
 import { joinStepsToSingleString } from './utils/joinStepsToSingleString';
 
 export function recipesService(database: Database) {
@@ -82,14 +84,31 @@ async function insertIngredients(
   repo: IngredientsRepository,
   linkRepo: RecipesIngredientsRepository
 ): Promise<void> {
-  for (const ingredient of ingredients) {
-    const existing = await repo.findByName(ingredient);
+  const existingIngredients = await repo.findByNames(ingredients);
+  const existingMap = new Map(
+    existingIngredients.map(index => [index.name, index])
+  );
 
-    const ingredientRecord =
-      existing ?? (await repo.create({ name: ingredient }));
+  const newIngredients = ingredients.filter(
+    ingredientName => !existingMap.has(ingredientName)
+  );
 
-    await linkRepo.create({ recipeId, ingredientId: ingredientRecord.id });
+  let createdIngredients: IngredientsPublic[] = [];
+  if (newIngredients.length > 0) {
+    const newInsertableIngredientsArray = newIngredients.map(name => ({
+      name,
+    }));
+
+    createdIngredients = await repo.create(newInsertableIngredientsArray);
   }
+  const allIngredients = [...existingIngredients, ...createdIngredients];
+
+  const links = allIngredients.map(ingredient => ({
+    recipeId,
+    ingredientId: ingredient.id,
+  }));
+
+  await linkRepo.create(links);
 }
 
 async function insertTools(
@@ -98,11 +117,23 @@ async function insertTools(
   repo: ToolsRepository,
   linkRepo: RecipesToolsRepository
 ): Promise<void> {
-  for (const tool of tools) {
-    const existing = await repo.findByName(tool);
+  if (tools.length === 0) return;
 
-    const toolRecord = existing ?? (await repo.create({ name: tool }));
+  const existingTools = await repo.findByNames(tools);
+  const existingMap = new Map(existingTools.map(index => [index.name, index]));
 
-    await linkRepo.create({ recipeId, toolId: toolRecord.id });
+  const newTools = tools.filter(toolName => !existingMap.has(toolName));
+
+  let createdTools: ToolsPublic[] = [];
+  if (newTools.length > 0) {
+    const newInsertableToolsArray = newTools.map(name => ({ name }));
+
+    createdTools = await repo.create(newInsertableToolsArray);
   }
+
+  const allTools = [...existingTools, ...createdTools];
+
+  const links = allTools.map(tool => ({ recipeId, toolId: tool.id }));
+
+  await linkRepo.create(links);
 }
