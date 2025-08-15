@@ -9,13 +9,25 @@ import CannotSaveOwnRecipe from '@server/utils/errors/recipes/CannotSaveOwnRecip
 import CannotUnsaveOwnRecipe from '@server/utils/errors/recipes/CannotUnsaveOwnRecipe';
 import { NoResultError } from 'kysely';
 import SavedRecipeNotFound from '@server/utils/errors/recipes/SavedRecipeNotFound';
+import type { savedRecipesPublic } from '@server/entities/savedRecipes';
 
-export function savedRecipesService(database: Database) {
+interface SavedRecipesService {
+  create: (
+    userId: string,
+    recipeId: number
+  ) => Promise<savedRecipesPublic | undefined>;
+  remove: (
+    recipeId: number,
+    userId: string
+  ) => Promise<savedRecipesPublic | undefined>;
+}
+
+export function savedRecipesService(database: Database): SavedRecipesService {
   const savedRecipesRepository = buildSavedRecipesRepository(database);
   const recipesRepository = buildRecipesRepository(database);
 
   return {
-    async create(userId: string, recipeId: number) {
+    async create(userId, recipeId) {
       const recipeById = await recipesRepository.findById(recipeId);
 
       if (!recipeById) throw new RecipeNotFound(recipeId);
@@ -38,7 +50,7 @@ export function savedRecipesService(database: Database) {
       }
     },
 
-    async remove(recipeId: number, userId: string) {
+    async remove(recipeId, userId) {
       const recipeById = await recipesRepository.findById(recipeId);
 
       if (!recipeById) throw new RecipeNotFound(recipeId);

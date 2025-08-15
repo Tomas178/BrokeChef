@@ -22,11 +22,19 @@ import { PostgresError } from 'pg-error-enum';
 import UserNotFound from '@server/utils/errors/users/UserNotFound';
 import type { ToolsPublic } from '@server/entities/tools';
 import type { IngredientsPublic } from '@server/entities/ingredients';
+import type { RecipesPublic } from '@server/entities/recipes';
 import { joinStepsToSingleString } from './utils/joinStepsToSingleString';
 
-export function recipesService(database: Database) {
+interface RecipesService {
+  createRecipe: (
+    recipe: createRecipeInput,
+    userId: string
+  ) => Promise<RecipesPublic | undefined>;
+}
+
+export function recipesService(database: Database): RecipesService {
   return {
-    async createRecipe(recipe: createRecipeInput, userId: string) {
+    async createRecipe(recipe, userId) {
       return await database.transaction().execute(async trx => {
         const recipesRepository = buildRecipesRepository(trx);
         const ingredientsRepository = buildIngredientsRepository(trx);
