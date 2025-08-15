@@ -8,21 +8,23 @@ import type { Insertable } from 'kysely';
 const TABLE = 'ingredients';
 
 export interface IngredientsRepository {
-  create: (ingredient: Insertable<Ingredients>) => Promise<IngredientsPublic>;
+  create: (
+    ingredients: Insertable<Ingredients>[]
+  ) => Promise<IngredientsPublic[]>;
   findById: (id: number) => Promise<IngredientsPublic | undefined>;
-  findByName: (name: string) => Promise<IngredientsPublic | undefined>;
+  findByNames: (names: string[]) => Promise<IngredientsPublic[]>;
 }
 
 export function ingredientsRepository(
   database: Database
 ): IngredientsRepository {
   return {
-    async create(ingredient) {
+    async create(ingredients) {
       return database
         .insertInto(TABLE)
-        .values(ingredient)
+        .values(ingredients)
         .returning(ingredientsKeysPublic)
-        .executeTakeFirstOrThrow();
+        .execute();
     },
 
     async findById(id) {
@@ -33,12 +35,12 @@ export function ingredientsRepository(
         .executeTakeFirst();
     },
 
-    async findByName(name) {
+    async findByNames(names) {
       return database
         .selectFrom(TABLE)
         .select(ingredientsKeysPublic)
-        .where('name', '=', name)
-        .executeTakeFirst();
+        .where('name', 'in', names)
+        .execute();
     },
   };
 }
