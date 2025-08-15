@@ -7,7 +7,7 @@ const TABLE = 'tools';
 export interface ToolsRepository {
   create: (tool: Insertable<Tools>) => Promise<ToolsPublic>;
   findById: (id: number) => Promise<ToolsPublic | undefined>;
-  findByName: (name: string) => Promise<ToolsPublic | undefined>;
+  findByNames: (names: string[]) => Promise<ToolsPublic[] | undefined>;
 }
 
 export function toolsRepository(database: Database): ToolsRepository {
@@ -28,12 +28,14 @@ export function toolsRepository(database: Database): ToolsRepository {
         .executeTakeFirst();
     },
 
-    async findByName(name) {
+    async findByNames(names) {
+      if (names.length === 0) return;
+
       return database
         .selectFrom(TABLE)
         .select(toolsKeysPublic)
-        .where('name', '=', name)
-        .executeTakeFirst();
+        .where('name', 'in', names)
+        .execute();
     },
   };
 }

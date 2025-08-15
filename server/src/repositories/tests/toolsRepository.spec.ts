@@ -9,7 +9,10 @@ import { toolsRepository } from '../toolsRepository';
 const database = await wrapInRollbacks(createTestDatabase());
 const repository = toolsRepository(database);
 
-const [tool] = await insertAll(database, 'tools', [fakeTool()]);
+const [toolOne, toolTwo] = await insertAll(database, 'tools', [
+  fakeTool(),
+  fakeTool(),
+]);
 
 describe('create', () => {
   it('Should create a new tool', async () => {
@@ -34,28 +37,40 @@ describe('create', () => {
 
 describe('findById', () => {
   it('Should return undefined if there is no tool with given ID', async () => {
-    const toolById = await repository.findById(tool.id + 1);
+    const toolById = await repository.findById(toolOne.id + toolTwo.id);
 
     expect(toolById).toBeUndefined();
   });
 
   it('Should return tool by ID', async () => {
-    const toolById = await repository.findById(tool.id);
+    const toolById = await repository.findById(toolOne.id);
 
-    expect(toolById).toEqual(tool);
+    expect(toolById).toEqual(toolOne);
   });
 });
 
-describe('findByName', () => {
-  it('Should return undefined if there is no tool with given name', async () => {
-    const toolByName = await repository.findByName(tool.name + 'a');
+describe('findByNames', () => {
+  it('Should return undefined if given an empty array', async () => {
+    await expect(repository.findByNames([])).resolves.toBeUndefined();
+  });
 
-    expect(toolByName).toBeUndefined();
+  it('Should return undefined if there is no tool with given name', async () => {
+    const toolByName = await repository.findByNames([toolOne.name + 'a']);
+
+    expect(toolByName).toEqual([]);
   });
 
   it('Should return tool by name', async () => {
-    const toolByName = await repository.findByName(tool.name);
+    const toolByName = await repository.findByNames([toolOne.name]);
 
-    expect(toolByName).toEqual(tool);
+    expect(toolByName).toEqual([toolOne]);
+  });
+
+  it('Should return multiple tools by names', async () => {
+    const tools = [toolOne.name, toolTwo.name];
+
+    const toolsByNames = await repository.findByNames(tools);
+
+    expect(toolsByNames).toEqual([toolOne, toolTwo]);
   });
 });
