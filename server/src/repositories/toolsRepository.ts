@@ -7,7 +7,7 @@ const TABLE = 'tools';
 export interface ToolsRepository {
   create: (tools: Insertable<Tools>[]) => Promise<ToolsPublic[]>;
   findById: (id: number) => Promise<ToolsPublic | undefined>;
-  findByNames: (names: string[]) => Promise<ToolsPublic[] | undefined>;
+  findByNames: (names: string[]) => Promise<ToolsPublic[]>;
 }
 
 export function toolsRepository(database: Database): ToolsRepository {
@@ -29,8 +29,6 @@ export function toolsRepository(database: Database): ToolsRepository {
     },
 
     async findByNames(names) {
-      if (names.length === 0) return;
-
       return database
         .selectFrom(TABLE)
         .select(toolsKeysPublic)

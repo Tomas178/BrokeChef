@@ -58,11 +58,7 @@ describe('findById', () => {
 });
 
 describe('findByNames', () => {
-  it('Should return undefined if given an empty array', async () => {
-    await expect(repository.findByNames([])).resolves.toBeUndefined();
-  });
-
-  it('Should return undefined if there is no tool with given name', async () => {
+  it('Should return an empty array if there is no tool with given name', async () => {
     const toolByName = await repository.findByNames([toolOne.name + 'a']);
 
     expect(toolByName).toEqual([]);
