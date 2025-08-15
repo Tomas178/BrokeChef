@@ -7,5 +7,6 @@
   "rules": {
     "at-rule-no-unknown": null,
     "at-rule-no-deprecated": null
-  }
+  },
+  "ignoreFiles": ["**/theme.css/**"]
 }

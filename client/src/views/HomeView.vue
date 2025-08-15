@@ -34,15 +34,17 @@ const resetPassword = async (newPass: string) => {
 const sendPasswordResetLink = async () => {
   const user = await trpc.users.findById.query(userId.value);
 
-  await authClient.requestPasswordReset({
-    email: user.email,
-    redirectTo: 'http://localhost:5173',
-    fetchOptions: {
-      onSuccess: () => {
-        console.log(`Password reset link sent to: ${user.email}`);
+  if (user) {
+    await authClient.requestPasswordReset({
+      email: user.email,
+      redirectTo: 'http://localhost:5173',
+      fetchOptions: {
+        onSuccess: () => {
+          console.log(`Password reset link sent to: ${user.email}`);
+        },
       },
-    },
-  });
+    });
+  }
 };
 
 const loginWithSocials = async (providerName: string) => {
@@ -143,7 +145,7 @@ const signIn = async () => {
 </template>
 
 <style>
-@reference '../assets/styles.css';
+@reference '../assets/index.css';
 
 #sign-up {
   @apply flex flex-col justify-center border-4;
