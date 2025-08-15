@@ -54,6 +54,8 @@
   },
   "dependencies": {
     "@trpc/client": "^11.4.3",
+    "flowbite": "^3.1.2",
+    "flowbite-vue": "^0.2.1",
     "pinia": "^3.0.3",
     "superjson": "^2.2.2",
     "vue": "^3.5.18",
