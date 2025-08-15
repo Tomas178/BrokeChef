@@ -1,12 +1,7 @@
 import { createTestDatabase } from '@tests/utils/database';
 import { wrapInRollbacks } from '@tests/utils/transactions';
 import { insertAll } from '@tests/utils/record';
-import {
-  fakeRecipe,
-  fakeRecipeToolLinkData,
-  fakeTool,
-  fakeUser,
-} from '@server/entities/tests/fakes';
+import { fakeRecipe, fakeTool, fakeUser } from '@server/entities/tests/fakes';
 import { recipesToolsRepository } from '../recipesToolsRepository';
 
 const database = await wrapInRollbacks(createTestDatabase());
@@ -24,10 +19,10 @@ const [toolOne, toolTwo] = await insertAll(database, 'tools', [
 describe('create', () => {
   it('Should create a new single link', async () => {
     const newLink = [
-      fakeRecipeToolLinkData({
+      {
         recipeId: recipe.id,
         toolId: toolOne.id,
-      }),
+      },
     ];
 
     const createdLink = await repository.create(newLink);
@@ -37,14 +32,14 @@ describe('create', () => {
 
   it('Should create new multiple links', async () => {
     const newLinks = [
-      fakeRecipeToolLinkData({
+      {
         recipeId: recipe.id,
         toolId: toolOne.id,
-      }),
-      fakeRecipeToolLinkData({
+      },
+      {
         recipeId: recipe.id,
         toolId: toolTwo.id,
-      }),
+      },
     ];
 
     const createdLinks = await repository.create(newLinks);
