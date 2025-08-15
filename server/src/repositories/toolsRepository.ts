@@ -5,19 +5,19 @@ import type { Insertable } from 'kysely';
 const TABLE = 'tools';
 
 export interface ToolsRepository {
-  create: (tool: Insertable<Tools>) => Promise<ToolsPublic>;
+  create: (tools: Insertable<Tools>[]) => Promise<ToolsPublic[]>;
   findById: (id: number) => Promise<ToolsPublic | undefined>;
   findByNames: (names: string[]) => Promise<ToolsPublic[] | undefined>;
 }
 
 export function toolsRepository(database: Database): ToolsRepository {
   return {
-    async create(tool) {
+    async create(tools) {
       return database
         .insertInto(TABLE)
-        .values(tool)
+        .values(tools)
         .returning(toolsKeysPublic)
-        .executeTakeFirstOrThrow();
+        .execute();
     },
 
     async findById(id) {

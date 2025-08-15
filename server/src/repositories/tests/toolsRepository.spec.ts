@@ -18,7 +18,7 @@ describe('create', () => {
   it('Should create a new tool', async () => {
     const tool = fakeTool();
 
-    const createdTool = await repository.create(tool);
+    const [createdTool] = await repository.create([tool]);
 
     expect(createdTool).toEqual({
       id: expect.any(Number),
@@ -26,12 +26,20 @@ describe('create', () => {
     });
   });
 
+  it('Should create many new tools', async () => {
+    const tools = [fakeTool(), fakeTool()];
+
+    const createdTools = await repository.create(tools);
+
+    expect(createdTools).toMatchObject(tools);
+  });
+
   it('Should throw an error if tool with the given name exists', async () => {
     const [tool] = await insertAll(database, 'tools', [fakeTool()]);
 
     const toolToInsert = omit(tool, 'id');
 
-    await expect(repository.create(toolToInsert)).rejects.toThrow(/unique/i);
+    await expect(repository.create([toolToInsert])).rejects.toThrow(/unique/i);
   });
 });
 
