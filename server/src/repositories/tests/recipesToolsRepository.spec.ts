@@ -1,7 +1,12 @@
 import { createTestDatabase } from '@tests/utils/database';
 import { wrapInRollbacks } from '@tests/utils/transactions';
 import { insertAll } from '@tests/utils/record';
-import { fakeRecipe, fakeTool, fakeUser } from '@server/entities/tests/fakes';
+import {
+  fakeRecipe,
+  fakeRecipeToolLinkData,
+  fakeTool,
+  fakeUser,
+} from '@server/entities/tests/fakes';
 import { recipesToolsRepository } from '../recipesToolsRepository';
 
 const database = await wrapInRollbacks(createTestDatabase());
@@ -11,19 +16,40 @@ const [user] = await insertAll(database, 'users', [fakeUser()]);
 const [recipe] = await insertAll(database, 'recipes', [
   fakeRecipe({ userId: user.id }),
 ]);
-const [tool] = await insertAll(database, 'tools', [fakeTool()]);
+const [toolOne, toolTwo] = await insertAll(database, 'tools', [
+  fakeTool(),
+  fakeTool(),
+]);
 
 describe('create', () => {
-  it('Should create a new link in recipesTools table', async () => {
-    const createdLink = await repository.create({
-      recipeId: recipe.id,
-      toolId: tool.id,
-    });
+  it('Should create a new single link', async () => {
+    const newLink = [
+      fakeRecipeToolLinkData({
+        recipeId: recipe.id,
+        toolId: toolOne.id,
+      }),
+    ];
 
-    expect(createdLink).toEqual({
-      recipeId: recipe.id,
-      toolId: tool.id,
-    });
+    const createdLink = await repository.create(newLink);
+
+    expect(createdLink).toEqual(newLink);
+  });
+
+  it('Should create new multiple links', async () => {
+    const newLinks = [
+      fakeRecipeToolLinkData({
+        recipeId: recipe.id,
+        toolId: toolOne.id,
+      }),
+      fakeRecipeToolLinkData({
+        recipeId: recipe.id,
+        toolId: toolTwo.id,
+      }),
+    ];
+
+    const createdLinks = await repository.create(newLinks);
+
+    expect(createdLinks).toEqual(newLinks);
   });
 });
 
@@ -36,14 +62,14 @@ describe('findByToolId', () => {
 
   it('Should return a link', async () => {
     await insertAll(database, 'recipesTools', [
-      { recipeId: recipe.id, toolId: tool.id },
+      { recipeId: recipe.id, toolId: toolOne.id },
     ]);
 
     const linkByRecipeId = await repository.findByRecipeId(recipe.id);
 
     expect(linkByRecipeId).toEqual({
       recipeId: recipe.id,
-      toolId: tool.id,
+      toolId: toolOne.id,
     });
   });
 });
