@@ -9,8 +9,8 @@ const TABLE = 'recipesIngredients';
 
 export interface RecipesIngredientsRepository {
   create: (
-    link: Insertable<RecipesIngredients>
-  ) => Promise<recipesIngredientsPublic>;
+    links: Insertable<RecipesIngredients>[]
+  ) => Promise<recipesIngredientsPublic[]>;
   findByRecipeId: (
     recipeId: number
   ) => Promise<recipesIngredientsPublic | undefined>;
@@ -20,12 +20,12 @@ export function recipesIngredientsRepository(
   database: Database
 ): RecipesIngredientsRepository {
   return {
-    async create(link) {
+    async create(links) {
       return database
         .insertInto(TABLE)
-        .values(link)
+        .values(links)
         .returning(recipesIngredientsKeysPublic)
-        .executeTakeFirstOrThrow();
+        .execute();
     },
 
     async findByRecipeId(recipeId) {

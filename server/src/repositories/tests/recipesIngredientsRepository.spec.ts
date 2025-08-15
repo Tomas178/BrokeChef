@@ -15,21 +15,38 @@ const [user] = await insertAll(database, 'users', [fakeUser()]);
 const [recipe] = await insertAll(database, 'recipes', [
   fakeRecipe({ userId: user.id }),
 ]);
-const [ingredient] = await insertAll(database, 'ingredients', [
-  fakeIngredient(),
-]);
+const [ingredientOne, ingredientTwo] = await insertAll(
+  database,
+  'ingredients',
+  [fakeIngredient(), fakeIngredient()]
+);
 
 describe('create', () => {
-  it('Should create a new link in recipesIngredients table', async () => {
-    const createdLink = await repository.create({
-      recipeId: recipe.id,
-      ingredientId: ingredient.id,
-    });
+  it('Should create a new single link', async () => {
+    const newLink = [
+      {
+        recipeId: recipe.id,
+        ingredientId: ingredientOne.id,
+      },
+    ];
 
-    expect(createdLink).toEqual({
-      recipeId: recipe.id,
-      ingredientId: ingredient.id,
-    });
+    const createdLink = await repository.create(newLink);
+
+    expect(createdLink).toEqual(newLink);
+  });
+
+  it('Should create new multiple links', async () => {
+    const newLinks = [
+      { recipeId: recipe.id, ingredientId: ingredientOne.id },
+      {
+        recipeId: recipe.id,
+        ingredientId: ingredientTwo.id,
+      },
+    ];
+
+    const createdLinks = await repository.create(newLinks);
+
+    expect(createdLinks).toEqual(newLinks);
   });
 });
 
@@ -42,14 +59,14 @@ describe('findByRecipeId', () => {
 
   it('Should return a link', async () => {
     await insertAll(database, 'recipesIngredients', [
-      { recipeId: recipe.id, ingredientId: ingredient.id },
+      { recipeId: recipe.id, ingredientId: ingredientOne.id },
     ]);
 
     const linkByRecipeId = await repository.findByRecipeId(recipe.id);
 
     expect(linkByRecipeId).toEqual({
       recipeId: recipe.id,
-      ingredientId: ingredient.id,
+      ingredientId: ingredientOne.id,
     });
   });
 });
