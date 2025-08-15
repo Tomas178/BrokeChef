@@ -88,13 +88,14 @@ export function recipesRepository(database: Database): RecipesRepository {
     },
 
     async isAuthor(recipeId, userId) {
-      const recipe = await database
+      const exists = await database
         .selectFrom(TABLE)
         .select('userId')
         .where('id', '=', recipeId)
+        .where('userId', '=', userId)
         .executeTakeFirst();
 
-      return recipe?.userId === userId;
+      return !!exists;
     },
 
     async remove(id) {
