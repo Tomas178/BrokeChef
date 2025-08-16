@@ -1,12 +1,6 @@
 <script setup lang="ts">
-import {
-  FwbNavbar,
-  FwbNavbarLogo,
-  FwbNavbarCollapse,
-  FwbNavbarLink,
-} from 'flowbite-vue';
-import logoUrl from '@/assets/logo.svg';
-import { useRoute } from 'vue-router';
+import { FwbNavbar, FwbNavbarCollapse, FwbNavbarLink } from 'flowbite-vue';
+import { useRoute, RouterLink } from 'vue-router';
 import { computed } from 'vue';
 
 const { links } = defineProps<{
@@ -29,20 +23,16 @@ const navigation = computed(() =>
 <template>
   <fwb-navbar>
     <template #logo>
-      <fwb-navbar-logo
-        alt="BrokChef Logo"
-        :image-url="logoUrl"
-        link-attr="to"
-        component="RouterLink"
-        :link="{ name: 'Home' } as any"
-      >
-        <span class="text-header font-bold">BrokeChef</span>
-      </fwb-navbar-logo>
+      <RouterLink :to="{ name: 'Home' }" class="flex items-center space-x-2">
+        <img src="@/assets/logo.svg" alt="BrokChef Logo" class="h-12 w-auto" />
+        <span class="text-header text-base font-bold">BrokeChef</span>
+      </RouterLink>
     </template>
 
     <template #default="{ isShowMenu }">
-      <fwb-navbar-collapse class="fill-black" :is-show-menu="isShowMenu">
+      <fwb-navbar-collapse class="links-background" :is-show-menu="isShowMenu">
         <fwb-navbar-link
+          class="font-bold"
           v-for="link in navigation"
           :key="`${link.name}-${String(route.name)}`"
           :is-active="link.isActive"
@@ -56,3 +46,9 @@ const navigation = computed(() =>
     </template>
   </fwb-navbar>
 </template>
+
+<style scoped>
+.links-background :deep(ul) {
+  background-color: var(--color-background-primary);
+}
+</style>

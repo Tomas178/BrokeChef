@@ -1,4 +1,11 @@
 @theme {
+  --font-primary: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+
   --color-header: #170f49;
-  --text-primary: 'Poppins', sans-serif;
+  --color-background-primary: #f1fdf5;
+  --color-random: #1c232d;
+
+  --color-start: #10b981;
+  --color-mid: #3aef73;
+  --color-end: #7bed9f;
 }
