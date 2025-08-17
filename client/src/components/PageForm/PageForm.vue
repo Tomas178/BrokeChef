@@ -29,8 +29,6 @@ defineEmits<{
         >
           <slot />
         </form>
-
-        <slot name="footer" />
       </div>
     </div>
   </div>
