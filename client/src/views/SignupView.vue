@@ -16,7 +16,7 @@ const userForm = ref({
 
 const repeatPassword = ref('');
 
-const footer = {
+const formFooter = {
   text: 'Already have an account? ',
   pageName: 'Sign In',
 };
@@ -66,7 +66,7 @@ const footer = {
         v-model="repeatPassword"
         class="bg-white"
       />
-      <AuthActions action-name="Sign Up" :footer="footer" />
+      <AuthActions action-name="Sign Up" :footer="formFooter" />
     </template>
   </PageForm>
 </template>
