@@ -16,7 +16,7 @@ defineEmits<{
 <template>
   <WelcomeText v-if="welcomeText" />
   <div
-    class="bg-background-primary mt-4 w-full max-w-screen overflow-hidden rounded-tl-4xl rounded-tr-4xl"
+    class="bg-background-primary mt-4 flex-1 overflow-hidden rounded-tl-4xl rounded-tr-4xl"
   >
     <div class="mx-4 flex flex-col gap-4 pt-10">
       <fwb-heading tag="h2">{{ heading }}</fwb-heading>

@@ -18,7 +18,8 @@ const repeatPassword = ref('');
 
 const formFooter = {
   text: 'Already have an account? ',
-  pageName: 'Sign In',
+  redirectPageName: 'Sign In',
+  redirectPageFullLink: '/login',
 };
 </script>
 

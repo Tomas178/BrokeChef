@@ -5,7 +5,8 @@ const { actionName, footer } = defineProps<{
   actionName: string;
   footer: {
     text: string;
-    pageName: string;
+    redirectPageName: string;
+    redirectPageFullLink: string;
   };
 }>();
 </script>
@@ -20,26 +21,26 @@ const { actionName, footer } = defineProps<{
       </div>
 
       <div class="flex items-center justify-center gap-2">
-        <div
-          class="flex flex-1 cursor-pointer flex-col items-center justify-center gap-2.5 rounded-3xl bg-white px-6 py-2"
+        <button
+          class="flex flex-1 flex-col items-center justify-center gap-2.5 rounded-3xl bg-white px-6 py-2"
         >
           <div class="flex items-center justify-center gap-2">
             <img src="@/assets/social-logins/Google.png" />
             <div class="text-sm text-black">Google</div>
           </div>
-        </div>
+        </button>
 
-        <div
-          class="flex flex-1 cursor-pointer flex-col items-center justify-center gap-2.5 rounded-3xl bg-white px-6 py-2"
+        <button
+          class="flex flex-1 flex-col items-center justify-center gap-2.5 rounded-3xl bg-white px-6 py-2"
         >
           <div class="flex items-center justify-center gap-2">
             <img src="@/assets/social-logins/GitHub.png" />
             <div class="text-sm text-black">GitHub</div>
           </div>
-        </div>
+        </button>
       </div>
 
-      <div>
+      <div class="items-center justify-center">
         <fwb-button
           class="from-start text-submit-text via-mid to-end mr-3 w-full rounded-4xl bg-gradient-to-r font-bold"
           type="submit"
@@ -51,8 +52,8 @@ const { actionName, footer } = defineProps<{
 
       <div class="justify-center self-stretch text-center">
         <span class="text-black">{{ footer.text }} </span
-        ><RouterLink to="/login" class="text-start">{{
-          footer.pageName
+        ><RouterLink :to="footer.redirectPageFullLink" class="text-start">{{
+          footer.redirectPageName
         }}</RouterLink>
       </div>
     </div>
