@@ -37,6 +37,7 @@ const footer = {
         :required="true"
         placeholder="Enter your username"
         v-model="userForm.username"
+        class="bg-white"
       />
       <fwb-input
         data-testId="email"
@@ -45,6 +46,7 @@ const footer = {
         :required="true"
         placeholder="Enter your email"
         v-model="userForm.email"
+        class="bg-white"
       />
       <fwb-input
         data-testId="password"
@@ -53,6 +55,7 @@ const footer = {
         :required="true"
         placeholder="Enter your password"
         v-model="userForm.password"
+        class="bg-white"
       />
       <fwb-input
         data-testId="repeat-password"
@@ -61,6 +64,7 @@ const footer = {
         :required="true"
         placeholder="Repeat your password"
         v-model="repeatPassword"
+        class="bg-white"
       />
       <AuthActions action-name="Sign Up" :footer="footer" />
     </template>
