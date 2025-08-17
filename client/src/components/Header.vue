@@ -25,7 +25,7 @@ const navigation = computed(() =>
     <template #logo>
       <RouterLink :to="{ name: 'Home' }" class="flex items-center space-x-2">
         <img src="@/assets/logo.svg" alt="BrokChef Logo" class="h-12 w-auto" />
-        <span class="text-header text-base font-bold">BrokeChef</span>
+        <span class="text-header font-bold">BrokeChef</span>
       </RouterLink>
     </template>
 
