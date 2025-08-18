@@ -22,3 +22,7 @@ body,
 #app {
   @apply h-screen;
 }
+
+@utility gradient-action-button {
+  @apply from-primary-green via-secondary-green to-tertiary-green bg-gradient-to-r;
+}

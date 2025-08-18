@@ -40,9 +40,9 @@ const { actionName, footer } = defineProps<{
         </button>
       </div>
 
-      <div class="items-center justify-center">
+      <div class="flex items-center justify-center">
         <fwb-button
-          class="from-start text-submit-text via-mid to-end mr-3 w-full rounded-4xl bg-gradient-to-r font-bold"
+          class="text-submit-text gradient-action-button mr-3 w-full rounded-4xl font-bold"
           type="submit"
           size="xl"
           pill
@@ -52,9 +52,11 @@ const { actionName, footer } = defineProps<{
 
       <div class="justify-center self-stretch text-center">
         <span class="text-black">{{ footer.text }} </span
-        ><RouterLink :to="footer.redirectPageFullLink" class="text-start">{{
-          footer.redirectPageName
-        }}</RouterLink>
+        ><RouterLink
+          :to="footer.redirectPageFullLink"
+          class="text-primary-green"
+          >{{ footer.redirectPageName }}</RouterLink
+        >
       </div>
     </div>
   </div>

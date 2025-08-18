@@ -5,7 +5,13 @@ import AuthActions from '@/components/PageForm/AuthActions.vue';
 import { FwbInput } from 'flowbite-vue';
 import { computed, ref } from 'vue';
 
-const links = computed(() => [{ label: 'Explore recipes', name: 'Home' }]);
+const links = computed(() => [
+  { label: 'Explore recipes', name: 'Home' },
+  {
+    label: 'Explore recipes',
+    name: 'Home',
+  },
+]);
 
 const userForm = ref({
   email: '',
@@ -43,6 +49,9 @@ const formFooter = {
           v-model="userForm.password"
           class="bg-white"
         />
+        <div class="text-primary-green justify-center text-end leading-loose">
+          <RouterLink to="/password-reset">Forgot your password?</RouterLink>
+        </div>
         <AuthActions action-name="Sign In" :footer="formFooter" />
       </template>
     </PageForm>
