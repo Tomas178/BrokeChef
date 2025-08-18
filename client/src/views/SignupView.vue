@@ -2,12 +2,14 @@
 import Header from '@/components/Header.vue';
 import PageForm from '@/components/PageForm/PageForm.vue';
 import AuthActions from '@/components/PageForm/AuthActions.vue';
-import AlertError from '@/components/AlertError.vue';
-import { FwbInput, FwbToast } from 'flowbite-vue';
+import { FwbInput } from 'flowbite-vue';
 // import { isLoggedIn } from '@/stores/user';
 import { computed, ref } from 'vue';
 import useErrorMessage from '@/composables/useErrorMessage';
 import { signup } from '@/stores/user';
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
+import { DEFAULT_SERVER_ERROR } from '@/consts';
 
 const links = computed(() => [{ label: 'Explore recipes', name: 'Home' }]);
 
@@ -19,12 +21,22 @@ const userForm = ref({
 
 const repeatPassword = ref('');
 
-const hasSucceeded = ref(false);
-
-const [submitSignup, errorMessage] = useErrorMessage(async () => {
-  await signup(userForm.value);
-
-  hasSucceeded.value = true;
+const [submitSignup] = useErrorMessage(async () => {
+  toast.promise(
+    signup(userForm.value),
+    {
+      pending: 'Creating account...',
+      success: 'You have successfully signed up! Please verify your email!',
+      error: {
+        render(err) {
+          return err.data.message ?? DEFAULT_SERVER_ERROR;
+        },
+      },
+    },
+    {
+      position: toast.POSITION.TOP_RIGHT,
+    }
+  );
 });
 
 const formFooter = {
@@ -35,14 +47,6 @@ const formFooter = {
 </script>
 
 <template>
-  <div class="fixed top-4 right-4 z-50 space-y-2">
-    <fwb-toast v-if="hasSucceeded" closable type="success">
-      You have successfully signed up! Please verify your email!
-    </fwb-toast>
-
-    <AlertError :message="errorMessage" />
-  </div>
-
   <Header :links="links">
     <!-- <template #menu>
       <FwbNavbarLink v-if="isLoggedIn">Logout</FwbNavbarLink>
