@@ -4,6 +4,11 @@ import PageForm from '@/components/PageForm/PageForm.vue';
 import AuthActions from '@/components/PageForm/AuthActions.vue';
 import { FwbInput } from 'flowbite-vue';
 import { computed, ref } from 'vue';
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
+import { DEFAULT_SERVER_ERROR } from '@/consts';
+import useErrorMessage from '@/composables/useErrorMessage';
+import { login } from '@/stores/user';
 
 const links = computed(() => [
   { label: 'Explore recipes', name: 'Home' },
@@ -18,6 +23,19 @@ const userForm = ref({
   password: '',
 });
 
+const [submitLogin] = useErrorMessage(async () => {
+  toast.promise(login(userForm.value), {
+    pending: 'Loggin in...',
+    success: 'You have logged in!',
+    error: {
+      render(err) {
+        if (err?.data?.message) return err.data.message;
+        return DEFAULT_SERVER_ERROR;
+      },
+    },
+  });
+});
+
 const formFooter = {
   text: 'Don’t have an account? ',
   redirectPageName: 'Sign Up',
@@ -29,7 +47,12 @@ const formFooter = {
   <div class="flex min-h-screen flex-col">
     <Header :links="links" />
 
-    <PageForm :welcome-text="true" heading="Sign In" form-label="Signin">
+    <PageForm
+      :welcome-text="true"
+      heading="Sign In"
+      form-label="Signin"
+      @submit="submitLogin"
+    >
       <template #default>
         <fwb-input
           data-testId="email"

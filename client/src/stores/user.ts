@@ -25,6 +25,22 @@ export async function signup(credentials: {
   if (error) throw new Error(error.message);
 }
 
+export async function login(credentials: { email: string; password: string }) {
+  const { email, password } = credentials;
+
+  const { error } = await authClient.signIn.email({
+    email,
+    password,
+    callbackURL: frontendBase,
+    fetchOptions: {
+      onSuccess: () => console.log(`${email} loggen in!`),
+      onError: (ctx) => console.log(ctx.error.message),
+    },
+  });
+
+  if (error) throw new Error(error.message);
+}
+
 export async function socialLogin(providerName: string) {
   authClient.signIn.social({
     provider: providerName,
