@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { FwbToast } from 'flowbite-vue';
+import { FwbAlert } from 'flowbite-vue';
 
 defineProps<{
   message: string;
@@ -7,7 +7,7 @@ defineProps<{
 </script>
 
 <template>
-  <fwb-toast v-if="message" data-testId="errorMessage" closable type="danger">
+  <fwb-alert v-if="message" data-testId="errorMessage" type="danger">
     {{ message }}
-  </fwb-toast>
+  </fwb-alert>
 </template>

@@ -2,6 +2,7 @@
 import Header from '@/components/Header.vue';
 import PageForm from '@/components/PageForm/PageForm.vue';
 import AuthActions from '@/components/PageForm/AuthActions.vue';
+import AlertError from '@/components/AlertError.vue';
 import { FwbInput } from 'flowbite-vue';
 // import { isLoggedIn } from '@/stores/user';
 import { computed, ref } from 'vue';
@@ -21,7 +22,11 @@ const userForm = ref({
 
 const repeatPassword = ref('');
 
-const [submitSignup] = useErrorMessage(async () => {
+const [submitSignup, errorMessage] = useErrorMessage(async () => {
+  if (userForm.value.password !== repeatPassword.value) {
+    throw new Error("Passwords don't match");
+  }
+
   toast.promise(
     signup(userForm.value),
     {
@@ -95,6 +100,8 @@ const formFooter = {
         v-model="repeatPassword"
         class="bg-white"
       />
+
+      <div class="inline-flex"><AlertError :message="errorMessage" /></div>
 
       <AuthActions action-name="Sign Up" :footer="formFooter" />
     </template>
