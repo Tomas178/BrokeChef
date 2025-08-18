@@ -24,3 +24,10 @@ export async function signup(credentials: {
 
   if (error) throw new Error(error.message);
 }
+
+export async function socialLogin(providerName: string) {
+  authClient.signIn.social({
+    provider: providerName,
+    callbackURL: frontendBase,
+  });
+}

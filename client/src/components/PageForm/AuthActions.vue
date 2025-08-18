@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { FwbButton } from 'flowbite-vue';
+import { socialLogin } from '@/stores/user';
 
 const { actionName, footer } = defineProps<{
   actionName: string;
@@ -23,19 +24,21 @@ const { actionName, footer } = defineProps<{
       <div class="flex items-center justify-center gap-2">
         <button
           class="flex flex-1 flex-col items-center justify-center gap-2.5 rounded-3xl bg-white px-6 py-2"
+          @click="socialLogin('google')"
         >
           <div class="flex items-center justify-center gap-2">
             <img src="@/assets/social-logins/Google.png" />
-            <div class="text-sm text-black">Google</div>
+            <span class="text-sm text-black">Google</span>
           </div>
         </button>
 
         <button
           class="flex flex-1 flex-col items-center justify-center gap-2.5 rounded-3xl bg-white px-6 py-2"
+          @click="socialLogin('github')"
         >
           <div class="flex items-center justify-center gap-2">
             <img src="@/assets/social-logins/GitHub.png" />
-            <div class="text-sm text-black">GitHub</div>
+            <span class="text-sm text-black">GitHub</span>
           </div>
         </button>
       </div>
