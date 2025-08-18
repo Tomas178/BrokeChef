@@ -1,13 +1,25 @@
 <script lang="ts" setup>
-import { FwbAlert } from 'flowbite-vue';
+import { FwbToast } from 'flowbite-vue';
 
 defineProps<{
   message: string;
 }>();
+
+const emit = defineEmits(['clear']);
+
+function handleClose() {
+  emit('clear');
+}
 </script>
 
 <template>
-  <fwb-alert v-if="message" data-testId="errorMessage" type="danger">
+  <fwb-toast
+    v-if="message"
+    data-testId="errorMessage"
+    type="danger"
+    closable
+    @close="handleClose"
+  >
     {{ message }}
-  </fwb-alert>
+  </fwb-toast>
 </template>

@@ -34,7 +34,8 @@ const [submitSignup, errorMessage] = useErrorMessage(async () => {
       success: 'You have successfully signed up! Please verify your email!',
       error: {
         render(err) {
-          return err.data.message ?? DEFAULT_SERVER_ERROR;
+          if (err?.data?.message) return err.data.message;
+          return DEFAULT_SERVER_ERROR;
         },
       },
     },
@@ -101,7 +102,9 @@ const formFooter = {
         class="bg-white"
       />
 
-      <div class="inline-flex"><AlertError :message="errorMessage" /></div>
+      <div class="inline-flex">
+        <AlertError :message="errorMessage" @clear="errorMessage = ''" />
+      </div>
 
       <AuthActions action-name="Sign Up" :footer="formFooter" />
     </template>
