@@ -6,7 +6,7 @@
     "src/**/*.vue",
     "../server/src/shared/**/*"
   ],
-  "exclude": ["src/**/tests/*", "node_modules"],
+  "exclude": ["src/**/tests/*", "src/**/*.spec.ts", "node_modules"],
   "compilerOptions": {
     "rootDir": "..",
     "composite": true,
