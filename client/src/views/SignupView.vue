@@ -11,6 +11,8 @@ import { signup } from '@/stores/user';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
+import { isSamePassword } from '@/utils/isSamePassword';
+import { loginPath } from '@/config';
 
 const links = computed(() => [{ label: 'Explore recipes', name: 'Home' }]);
 
@@ -23,32 +25,26 @@ const userForm = ref({
 const repeatPassword = ref('');
 
 const [submitSignup, errorMessage] = useErrorMessage(async () => {
-  if (userForm.value.password !== repeatPassword.value) {
+  if (!isSamePassword(userForm.value.password, repeatPassword.value)) {
     throw new Error("Passwords don't match");
   }
 
-  toast.promise(
-    signup(userForm.value),
-    {
-      pending: 'Creating account...',
-      success: 'You have successfully signed up! Please verify your email!',
-      error: {
-        render(err) {
-          if (err?.data?.message) return err.data.message;
-          return DEFAULT_SERVER_ERROR;
-        },
+  toast.promise(signup(userForm.value), {
+    pending: 'Creating account...',
+    success: 'You have successfully signed up! Please verify your email!',
+    error: {
+      render(err) {
+        if (err?.data?.message) return err.data.message;
+        return DEFAULT_SERVER_ERROR;
       },
     },
-    {
-      position: toast.POSITION.TOP_RIGHT,
-    }
-  );
+  });
 });
 
 const formFooter = {
   text: 'Already have an account? ',
   redirectPageName: 'Sign In',
-  redirectPageFullLink: '/login',
+  redirectPageFullLink: loginPath,
 };
 </script>
 

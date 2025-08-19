@@ -9,6 +9,7 @@ import 'vue3-toastify/dist/index.css';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
 import useErrorMessage from '@/composables/useErrorMessage';
 import { login } from '@/stores/user';
+import { requestResetPasswordPath, signupPath } from '@/config';
 
 const links = computed(() => [
   { label: 'Explore recipes', name: 'Home' },
@@ -39,7 +40,7 @@ const [submitLogin] = useErrorMessage(async () => {
 const formFooter = {
   text: 'Don’t have an account? ',
   redirectPageName: 'Sign Up',
-  redirectPageFullLink: '/signup',
+  redirectPageFullLink: signupPath,
 };
 </script>
 
@@ -72,9 +73,13 @@ const formFooter = {
           v-model="userForm.password"
           class="bg-white"
         />
+
         <div class="text-primary-green justify-center text-end leading-loose">
-          <RouterLink to="/password-reset">Forgot your password?</RouterLink>
+          <RouterLink :to="requestResetPasswordPath"
+            >Forgot your password?</RouterLink
+          >
         </div>
+
         <AuthActions action-name="Sign In" :footer="formFooter" />
       </template>
     </PageForm>
