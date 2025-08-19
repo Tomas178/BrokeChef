@@ -1,3 +1,8 @@
+export const signupPath = '/signup';
+export const loginPath = '/login';
+export const requestResetPasswordPath = '/request-reset-password';
+export const resetPasswordPath = '/reset-password';
+
 export const apiOrigin =
   (import.meta.env.VITE_API_ORIGIN as string) || window.location.origin;
 export const apiPath =
@@ -13,13 +18,7 @@ if (typeof apiPath !== 'string')
 export const frontendBase =
   (import.meta.env.VITE_BASE_ORIGIN as string) || 'http://localhost:5173';
 
-export const resetPasswordPath =
-  (import.meta.env.VITE_RESET_PASSWORD_PATH as string) || '/reset-password';
-
 export const resetPasswordBase = `${frontendBase}${resetPasswordPath}`;
 
 if (typeof frontendBase !== 'string')
   throw new Error('VITE_BASE_ORIGIN is not defined');
-
-if (typeof resetPasswordPath !== 'string')
-  throw new Error('VITE_RESET_PASSWORD_PATH is not defined');
