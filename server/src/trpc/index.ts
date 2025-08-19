@@ -4,7 +4,7 @@ import type { Repositories } from '@server/repositories';
 import type { Services } from '@server/services';
 import { initTRPC } from '@trpc/server';
 import type { Request, Response } from 'express';
-import { SuperJSON } from 'superjson';
+import superjson from 'superjson';
 import { ZodError } from 'zod';
 import { fromError } from 'zod-validation-error';
 
@@ -20,7 +20,7 @@ export interface Context {
 export type ContextMinimal = Pick<Context, 'db'>;
 
 const t = initTRPC.context<Context>().create({
-  transformer: SuperJSON,
+  transformer: superjson,
   errorFormatter(options) {
     const { shape, error } = options;
 
