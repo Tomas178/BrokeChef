@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "@/*": ["../src/*"],
+      "@server/*": ["../../server/src/*"]
+    }
+  }
+}
