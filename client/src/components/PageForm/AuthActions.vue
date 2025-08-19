@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { FwbButton } from 'flowbite-vue';
+import SubmitButton from './SubmitButton.vue';
 import { socialLogin } from '@/stores/user';
 
 const { actionName, footer } = defineProps<{
@@ -43,15 +43,7 @@ const { actionName, footer } = defineProps<{
         </button>
       </div>
 
-      <div class="flex items-center justify-center">
-        <fwb-button
-          class="text-submit-text gradient-action-button mr-3 w-full rounded-4xl font-bold"
-          type="submit"
-          size="xl"
-          pill
-          >{{ actionName }}</fwb-button
-        >
-      </div>
+      <SubmitButton :action-name="actionName" />
 
       <div class="justify-center self-stretch text-center">
         <span class="text-black">{{ footer.text }} </span
