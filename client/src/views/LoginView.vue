@@ -56,7 +56,7 @@ const formFooter = {
     >
       <template #default>
         <fwb-input
-          data-testId="email"
+          data-testid="email"
           label="Email"
           type="email"
           :required="true"
@@ -65,7 +65,7 @@ const formFooter = {
           class="bg-white"
         />
         <fwb-input
-          data-testId="password"
+          data-testid="password"
           label="Password"
           type="password"
           :required="true"

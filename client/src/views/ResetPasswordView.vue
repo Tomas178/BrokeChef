@@ -52,7 +52,7 @@ const [submitResetPassword, errorMessage] = useErrorMessage(async () => {
     >
       <template #default>
         <fwb-input
-          data-testId="password"
+          data-testid="password"
           label="Password"
           type="password"
           :required="true"
@@ -62,7 +62,7 @@ const [submitResetPassword, errorMessage] = useErrorMessage(async () => {
         />
 
         <fwb-input
-          data-testId="repeat-password"
+          data-testid="repeat-password"
           label="Repeat Password"
           type="password"
           :required="true"

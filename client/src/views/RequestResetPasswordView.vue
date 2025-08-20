@@ -44,7 +44,7 @@ const [submitSendLink] = useErrorMessage(async () => {
       <template #default>
         <div class="flex flex-col gap-8">
           <fwb-input
-            data-testId="email"
+            data-testid="email"
             label="Email"
             type="email"
             :required="true"

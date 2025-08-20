@@ -15,7 +15,7 @@ function handleClose() {
 <template>
   <fwb-toast
     v-if="message"
-    data-testId="errorMessage"
+    data-testid="errorMessage"
     type="danger"
     closable
     @close="handleClose"

@@ -62,7 +62,7 @@ const formFooter = {
   >
     <template #default>
       <fwb-input
-        data-testId="username"
+        data-testid="username"
         label="Username"
         type="text"
         :required="true"
@@ -71,7 +71,7 @@ const formFooter = {
         class="bg-white"
       />
       <fwb-input
-        data-testId="email"
+        data-testid="email"
         label="Email"
         type="email"
         :required="true"
@@ -80,7 +80,7 @@ const formFooter = {
         class="bg-white"
       />
       <fwb-input
-        data-testId="password"
+        data-testid="password"
         label="Password"
         type="password"
         :required="true"
@@ -89,7 +89,7 @@ const formFooter = {
         class="bg-white"
       />
       <fwb-input
-        data-testId="repeat-password"
+        data-testid="repeat-password"
         label="Repeat Password"
         type="password"
         :required="true"
