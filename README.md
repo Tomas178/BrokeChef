@@ -242,6 +242,8 @@ _Example usage:_
 
 #### Via front-end
 
+**Homepage testing**
+
 - Traditional sign-up/sign-in (Email verification is required. After signing up can just change email_verified to true in database)
 - OAuth sign-ins via Github or Google accounts
 - Check session (Shows user ID)
@@ -252,3 +254,26 @@ _Example usage:_
   - Click 'Get Link For Password Reset'
   - Go to email and click on the button
   - Enter new password and click 'Reset Password'
+
+**Testing with real pages** (only mobile design done so far)
+
+##### Signup
+
+- Route: _/signup_
+- Test - traditional signup, OAuth sign-ins via Google or Github
+- Email verification is required if signed up via traditional method. After signing up can just change email_verified to true in database
+
+##### Login
+
+- Route: _/login_
+- Test - traditional login, OAuth sign-ins via Google or Github
+
+##### Request reset password
+
+- Route: _/request-reset-password_
+- Test - Link sending to email for password reset
+
+##### Reset password
+
+- Route: _/reset-password_
+- Test - reset password
