@@ -20,6 +20,7 @@ Recipe sharing app primarily orientied for students. Users can look for various 
 
 - <a href="https://github.com/settings/developers" target="_blank">GitHub Developer Portal</a>
 - <a href="https://console.cloud.google.com/apis/dashboard" target="_blank">Google Cloud Console</a>
+- <a href="https://aws.amazon.com/s3/" target="_blank">AWS S3 Storage</a>
 
 #### Setting up GitHub App in <a href="https://github.com/settings/developers" target="_blank">GitHub Developer Portal</a>
 
