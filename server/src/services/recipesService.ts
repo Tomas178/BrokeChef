@@ -86,12 +86,14 @@ export function recipesService(database: Database): RecipesService {
   };
 }
 
-async function insertIngredients(
+export async function insertIngredients(
   recipeId: number,
   ingredients: string[],
   repo: IngredientsRepository,
   linkRepo: RecipesIngredientsRepository
 ): Promise<void> {
+  if (ingredients.length === 0) return;
+
   const existingIngredients = await repo.findByNames(ingredients);
   const existingMap = new Map(
     existingIngredients.map(index => [index.name, index])
@@ -119,7 +121,7 @@ async function insertIngredients(
   await linkRepo.create(links);
 }
 
-async function insertTools(
+export async function insertTools(
   recipeId: number,
   tools: string[],
   repo: ToolsRepository,
