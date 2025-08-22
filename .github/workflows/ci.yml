@@ -12,9 +12,9 @@ jobs:
       postgres:
         image: postgres-latest
         env:
-          POSTGRES_USER: { { secrets.POSTGRES_USER } }
-          POSTGRES_PASSWORD: { { secrets.POSTGRES_PASSWORD } }
-          POSTGRES_DB: { { secrets.POSTGRES_DB } }
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
         ports:
           - 5432:5432
     steps:
@@ -63,9 +63,9 @@ jobs:
       - name: Wait for server to startup
         uses: jtalk/url-health-check-action@v4
         with:
-          max-attemps: 5
+          max-attempts: 5
           retry-delay: 5s
-          url: ${{ env.VITE_API_ORIGIN}}/api/health
+          url: ${{ env.VITE_API_ORIGIN }}/api/health
 
       - name: Test client E2E
         run: npm run test:e2e -w=client
