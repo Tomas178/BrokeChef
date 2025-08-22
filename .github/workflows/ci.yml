@@ -10,7 +10,7 @@ jobs:
       VITE_API_PATH: /api/v1/trpc
     services:
       postgres:
-        image: postgres-latest
+        image: postgres
         env:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
