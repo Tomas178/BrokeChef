@@ -8,6 +8,27 @@ jobs:
     env:
       VITE_API_ORIGIN: http://localhost:3000
       VITE_API_PATH: /api/v1/trpc
+
+      EMAIL: ${{ secrets.EMAIL }}
+      EMAIL_APP_PASS: ${{ secrets.EMAIL_APP_PASS }}
+
+      CLIENT_ID_GITHUB: ${{ secrets.CLIENT_ID_GITHUB }}
+      CLIENT_SECRET_GITHUB: ${{ secrets.CLIENT_SECRET_GITHUB }}
+
+      CLIENT_ID_GOOGLE: ${{ secrets.CLIENT_ID_GOOGLE }}
+      CLIENT_SECRET_GOOGLE: ${{ secrets.CLIENT_SECRET_GOOGLE }}
+
+      BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+      BETTER_AUTH_URL: ${{ secrets.BETTER_AUTH_URL }}
+
+      AWS_ACCESS_ID_KEY: ${{ secrets.AWS_ACCESS_ID_KEY }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
+      AWS_S3_EMAIL_TEMPLATES_BUCKET_NAME: ${{ secrets.AWS_S3_EMAIL_TEMPLATES_BUCKET_NAME }}
+
+      FRONT_END_URL: ${{ secrets.FRONT_END_URL }}
+      FRONT_END_FULL_URL: ${{ secrets.FRONT_END_FULL_URL }}
     services:
       postgres:
         image: postgres

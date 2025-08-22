@@ -91,13 +91,13 @@ const config = schema.parse({
 
   auth: {
     google: {
-      clientId: env.GOOGLE_CLIENT_ID,
-      clientSecret: env.GOOGLE_CLIENT_SECRET,
+      clientId: env.CLIENT_ID_GOOGLE,
+      clientSecret: env.CLIENT_SECRET_GOOGLE,
     },
 
     github: {
-      clientId: env.GITHUB_CLIENT_ID,
-      clientSecret: env.GITHUB_CLIENT_SECRET,
+      clientId: env.CLIENT_ID_GITHUB,
+      clientSecret: env.CLIENT_SECRET_GITHUB,
     },
 
     betterAuth: {
