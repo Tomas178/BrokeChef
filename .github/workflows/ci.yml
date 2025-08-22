@@ -29,6 +29,8 @@ jobs:
 
       FRONT_END_URL: ${{ secrets.FRONT_END_URL }}
       FRONT_END_FULL_URL: ${{ secrets.FRONT_END_FULL_URL }}
+
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
     services:
       postgres:
         image: postgres
