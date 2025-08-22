@@ -21,7 +21,7 @@ const navigation = computed(() =>
 </script>
 
 <template>
-  <fwb-navbar class="relative">
+  <fwb-navbar class="relative md:mx-10">
     <template #logo>
       <RouterLink :to="{ name: 'Home' }" class="flex items-center space-x-2">
         <img src="@/assets/logo.svg" alt="BrokChef Logo" class="h-12 w-auto" />
@@ -31,7 +31,7 @@ const navigation = computed(() =>
 
     <template #default="{ isShowMenu }">
       <fwb-navbar-collapse
-        class="links-background absolute top-12 right-0"
+        class="links-background absolute top-12 right-0 md:static"
         :is-show-menu="isShowMenu"
       >
         <fwb-navbar-link
@@ -53,5 +53,11 @@ const navigation = computed(() =>
 <style scoped>
 .links-background :deep(ul) {
   background-color: var(--color-background-primary);
+}
+
+@media ((width >=768px)) {
+  .links-background :deep(ul) {
+    background-color: white;
+  }
 }
 </style>

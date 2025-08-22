@@ -1,6 +1,6 @@
 <template>
   <img
-    class="top absolute top-36 right-6 -z-1 size-48"
+    class="absolute top-36 right-6 -z-1 size-48 md:top-1/3 md:right-0 md:left-1/6"
     src="@/assets/background-pictures/salad-bowl.webp"
   />
   <div class="mx-4 mt-7 justify-center">
