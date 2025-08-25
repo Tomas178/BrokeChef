@@ -5,13 +5,15 @@ import SubmitButton from '@/components/PageForm/SubmitButton.vue';
 import useErrorMessage from '@/composables/useErrorMessage';
 import { loginPath } from '@/config';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
-import { resetPassword } from '@/stores/user';
+import { useUserStore } from '@/stores/user';
 import { isSamePassword } from '@/utils/isSamePassword';
 import { FwbInput } from 'flowbite-vue';
 import { ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
+
+const user = useUserStore();
 
 const password = ref('');
 const repeatPassword = ref('');
@@ -21,7 +23,7 @@ const [submitResetPassword, errorMessage] = useErrorMessage(async () => {
     throw new Error("Passwords don't match");
   }
 
-  toast.promise(resetPassword(password.value), {
+  toast.promise(user.resetPassword(password.value), {
     pending: 'Resetting password...',
     success: 'Password has been changed now you can log in!',
     error: {

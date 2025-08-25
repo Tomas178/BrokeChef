@@ -7,8 +7,10 @@ import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
 import useErrorMessage from '@/composables/useErrorMessage';
-import { login } from '@/stores/user';
+import { useUserStore } from '@/stores/user';
 import { requestResetPasswordPath, signupPath } from '@/config';
+
+const user = useUserStore();
 
 const userForm = ref({
   email: '',
@@ -16,7 +18,7 @@ const userForm = ref({
 });
 
 const [submitLogin] = useErrorMessage(async () => {
-  toast.promise(login(userForm.value), {
+  toast.promise(user.login(userForm.value), {
     pending: 'Loggin in...',
     success: 'You have logged in!',
     error: {

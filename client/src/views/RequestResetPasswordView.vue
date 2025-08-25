@@ -3,16 +3,18 @@ import PageForm from '@/components/PageForm/PageForm.vue';
 import SubmitButton from '@/components/PageForm/SubmitButton.vue';
 import useErrorMessage from '@/composables/useErrorMessage';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
-import { sendResetPasswordLink } from '@/stores/user';
+import { useUserStore } from '@/stores/user';
 import { FwbInput } from 'flowbite-vue';
 import { ref } from 'vue';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 
+const user = useUserStore();
+
 const email = ref('');
 
 const [submitSendLink] = useErrorMessage(async () => {
-  toast.promise(sendResetPasswordLink(email.value), {
+  toast.promise(user.sendResetPasswordLink(email.value), {
     pending: 'Sending link...',
     success: 'Reset link has been sent. Please check your inbox!',
     error: {

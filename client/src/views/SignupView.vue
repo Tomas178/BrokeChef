@@ -5,12 +5,14 @@ import AlertError from '@/components/AlertError.vue';
 import { FwbInput } from 'flowbite-vue';
 import { ref } from 'vue';
 import useErrorMessage from '@/composables/useErrorMessage';
-import { signup } from '@/stores/user';
+import { useUserStore } from '@/stores/user';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
 import { isSamePassword } from '@/utils/isSamePassword';
 import { loginPath } from '@/config';
+
+const user = useUserStore();
 
 const userForm = ref({
   username: '',
@@ -25,7 +27,7 @@ const [submitSignup, errorMessage] = useErrorMessage(async () => {
     throw new Error("Passwords don't match");
   }
 
-  toast.promise(signup(userForm.value), {
+  toast.promise(user.signup(userForm.value), {
     pending: 'Creating account...',
     success: 'You have successfully signed up! Please verify your email!',
     error: {
