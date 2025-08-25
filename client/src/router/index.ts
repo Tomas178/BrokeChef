@@ -1,11 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '@/views/HomeView.vue';
 import {
+  createRecipePath,
   loginPath,
   requestResetPasswordPath,
   resetPasswordPath,
   signupPath,
 } from '@/config';
+import { authenticate } from './guards';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -34,6 +36,12 @@ const router = createRouter({
       path: resetPasswordPath,
       name: 'ResetPassword',
       component: () => import('../views/ResetPasswordView.vue'),
+    },
+    {
+      beforeEnter: [authenticate],
+      path: createRecipePath,
+      name: 'CreateRecipe',
+      component: () => import('../views/CreateRecipesView.vue'),
     },
   ],
 });
