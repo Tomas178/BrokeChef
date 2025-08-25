@@ -2,7 +2,7 @@
 import SubmitButton from './SubmitButton.vue';
 import { useUserStore } from '@/stores/user';
 
-const user = useUserStore();
+const { socialLogin } = useUserStore();
 
 const { actionName, footer } = defineProps<{
   actionName: string;
@@ -26,7 +26,7 @@ const { actionName, footer } = defineProps<{
       <div class="flex items-center justify-center gap-2">
         <button
           class="flex flex-1 flex-col items-center justify-center gap-2.5 rounded-3xl bg-white px-6 py-2"
-          @click="user.socialLogin('google')"
+          @click="socialLogin('google')"
         >
           <div class="flex items-center justify-center gap-2">
             <img src="@/assets/social-logins/Google.png" />
@@ -36,7 +36,7 @@ const { actionName, footer } = defineProps<{
 
         <button
           class="flex flex-1 flex-col items-center justify-center gap-2.5 rounded-3xl bg-white px-6 py-2"
-          @click="user.socialLogin('github')"
+          @click="socialLogin('github')"
         >
           <div class="flex items-center justify-center gap-2">
             <img src="@/assets/social-logins/GitHub.png" />

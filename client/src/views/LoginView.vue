@@ -10,7 +10,7 @@ import useErrorMessage from '@/composables/useErrorMessage';
 import { useUserStore } from '@/stores/user';
 import { requestResetPasswordPath, signupPath } from '@/config';
 
-const user = useUserStore();
+const { login } = useUserStore();
 
 const userForm = ref({
   email: '',
@@ -18,7 +18,7 @@ const userForm = ref({
 });
 
 const [submitLogin] = useErrorMessage(async () => {
-  toast.promise(user.login(userForm.value), {
+  toast.promise(login(userForm.value), {
     pending: 'Loggin in...',
     success: 'You have logged in!',
     error: {

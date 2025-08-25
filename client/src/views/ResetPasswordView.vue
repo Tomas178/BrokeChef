@@ -13,7 +13,7 @@ import { RouterLink } from 'vue-router';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 
-const user = useUserStore();
+const { resetPassword } = useUserStore();
 
 const password = ref('');
 const repeatPassword = ref('');
@@ -23,7 +23,7 @@ const [submitResetPassword, errorMessage] = useErrorMessage(async () => {
     throw new Error("Passwords don't match");
   }
 
-  toast.promise(user.resetPassword(password.value), {
+  toast.promise(resetPassword(password.value), {
     pending: 'Resetting password...',
     success: 'Password has been changed now you can log in!',
     error: {

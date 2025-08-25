@@ -12,7 +12,7 @@ import { DEFAULT_SERVER_ERROR } from '@/consts';
 import { isSamePassword } from '@/utils/isSamePassword';
 import { loginPath } from '@/config';
 
-const user = useUserStore();
+const { signup } = useUserStore();
 
 const userForm = ref({
   username: '',
@@ -27,7 +27,7 @@ const [submitSignup, errorMessage] = useErrorMessage(async () => {
     throw new Error("Passwords don't match");
   }
 
-  toast.promise(user.signup(userForm.value), {
+  toast.promise(signup(userForm.value), {
     pending: 'Creating account...',
     success: 'You have successfully signed up! Please verify your email!',
     error: {

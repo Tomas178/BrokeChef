@@ -9,12 +9,12 @@ import { ref } from 'vue';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 
-const user = useUserStore();
+const { sendResetPasswordLink } = useUserStore();
 
 const email = ref('');
 
 const [submitSendLink] = useErrorMessage(async () => {
-  toast.promise(user.sendResetPasswordLink(email.value), {
+  toast.promise(sendResetPasswordLink(email.value), {
     pending: 'Sending link...',
     success: 'Reset link has been sent. Please check your inbox!',
     error: {
