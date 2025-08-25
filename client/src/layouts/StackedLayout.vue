@@ -32,7 +32,7 @@ const navigation = computed(() =>
     </template>
 
     <template #default="{ isShowMenu }">
-      <div class="px-4">
+      <div class="md:px-4">
         <FwbNavbarCollapse
           class="links-background absolute top-12 right-0 md:static"
           :is-show-menu="isShowMenu"
