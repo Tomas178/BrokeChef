@@ -1,8 +1,10 @@
 import { frontendBase, resetPasswordBase } from '@/config';
 import { authClient } from '@/lib/auth-client';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
-export const isLoggedIn = computed(() => !!authClient.getSession());
+const authToken = ref<string | null>(null);
+
+export const isLoggedIn = computed(() => !!authToken.value);
 
 export async function signup(credentials: {
   username: string;
@@ -28,10 +30,9 @@ export async function signup(credentials: {
 export async function login(credentials: { email: string; password: string }) {
   const { email, password } = credentials;
 
-  const { error } = await authClient.signIn.email({
+  const { data, error } = await authClient.signIn.email({
     email,
     password,
-    callbackURL: frontendBase,
     fetchOptions: {
       onSuccess: () => console.log(`${email} logged in!`),
       onError: (ctx) => console.log(ctx.error.message),
@@ -39,13 +40,34 @@ export async function login(credentials: { email: string; password: string }) {
   });
 
   if (error) throw new Error(error.message);
+
+  authToken.value = data.token;
 }
 
 export async function socialLogin(providerName: string) {
-  authClient.signIn.social({
+  const { error } = await authClient.signIn.social({
     provider: providerName,
     callbackURL: frontendBase,
+    fetchOptions: {
+      onSuccess: () => console.log(`Logged in via ${providerName}`),
+    },
   });
+
+  if (error) throw new Error(error.message);
+
+  const accessToken = await getAccessToken(providerName);
+
+  authToken.value = accessToken;
+}
+
+async function getAccessToken(providerName: string): Promise<string | null> {
+  const { data, error } = await authClient.getAccessToken({
+    providerId: providerName,
+  });
+
+  if (error) throw new Error(error.message);
+
+  return data.accessToken;
 }
 
 export async function sendResetPasswordLink(email: string) {
@@ -78,4 +100,17 @@ export async function resetPassword(newPassword: string) {
   });
 
   if (error) throw new Error(error.message);
+}
+
+export async function logout() {
+  const { error } = await authClient.signOut({
+    fetchOptions: {
+      onSuccess: () => console.log('User logged out successfully!'),
+      onError: (ctx) => console.log(ctx.error.message),
+    },
+  });
+
+  if (error) throw new Error(error.message);
+
+  authToken.value = null;
 }

@@ -3,18 +3,26 @@ import Header from '@/components/Header.vue';
 import PageForm from '@/components/PageForm/PageForm.vue';
 import AuthActions from '@/components/PageForm/AuthActions.vue';
 import AlertError from '@/components/AlertError.vue';
-import { FwbInput } from 'flowbite-vue';
-// import { isLoggedIn } from '@/stores/user';
+import { FwbInput, FwbNavbarLink } from 'flowbite-vue';
 import { computed, ref } from 'vue';
 import useErrorMessage from '@/composables/useErrorMessage';
-import { signup } from '@/stores/user';
+import { isLoggedIn, logout, signup } from '@/stores/user';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
 import { isSamePassword } from '@/utils/isSamePassword';
 import { loginPath } from '@/config';
 
-const links = computed(() => [{ label: 'Explore recipes', name: 'Home' }]);
+const links = computed(() => [
+  { label: 'Explore recipes', name: 'Home' },
+
+  ...(isLoggedIn.value
+    ? [{ label: 'Create a recipe', name: 'CreateRecipe' }]
+    : [
+        { label: 'Login', name: 'Login' },
+        { label: 'Signup', name: 'Signup' },
+      ]),
+]);
 
 const userForm = ref({
   username: '',
@@ -50,9 +58,15 @@ const formFooter = {
 
 <template>
   <Header :links="links">
-    <!-- <template #menu>
-      <FwbNavbarLink v-if="isLoggedIn">Logout</FwbNavbarLink>
-    </template> -->
+    <template #menu>
+      <fwb-navbar-link
+        v-if="isLoggedIn"
+        @click.prevent="logout"
+        class="font-bold"
+      >
+        Logout
+      </fwb-navbar-link>
+    </template>
   </Header>
   <PageForm
     :welcome-text="true"

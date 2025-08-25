@@ -2,21 +2,24 @@
 import Header from '@/components/Header.vue';
 import PageForm from '@/components/PageForm/PageForm.vue';
 import AuthActions from '@/components/PageForm/AuthActions.vue';
-import { FwbInput } from 'flowbite-vue';
+import { FwbInput, FwbNavbarLink } from 'flowbite-vue';
 import { computed, ref } from 'vue';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
 import useErrorMessage from '@/composables/useErrorMessage';
-import { login } from '@/stores/user';
+import { isLoggedIn, login, logout } from '@/stores/user';
 import { requestResetPasswordPath, signupPath } from '@/config';
 
 const links = computed(() => [
   { label: 'Explore recipes', name: 'Home' },
-  {
-    label: 'Explore recipes',
-    name: 'Home',
-  },
+
+  ...(isLoggedIn.value
+    ? [{ label: 'Create a recipe', name: 'CreateRecipe' }]
+    : [
+        { label: 'Login', name: 'Login' },
+        { label: 'Signup', name: 'Signup' },
+      ]),
 ]);
 
 const userForm = ref({
@@ -46,7 +49,17 @@ const formFooter = {
 
 <template>
   <div class="flex min-h-screen flex-col">
-    <Header :links="links" />
+    <Header :links="links">
+      <template #menu>
+        <fwb-navbar-link
+          v-if="isLoggedIn"
+          class="font-bold"
+          @click.prevent="logout"
+        >
+          Logout
+        </fwb-navbar-link>
+      </template>
+    </Header>
 
     <PageForm
       :welcome-text="true"
