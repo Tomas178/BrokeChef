@@ -2,6 +2,7 @@
 import { FwbNavbar, FwbNavbarCollapse, FwbNavbarLink } from 'flowbite-vue';
 import { useRoute, RouterLink } from 'vue-router';
 import { computed } from 'vue';
+import { logout } from '@/stores/user';
 
 const { links } = defineProps<{
   links: {
@@ -21,11 +22,13 @@ const navigation = computed(() =>
 </script>
 
 <template>
-  <fwb-navbar class="relative md:mx-10">
+  <fwb-navbar class="relative">
     <template #logo>
       <RouterLink :to="{ name: 'Home' }" class="flex items-center space-x-2">
         <img src="@/assets/logo.svg" alt="BrokChef Logo" class="h-12 w-auto" />
-        <span class="text-header font-bold">BrokeChef</span>
+        <span class="text-header md:text-extrabold font-bold md:text-2xl"
+          >BrokeChef</span
+        >
       </RouterLink>
     </template>
 
@@ -37,6 +40,7 @@ const navigation = computed(() =>
         <fwb-navbar-link
           class="font-bold"
           v-for="link in navigation"
+          @click.prevent="link.label === 'Logout' ? logout() : null"
           :key="`${link.name}-${String(route.name)}`"
           :is-active="link.isActive"
           :link="{ name: link.name } as any"
@@ -45,6 +49,7 @@ const navigation = computed(() =>
         >
           {{ link.label }}
         </fwb-navbar-link>
+        <slot name="menu" />
       </fwb-navbar-collapse>
     </template>
   </fwb-navbar>
