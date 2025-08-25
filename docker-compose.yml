@@ -1,0 +1,41 @@
+name: Brokechef
+
+services:
+  postgres:
+    image: postgres:17.6-alpine
+    environment:
+      POSTGRES_USER: brokechef
+      POSTGRES_PASSWORD: brokechef
+      POSTGRES_DB: brokechef
+    ports:
+      - '5432'
+    volumes:
+      - brokechef-db:/var/lib/postgresql/data
+
+  server:
+    build:
+      context: .
+      dockerfile: ./server/Dockerfile
+    env_file:
+      - ./server/.env
+    environment:
+      DATABASE_URL: postgres://brokechef:brokechef@postgres:5432/brokechef
+      PORT: 3000
+    ports:
+      - '3000'
+    depends_on:
+      - postgres
+
+  client:
+    build:
+      context: .
+      dockerfile: ./client/Dockerfile
+    environment:
+      API_PROXY_PASS: http://server:3000
+    ports:
+      - '3001:80'
+    depends_on:
+      - server
+
+volumes:
+  brokechef-db:
