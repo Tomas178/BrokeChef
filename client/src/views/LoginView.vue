@@ -1,26 +1,14 @@
 <script lang="ts" setup>
-import Header from '@/components/Header.vue';
 import PageForm from '@/components/PageForm/PageForm.vue';
 import AuthActions from '@/components/PageForm/AuthActions.vue';
-import { FwbInput, FwbNavbarLink } from 'flowbite-vue';
-import { computed, ref } from 'vue';
+import { FwbInput } from 'flowbite-vue';
+import { ref } from 'vue';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
 import useErrorMessage from '@/composables/useErrorMessage';
-import { isLoggedIn, login, logout } from '@/stores/user';
+import { login } from '@/stores/user';
 import { requestResetPasswordPath, signupPath } from '@/config';
-
-const links = computed(() => [
-  { label: 'Explore recipes', name: 'Home' },
-
-  ...(isLoggedIn.value
-    ? [{ label: 'Create a recipe', name: 'CreateRecipe' }]
-    : [
-        { label: 'Login', name: 'Login' },
-        { label: 'Signup', name: 'Signup' },
-      ]),
-]);
 
 const userForm = ref({
   email: '',
@@ -48,53 +36,39 @@ const formFooter = {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col">
-    <Header :links="links">
-      <template #menu>
-        <fwb-navbar-link
-          v-if="isLoggedIn"
-          class="font-bold"
-          @click.prevent="logout"
+  <PageForm
+    :welcome-text="true"
+    heading="Sign In"
+    form-label="Signin"
+    @submit="submitLogin"
+  >
+    <template #default>
+      <fwb-input
+        data-testid="email"
+        label="Email"
+        type="email"
+        :required="true"
+        placeholder="Enter your email"
+        v-model="userForm.email"
+        class="bg-white"
+      />
+      <fwb-input
+        data-testid="password"
+        label="Password"
+        type="password"
+        :required="true"
+        placeholder="Enter your password"
+        v-model="userForm.password"
+        class="bg-white"
+      />
+
+      <div class="text-primary-green justify-center text-end leading-loose">
+        <RouterLink :to="requestResetPasswordPath"
+          >Forgot your password?</RouterLink
         >
-          Logout
-        </fwb-navbar-link>
-      </template>
-    </Header>
+      </div>
 
-    <PageForm
-      :welcome-text="true"
-      heading="Sign In"
-      form-label="Signin"
-      @submit="submitLogin"
-    >
-      <template #default>
-        <fwb-input
-          data-testid="email"
-          label="Email"
-          type="email"
-          :required="true"
-          placeholder="Enter your email"
-          v-model="userForm.email"
-          class="bg-white"
-        />
-        <fwb-input
-          data-testid="password"
-          label="Password"
-          type="password"
-          :required="true"
-          placeholder="Enter your password"
-          v-model="userForm.password"
-          class="bg-white"
-        />
-
-        <div class="text-primary-green justify-center text-end leading-loose">
-          <RouterLink :to="requestResetPasswordPath"
-            >Forgot your password?</RouterLink
-          >
-        </div>
-
-        <AuthActions action-name="Sign In" :footer="formFooter" />
-      </template>
-    </PageForm>
-  </div>
+      <AuthActions action-name="Sign In" :footer="formFooter" />
+    </template>
+  </PageForm>
 </template>
