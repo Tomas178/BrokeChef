@@ -21,7 +21,7 @@ const navigation = computed(() =>
 </script>
 
 <template>
-  <fwb-navbar class="relative">
+  <FwbNavbar class="relative">
     <template #logo>
       <RouterLink :to="{ name: 'Home' }" class="flex items-center space-x-2">
         <img src="@/assets/logo.svg" alt="BrokChef Logo" class="h-12 w-auto" />
@@ -33,7 +33,7 @@ const navigation = computed(() =>
 
     <template #default="{ isShowMenu }">
       <div class="px-4">
-        <fwb-navbar-collapse
+        <FwbNavbarCollapse
           class="links-background absolute top-12 right-0 md:static"
           :is-show-menu="isShowMenu"
         >
@@ -49,10 +49,10 @@ const navigation = computed(() =>
             {{ link.label }}
           </FwbNavbarLink>
           <slot name="menu" />
-        </fwb-navbar-collapse>
+        </FwbNavbarCollapse>
       </div>
     </template>
-  </fwb-navbar>
+  </FwbNavbar>
 
   <main>
     <div class="container flex flex-col">

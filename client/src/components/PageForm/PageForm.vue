@@ -20,7 +20,7 @@ defineEmits<{
       class="bg-background-primary mt-4 flex-1 overflow-hidden rounded-tl-4xl rounded-tr-4xl md:overflow-visible md:rounded-4xl"
     >
       <div class="mx-4 flex flex-col gap-4 pt-10 md:py-8">
-        <fwb-heading tag="h2">{{ heading }}</fwb-heading>
+        <FwbHeading tag="h2">{{ heading }}</FwbHeading>
 
         <div class="flex flex-col gap-4">
           <form

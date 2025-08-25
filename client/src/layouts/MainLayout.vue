@@ -27,14 +27,14 @@ function logoutUser() {
 <template>
   <StackedLayout :links="links">
     <template #menu>
-      <fwb-navbar-link
+      <FwbNavbarLink
         v-if="isLoggedIn"
         @click.prevent="logoutUser"
         class="font-bold"
         link="#"
       >
         Logout
-      </fwb-navbar-link>
+      </FwbNavbarLink>
     </template>
   </StackedLayout>
 </template>
