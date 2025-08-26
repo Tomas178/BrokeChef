@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { FwbHeading, FwbInput, FwbButton } from 'flowbite-vue';
-import { ref } from 'vue';
+
+const inputs = defineModel<string[]>({ required: true });
 
 const props = defineProps<{
   heading: string;
@@ -8,7 +9,9 @@ const props = defineProps<{
   placeholder: string;
 }>();
 
-const inputs = ref<string[]>([]);
+defineEmits<{
+  submit: [];
+}>();
 
 function addInput() {
   inputs.value.push('');
@@ -20,7 +23,7 @@ function removeInput(index: number) {
 </script>
 
 <template>
-  <div class="flex flex-col gap-6">
+  <div class="flex flex-col gap-6 md:flex-1">
     <FwbHeading tag="h2">{{ heading }}</FwbHeading>
     <div class="rounded-4xl bg-white">
       <div class="m-4 flex flex-col gap-4 md:m-16">
@@ -30,12 +33,18 @@ function removeInput(index: number) {
           class="flex items-center gap-2"
         >
           <FwbInput
+            type="text"
             v-model="inputs[index]"
             :placeholder="`${props.placeholder} #${index + 1}`"
             class="bg-white"
             wrapper-class="flex-1"
           />
-          <FwbButton outline @click="removeInput(index)" color="light">
+          <FwbButton
+            type="button"
+            outline
+            @click="removeInput(index)"
+            color="light"
+          >
             <svg
               width="24"
               height="24"
@@ -61,6 +70,7 @@ function removeInput(index: number) {
           </FwbButton>
         </div>
         <FwbButton
+          type="button"
           class="border-primary-green mt-6 border-2"
           @click="addInput"
           color="light"

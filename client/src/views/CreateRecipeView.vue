@@ -1,10 +1,60 @@
 <script lang="ts" setup>
 import CreateForm from '@/components/Forms/CreateForm.vue';
-import { FwbButton } from 'flowbite-vue';
+import type { CreateRecipeInput } from '@server/shared/types';
+import { FwbButton, FwbHeading, FwbInput } from 'flowbite-vue';
+import { reactive } from 'vue';
+import { trpc } from '@/trpc';
+import useErrorMessage from '@/composables/useErrorMessage';
+// import { useRouter } from 'vue-router';
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
+import { DEFAULT_SERVER_ERROR } from '@/consts';
+
+// const router = useRouter();
+
+const recipeForm = reactive<CreateRecipeInput>({
+  title: '',
+  duration: '',
+  steps: [],
+  ingredients: [],
+  tools: [],
+});
+
+const [createRecipe] = useErrorMessage(async () => {
+  const recipe = await toast.promise(trpc.recipes.create.mutate(recipeForm), {
+    pending: 'Creating recipe...',
+    success: 'Recipe has been created!',
+    error: {
+      render(err) {
+        if (err?.data?.message) return err.data.message;
+        return DEFAULT_SERVER_ERROR;
+      },
+    },
+  });
+
+  console.log(recipe);
+
+  recipeForm.title = '';
+  recipeForm.duration = '';
+  recipeForm.steps = [];
+  recipeForm.ingredients = [];
+  recipeForm.tools = [];
+
+  // if (recipe) {
+  //   router.push({
+  //     name: 'Recipe',
+  //     params: { id: recipe.id },
+  //   });
+  // }
+});
 </script>
 
 <template>
-  <div class="mx-4 mt-8 mb-12 md:mx-32 md:mt-14 md:mb-28">
+  <form
+    class="mx-4 mt-8 mb-12 md:mx-32 md:mt-14 md:mb-28"
+    aria-label="Recipe"
+    @submit.prevent="createRecipe"
+  >
     <div class="flex flex-col gap-4 md:gap-6">
       <div class="justify-center text-3xl md:text-6xl">
         <span class="text-primary-green font-bold">Create a New <br /></span
@@ -12,6 +62,7 @@ import { FwbButton } from 'flowbite-vue';
       </div>
       <div class="flex items-end justify-end">
         <FwbButton
+          type="submit"
           class="gradient-action-button text-submit-text px-6 py-2 hover:scale-105"
           ><template #prefix
             ><svg
@@ -47,17 +98,40 @@ import { FwbButton } from 'flowbite-vue';
         >
       </div>
       <div class="flex flex-col gap-10 md:flex-row md:gap-8">
-        <CreateForm
-          heading="General Recipe Information"
-          form-label="general-recipe-information"
-          placeholder="Information"
-          class="md:flex-1"
-        />
+        <div class="flex flex-col gap-6 md:flex-1">
+          <FwbHeading tag="h2">General Recipe Information</FwbHeading>
+          <div class="rounded-4xl bg-white">
+            <div class="m-4 flex flex-col gap-4 md:m-16">
+              <div class="flex items-center gap-2">
+                <FwbInput
+                  type="text"
+                  label="Recipe title"
+                  v-model="recipeForm.title"
+                  placeholder="eg: Savory Stuffed Bell Peppers"
+                  class="bg-white"
+                  wrapper-class="flex-1"
+                />
+              </div>
+              <div class="flex items-center gap-2">
+                <FwbInput
+                  type="text"
+                  label="Cook duration"
+                  v-model="recipeForm.duration"
+                  placeholder="30"
+                  class="bg-white"
+                  wrapper-class="flex-1"
+                >
+                  <template #suffix><span>minutes</span></template>
+                </FwbInput>
+              </div>
+            </div>
+          </div>
+        </div>
         <CreateForm
           heading="Ingredients"
           form-label="Ingredients"
           placeholder="Ingredient"
-          class="md:flex-1"
+          v-model="recipeForm.ingredients"
         />
       </div>
       <div class="flex flex-col gap-10 md:flex-row md:gap-8">
@@ -65,15 +139,15 @@ import { FwbButton } from 'flowbite-vue';
           heading="Kitchen Equipment"
           form-label="kitchen-equipment"
           placeholder="Equipment"
-          class="md:flex-1"
+          v-model="recipeForm.tools"
         />
         <CreateForm
           heading="Steps"
           form-label="steps"
           placeholder="Step"
-          class="md:flex-1"
+          v-model="recipeForm.steps"
         />
       </div>
     </div>
-  </div>
+  </form>
 </template>
