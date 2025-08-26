@@ -1,4 +1,4 @@
-import type { createRecipeInput } from '@server/controllers/recipes/create';
+import type { CreateRecipeInput } from '@server/controllers/recipes/create';
 import type { Database } from '@server/database';
 import { recipesRepository as buildRecipesRepository } from '@server/repositories/recipesRepository';
 import {
@@ -27,7 +27,7 @@ import { joinStepsToSingleString } from './utils/joinStepsToSingleString';
 
 interface RecipesService {
   createRecipe: (
-    recipe: createRecipeInput,
+    recipe: CreateRecipeInput,
     userId: string
   ) => Promise<RecipesPublic | undefined>;
 }

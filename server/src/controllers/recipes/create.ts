@@ -18,7 +18,7 @@ const createRecipeInputSchema = recipesSchema
     tools: arrayStringSchema,
   });
 
-export type createRecipeInput = z.infer<typeof createRecipeInputSchema>;
+export type CreateRecipeInput = z.infer<typeof createRecipeInputSchema>;
 
 export default authenticatedProcedure
   .use(provideServices({ recipesService }))

@@ -7,7 +7,7 @@ import type {
 } from '@server/database';
 import { random } from '@tests/utils/random';
 import type { Insertable } from 'kysely';
-import type { createRecipeInput } from '@server/controllers/recipes/create';
+import type { CreateRecipeInput } from '@server/controllers/recipes/create';
 import type { AuthUser } from '../users';
 
 const randomOAuthId = () => random.string({ length: 32 });
@@ -64,7 +64,7 @@ export const fakeTool = <T extends Partial<Insertable<Tools>>>(
 });
 
 export const fakeCreateRecipeData = <
-  T extends Partial<Insertable<createRecipeInput>>,
+  T extends Partial<Insertable<CreateRecipeInput>>,
 >(
   overrides: T = {} as T
 ) => ({
