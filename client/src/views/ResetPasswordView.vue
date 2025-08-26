@@ -25,7 +25,13 @@ const [submitResetPassword, errorMessage] = useErrorMessage(async () => {
 
   toast.promise(resetPassword(password.value), {
     pending: 'Resetting password...',
-    success: 'Password has been changed now you can log in!',
+    success: {
+      render() {
+        password.value = '';
+        repeatPassword.value = '';
+        return 'Password has been changed now you can log in!';
+      },
+    },
     error: {
       render(err) {
         if (err?.data?.message) return err.data.message;

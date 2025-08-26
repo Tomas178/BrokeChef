@@ -20,7 +20,13 @@ const userForm = ref({
 const [submitLogin] = useErrorMessage(async () => {
   toast.promise(login(userForm.value), {
     pending: 'Logging in...',
-    success: 'You have logged in!',
+    success: {
+      render() {
+        userForm.value.email = '';
+        userForm.value.password = '';
+        return 'You have logged in!';
+      },
+    },
     error: {
       render(err) {
         if (err?.data?.message) return err.data.message;

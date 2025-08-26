@@ -29,7 +29,15 @@ const [submitSignup, errorMessage] = useErrorMessage(async () => {
 
   toast.promise(signup(userForm.value), {
     pending: 'Creating account...',
-    success: 'You have successfully signed up! Please verify your email!',
+    success: {
+      render() {
+        userForm.value.username = '';
+        userForm.value.email = '';
+        userForm.value.password = '';
+        repeatPassword.value = '';
+        return 'You have successfully signed up! Please verify your email!';
+      },
+    },
     error: {
       render(err) {
         if (err?.data?.message) return err.data.message;
