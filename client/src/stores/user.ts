@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { authClient } from '@/lib/auth-client';
 import { frontendBase, resetPasswordBase } from '@/config';
 
@@ -7,6 +7,14 @@ export const useUserStore = defineStore('user', () => {
   const authToken = ref<string | null>(localStorage.getItem('authToken'));
 
   const session = authClient.useSession();
+
+  watch(
+    () => session.value?.data?.session?.token,
+    (token) => {
+      if (token) setToken(token);
+    },
+    { immediate: true }
+  );
 
   const isLoggedIn = computed(() => !!session.value?.data);
 

@@ -2,22 +2,27 @@
 import CreateForm from '@/components/Forms/CreateForm.vue';
 import type { CreateRecipeInput } from '@server/shared/types';
 import { FwbButton, FwbHeading, FwbInput } from 'flowbite-vue';
-import { reactive } from 'vue';
+import { reactive, computed } from 'vue';
 import { trpc } from '@/trpc';
 import useErrorMessage from '@/composables/useErrorMessage';
-// import { useRouter } from 'vue-router';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
 
-// const router = useRouter();
-
 const recipeForm = reactive<CreateRecipeInput>({
   title: '',
-  duration: '',
+  duration: 0,
   steps: [''],
   ingredients: [''],
   tools: [''],
+});
+
+const durationString = computed({
+  get: () => recipeForm.duration.toString(),
+  set: (val: string) => {
+    const parsed = parseInt(val);
+    recipeForm.duration = isNaN(parsed) ? 0 : parsed;
+  },
 });
 
 const [createRecipe] = useErrorMessage(async () => {
@@ -35,17 +40,10 @@ const [createRecipe] = useErrorMessage(async () => {
   console.log(recipe);
 
   recipeForm.title = '';
-  recipeForm.duration = '';
+  recipeForm.duration = 0;
   recipeForm.steps = [''];
   recipeForm.ingredients = [''];
   recipeForm.tools = [''];
-
-  // if (recipe) {
-  //   router.push({
-  //     name: 'Recipe',
-  //     params: { id: recipe.id },
-  //   });
-  // }
 });
 </script>
 
@@ -57,15 +55,16 @@ const [createRecipe] = useErrorMessage(async () => {
   >
     <div class="flex flex-col gap-4 md:gap-6">
       <div class="justify-center text-3xl md:text-6xl">
-        <span class="text-primary-green font-bold">Create a New <br /></span
-        ><span class="text-submit-text font-bold">Recipe</span>
+        <span class="text-primary-green font-bold">Create a New <br /></span>
+        <span class="text-submit-text font-bold">Recipe</span>
       </div>
       <div class="flex items-end justify-end">
         <FwbButton
           type="submit"
           class="gradient-action-button text-submit-text px-6 py-2 hover:scale-105"
-          ><template #prefix
-            ><svg
+        >
+          <template #prefix>
+            <svg
               width="24"
               height="24"
               viewBox="0 0 24 24"
@@ -93,41 +92,38 @@ const [createRecipe] = useErrorMessage(async () => {
                 stroke-linecap="round"
                 stroke-linejoin="round"
               />
-            </svg> </template
-          >Publish Recipe</FwbButton
-        >
+            </svg>
+          </template>
+          Publish Recipe
+        </FwbButton>
       </div>
       <div class="flex flex-col gap-10 md:flex-row md:gap-8">
         <div class="flex flex-col gap-6 md:flex-1">
           <FwbHeading tag="h2">General Recipe Information</FwbHeading>
           <div class="rounded-4xl bg-white">
             <div class="m-4 flex flex-col gap-4 md:m-16">
-              <div class="flex items-center gap-2">
-                <FwbInput
-                  type="text"
-                  label="Recipe title"
-                  v-model="recipeForm.title"
-                  placeholder="eg: Savory Stuffed Bell Peppers"
-                  class="bg-white"
-                  wrapper-class="flex-1"
-                  :minlength="2"
-                  :required="true"
-                />
-              </div>
-              <div class="flex items-center gap-2">
-                <FwbInput
-                  type="number"
-                  label="Cook duration"
-                  v-model="recipeForm.duration"
-                  placeholder="30"
-                  class="bg-white"
-                  wrapper-class="flex-1"
-                  :min="1"
-                  :required="true"
-                >
-                  <template #suffix><span>minutes</span></template>
-                </FwbInput>
-              </div>
+              <FwbInput
+                type="text"
+                label="Recipe title"
+                v-model="recipeForm.title"
+                placeholder="eg: Savory Stuffed Bell Peppers"
+                class="bg-white"
+                wrapper-class="flex-1"
+                :minlength="2"
+                :required="true"
+              />
+              <FwbInput
+                type="number"
+                label="Cook duration"
+                v-model="durationString"
+                placeholder="30"
+                class="bg-white"
+                wrapper-class="flex-1"
+                :min="1"
+                :required="true"
+              >
+                <template #suffix><span>minutes</span></template>
+              </FwbInput>
             </div>
           </div>
         </div>
