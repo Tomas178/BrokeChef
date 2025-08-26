@@ -19,7 +19,7 @@ const userForm = ref({
 
 const [submitLogin] = useErrorMessage(async () => {
   toast.promise(login(userForm.value), {
-    pending: 'Loggin in...',
+    pending: 'Logging in...',
     success: 'You have logged in!',
     error: {
       render(err) {
