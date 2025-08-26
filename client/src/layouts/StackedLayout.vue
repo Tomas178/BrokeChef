@@ -23,7 +23,10 @@ const navigation = computed(() =>
 <template>
   <FwbNavbar class="relative">
     <template #logo>
-      <RouterLink :to="{ name: 'Home' }" class="flex items-center space-x-2">
+      <RouterLink
+        :to="{ name: 'Home' }"
+        class="flex items-center space-x-2 hover:scale-105"
+      >
         <img src="@/assets/logo.svg" alt="BrokChef Logo" class="h-12 w-auto" />
         <span class="text-header md:text-extrabold font-bold md:text-2xl"
           >BrokeChef</span
@@ -32,25 +35,23 @@ const navigation = computed(() =>
     </template>
 
     <template #default="{ isShowMenu }">
-      <div class="md:px-4">
-        <FwbNavbarCollapse
-          class="links-background absolute top-12 right-0 md:static"
-          :is-show-menu="isShowMenu"
+      <FwbNavbarCollapse
+        class="top-12 right-0 md:static"
+        :is-show-menu="isShowMenu"
+      >
+        <FwbNavbarLink
+          class="font-bold"
+          v-for="link in navigation"
+          :key="`${link.name}-${String(route.name)}`"
+          :is-active="link.isActive"
+          :link="{ name: link.name } as any"
+          link-attr="to"
+          component="RouterLink"
         >
-          <FwbNavbarLink
-            class="font-bold"
-            v-for="link in navigation"
-            :key="`${link.name}-${String(route.name)}`"
-            :is-active="link.isActive"
-            :link="{ name: link.name } as any"
-            link-attr="to"
-            component="RouterLink"
-          >
-            {{ link.label }}
-          </FwbNavbarLink>
-          <slot name="menu" />
-        </FwbNavbarCollapse>
-      </div>
+          {{ link.label }}
+        </FwbNavbarLink>
+        <slot name="menu" />
+      </FwbNavbarCollapse>
     </template>
   </FwbNavbar>
 
@@ -62,13 +63,26 @@ const navigation = computed(() =>
 </template>
 
 <style scoped>
-.links-background :deep(ul) {
+:deep(ul) {
   background-color: var(--color-background-primary);
 }
 
+:deep(.router-link-exact-active) {
+  background-color: var(--color-primary-green);
+}
+
 @media ((width >=768px)) {
-  .links-background :deep(ul) {
+  :deep(ul) {
     background-color: white;
+  }
+
+  :deep(.router-link-exact-active) {
+    background-color: white;
+    color: var(--color-primary-green);
+  }
+
+  :deep(a:hover) {
+    color: var(--color-secondary-green);
   }
 }
 </style>
