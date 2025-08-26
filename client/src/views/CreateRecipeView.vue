@@ -11,7 +11,8 @@ import { FwbButton } from 'flowbite-vue';
         ><span class="text-submit-text font-bold">Recipe</span>
       </div>
       <div class="flex items-end justify-end">
-        <FwbButton class="gradient-action-button text-submit-text px-6 py-2"
+        <FwbButton
+          class="gradient-action-button text-submit-text px-6 py-2 hover:scale-105"
           ><template #prefix
             ><svg
               width="24"
@@ -49,15 +50,29 @@ import { FwbButton } from 'flowbite-vue';
         <CreateForm
           heading="General Recipe Information"
           form-label="general-recipe-information"
+          placeholder="Information"
+          class="flex-1"
         />
-        <CreateForm heading="Ingredients" form-label="Ingredients" />
+        <CreateForm
+          heading="Ingredients"
+          form-label="Ingredients"
+          placeholder="Ingredient"
+          class="flex-1"
+        />
       </div>
       <div class="flex gap-8">
         <CreateForm
           heading="Kitchen Equipment"
           form-label="kitchen-equipment"
+          placeholder="Equipment"
+          class="flex-1"
         />
-        <CreateForm heading="Steps" form-label="steps" />
+        <CreateForm
+          heading="Steps"
+          form-label="steps"
+          placeholder="Step"
+          class="flex-1"
+        />
       </div>
     </div>
   </div>
