@@ -15,9 +15,9 @@ import { DEFAULT_SERVER_ERROR } from '@/consts';
 const recipeForm = reactive<CreateRecipeInput>({
   title: '',
   duration: '',
-  steps: [],
-  ingredients: [],
-  tools: [],
+  steps: [''],
+  ingredients: [''],
+  tools: [''],
 });
 
 const [createRecipe] = useErrorMessage(async () => {
@@ -36,9 +36,9 @@ const [createRecipe] = useErrorMessage(async () => {
 
   recipeForm.title = '';
   recipeForm.duration = '';
-  recipeForm.steps = [];
-  recipeForm.ingredients = [];
-  recipeForm.tools = [];
+  recipeForm.steps = [''];
+  recipeForm.ingredients = [''];
+  recipeForm.tools = [''];
 
   // if (recipe) {
   //   router.push({
@@ -110,16 +110,20 @@ const [createRecipe] = useErrorMessage(async () => {
                   placeholder="eg: Savory Stuffed Bell Peppers"
                   class="bg-white"
                   wrapper-class="flex-1"
+                  :minlength="2"
+                  :required="true"
                 />
               </div>
               <div class="flex items-center gap-2">
                 <FwbInput
-                  type="text"
+                  type="number"
                   label="Cook duration"
                   v-model="recipeForm.duration"
                   placeholder="30"
                   class="bg-white"
                   wrapper-class="flex-1"
+                  :min="1"
+                  :required="true"
                 >
                   <template #suffix><span>minutes</span></template>
                 </FwbInput>

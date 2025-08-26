@@ -25,6 +25,7 @@ const { actionName, footer } = defineProps<{
 
       <div class="flex items-center justify-center gap-2">
         <button
+          type="button"
           class="flex flex-1 flex-col items-center justify-center gap-2.5 rounded-3xl bg-white px-6 py-2 hover:scale-105"
           @click="socialLogin('google')"
         >
@@ -35,6 +36,7 @@ const { actionName, footer } = defineProps<{
         </button>
 
         <button
+          type="button"
           class="flex flex-1 flex-col items-center justify-center gap-2.5 rounded-3xl bg-white px-6 py-2 hover:scale-105"
           @click="socialLogin('github')"
         >

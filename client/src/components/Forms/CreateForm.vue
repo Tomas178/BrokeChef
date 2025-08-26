@@ -18,7 +18,11 @@ function addInput() {
 }
 
 function removeInput(index: number) {
-  inputs.value.splice(index, 1);
+  if (inputs.value.length > 1) {
+    inputs.value.splice(index, 1);
+  } else {
+    inputs.value[index] = '';
+  }
 }
 </script>
 
@@ -38,10 +42,12 @@ function removeInput(index: number) {
             :placeholder="`${props.placeholder} #${index + 1}`"
             class="bg-white"
             wrapper-class="flex-1"
+            :minlength="1"
+            :required="true"
           />
           <FwbButton
+            v-if="inputs.length > 1"
             type="button"
-            outline
             @click="removeInput(index)"
             color="light"
           >
