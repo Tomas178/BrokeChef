@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import PageForm from '@/components/PageForm/PageForm.vue';
-import AuthActions from '@/components/PageForm/AuthActions.vue';
+import AuthenticationForm from '@/components/Forms/AuthenticationForm/AuthenticationForm.vue';
+import AuthActions from '@/components/Forms/AuthenticationForm/AuthActions.vue';
 import { FwbInput } from 'flowbite-vue';
 import { ref } from 'vue';
 import { toast } from 'vue3-toastify';
@@ -38,7 +38,7 @@ const formFooter = {
 </script>
 
 <template>
-  <PageForm
+  <AuthenticationForm
     :welcome-text="true"
     heading="Sign In"
     form-label="Signin"
@@ -72,5 +72,5 @@ const formFooter = {
 
       <AuthActions action-name="Sign In" :footer="formFooter" />
     </template>
-  </PageForm>
+  </AuthenticationForm>
 </template>

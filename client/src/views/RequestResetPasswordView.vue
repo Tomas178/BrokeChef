@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import PageForm from '@/components/PageForm/PageForm.vue';
-import SubmitButton from '@/components/PageForm/SubmitButton.vue';
+import AuthenticationForm from '@/components/Forms/AuthenticationForm/AuthenticationForm.vue';
+import SubmitButton from '@/components/Forms/AuthenticationForm/SubmitButton.vue';
 import useErrorMessage from '@/composables/useErrorMessage';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
 import { useUserStore } from '@/stores/user';
@@ -28,7 +28,7 @@ const [submitSendLink] = useErrorMessage(async () => {
 </script>
 
 <template>
-  <PageForm
+  <AuthenticationForm
     :welcome-text="true"
     heading="Request reset password link"
     form-label="request-reset-password-link"
@@ -49,5 +49,5 @@ const [submitSendLink] = useErrorMessage(async () => {
         <SubmitButton action-name="Send Link" />
       </div>
     </template>
-  </PageForm>
+  </AuthenticationForm>
 </template>

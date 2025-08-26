@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AlertError from '@/components/AlertError.vue';
-import PageForm from '@/components/PageForm/PageForm.vue';
-import SubmitButton from '@/components/PageForm/SubmitButton.vue';
+import AuthenticationForm from '@/components/Forms/AuthenticationForm/AuthenticationForm.vue';
+import SubmitButton from '@/components/Forms/AuthenticationForm/SubmitButton.vue';
 import useErrorMessage from '@/composables/useErrorMessage';
 import { loginPath } from '@/config';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
@@ -37,7 +37,7 @@ const [submitResetPassword, errorMessage] = useErrorMessage(async () => {
 </script>
 
 <template>
-  <PageForm
+  <AuthenticationForm
     :welcome-text="true"
     heading="Reset Password"
     form-label="reset-password"
@@ -76,5 +76,5 @@ const [submitResetPassword, errorMessage] = useErrorMessage(async () => {
         </RouterLink>
       </div>
     </template>
-  </PageForm>
+  </AuthenticationForm>
 </template>
