@@ -36,7 +36,7 @@ export interface Ingredients {
 
 export interface Recipes {
   createdAt: Generated<Timestamp>;
-  duration: string;
+  duration: number;
   id: Generated<number>;
   steps: string;
   title: string;

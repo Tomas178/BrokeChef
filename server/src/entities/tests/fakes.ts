@@ -12,6 +12,8 @@ import type { AuthUser } from '../users';
 
 const randomOAuthId = () => random.string({ length: 32 });
 
+const randomDuration = () => random.integer({ min: 1, max: 240 });
+
 export const fakeUser = <T extends Partial<Insertable<Users>>>(
   overrides: T = {} as T
 ) =>
@@ -40,7 +42,7 @@ export const fakeRecipe = <T extends Partial<Insertable<Recipes>>>(
   ({
     userId: randomOAuthId(),
     title: random.string(),
-    duration: random.string(),
+    duration: randomDuration(),
     steps: random.paragraph(),
     ...overrides,
     createdAt: new Date(),
@@ -69,7 +71,7 @@ export const fakeCreateRecipeData = <
   overrides: T = {} as T
 ) => ({
   title: random.string(),
-  duration: random.string(),
+  duration: randomDuration(),
   steps: [random.string(), random.string()],
   ingredients: [random.word(), random.word()],
   tools: [random.word(), random.word()],

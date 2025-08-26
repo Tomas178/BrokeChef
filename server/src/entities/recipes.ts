@@ -14,7 +14,7 @@ export const recipesSchema = z.object({
   id: integerIdSchema,
   userId: oauthUserIdSchema,
   title: z.string().nonempty(),
-  duration: z.coerce.string().nonempty(),
+  duration: z.number().int().min(1),
   steps: arrayStringSchema,
   createdAt: createdAtSchema,
   updatedAt: updatedAtSchema,
