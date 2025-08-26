@@ -6,7 +6,9 @@ import { frontendBase, resetPasswordBase } from '@/config';
 export const useUserStore = defineStore('user', () => {
   const authToken = ref<string | null>(localStorage.getItem('authToken'));
 
-  const isLoggedIn = computed(() => !!authToken.value);
+  const session = authClient.useSession();
+
+  const isLoggedIn = computed(() => !!session.value?.data);
 
   function setToken(token: string | null) {
     authToken.value = token;
@@ -62,19 +64,6 @@ export const useUserStore = defineStore('user', () => {
     });
 
     if (error) throw new Error(error.message);
-
-    const accessToken = await getAccessToken(providerName);
-    setToken(accessToken);
-  }
-
-  async function getAccessToken(providerName: string): Promise<string | null> {
-    const { data, error } = await authClient.getAccessToken({
-      providerId: providerName,
-    });
-
-    if (error) throw new Error(error.message);
-
-    return data.accessToken;
   }
 
   async function sendResetPasswordLink(email: string) {
