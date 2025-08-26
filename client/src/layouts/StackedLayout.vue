@@ -60,7 +60,7 @@ const navigation = computed(() =>
 
 <style scoped>
 :deep(ul) {
-  background-color: var(--color-background-primary);
+  background-color: var(--color-background-form);
 }
 
 :deep(.router-link-exact-active) {

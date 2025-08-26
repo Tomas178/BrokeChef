@@ -40,7 +40,7 @@ function logoutUser() {
       </FwbNavbarLink>
     </template>
     <main>
-      <div class="container flex flex-col bg-gray-50">
+      <div class="bg-background-main container flex flex-col">
         <RouterView />
       </div>
     </main>
