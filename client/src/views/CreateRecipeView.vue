@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import CreateForm from '@/components/Forms/CreateForm.vue';
 import { FwbButton } from 'flowbite-vue';
 </script>
 
@@ -43,6 +44,20 @@ import { FwbButton } from 'flowbite-vue';
             </svg> </template
           >Publish Recipe</FwbButton
         >
+      </div>
+      <div class="flex gap-8">
+        <CreateForm
+          heading="General Recipe Information"
+          form-label="general-recipe-information"
+        />
+        <CreateForm heading="Ingredients" form-label="Ingredients" />
+      </div>
+      <div class="flex gap-8">
+        <CreateForm
+          heading="Kitchen Equipment"
+          form-label="kitchen-equipment"
+        />
+        <CreateForm heading="Steps" form-label="steps" />
       </div>
     </div>
   </div>
