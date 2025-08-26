@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '@/views/HomeView.vue';
 import MainLayout from '@/layouts/MainLayout.vue';
+import AuthenticationLayout from '@/layouts/AuthenticationLayout.vue';
 import {
   createRecipePath,
   loginPath,
@@ -23,6 +24,18 @@ const router = createRouter({
           component: HomeView,
         },
         {
+          beforeEnter: [authenticate],
+          path: createRecipePath,
+          name: 'CreateRecipe',
+          component: () => import('../views/CreateRecipesView.vue'),
+        },
+      ],
+    },
+    {
+      path: '',
+      component: AuthenticationLayout,
+      children: [
+        {
           path: signupPath,
           name: 'Signup',
           component: () => import('../views/SignupView.vue'),
@@ -33,6 +46,11 @@ const router = createRouter({
           component: () => import('../views/LoginView.vue'),
         },
         {
+          path: signupPath,
+          name: 'Signup',
+          component: () => import('../views/SignupView.vue'),
+        },
+        {
           path: requestResetPasswordPath,
           name: 'RequestResetPassword',
           component: () => import('../views/RequestResetPasswordView.vue'),
@@ -41,12 +59,6 @@ const router = createRouter({
           path: resetPasswordPath,
           name: 'ResetPassword',
           component: () => import('../views/ResetPasswordView.vue'),
-        },
-        {
-          beforeEnter: [authenticate],
-          path: createRecipePath,
-          name: 'CreateRecipe',
-          component: () => import('../views/CreateRecipesView.vue'),
         },
       ],
     },

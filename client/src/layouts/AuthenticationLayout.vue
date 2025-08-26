@@ -6,7 +6,6 @@ import { useRouter } from 'vue-router';
 import { computed } from 'vue';
 
 const user = useUserStore();
-console.log(user.isLoggedIn);
 
 const router = useRouter();
 
@@ -40,7 +39,7 @@ function logoutUser() {
       </FwbNavbarLink>
     </template>
     <main>
-      <div class="container flex flex-col bg-gray-50">
+      <div class="container flex flex-col">
         <RouterView />
       </div>
     </main>

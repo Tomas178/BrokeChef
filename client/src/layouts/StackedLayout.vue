@@ -55,11 +55,7 @@ const navigation = computed(() =>
     </template>
   </FwbNavbar>
 
-  <main>
-    <div class="container flex flex-col">
-      <RouterView />
-    </div>
-  </main>
+  <slot />
 </template>
 
 <style scoped>
