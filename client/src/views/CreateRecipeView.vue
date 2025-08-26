@@ -4,9 +4,9 @@ import { FwbButton } from 'flowbite-vue';
 </script>
 
 <template>
-  <div class="md:mx-32 md:mt-14 md:mb-28">
-    <div class="flex flex-col md:gap-6">
-      <div class="justify-center text-6xl">
+  <div class="mx-4 mt-8 mb-12 md:mx-32 md:mt-14 md:mb-28">
+    <div class="flex flex-col gap-4 md:gap-6">
+      <div class="justify-center text-3xl md:text-6xl">
         <span class="text-primary-green font-bold">Create a New <br /></span
         ><span class="text-submit-text font-bold">Recipe</span>
       </div>
@@ -46,32 +46,32 @@ import { FwbButton } from 'flowbite-vue';
           >Publish Recipe</FwbButton
         >
       </div>
-      <div class="flex gap-8">
+      <div class="flex flex-col gap-10 md:flex-row md:gap-8">
         <CreateForm
           heading="General Recipe Information"
           form-label="general-recipe-information"
           placeholder="Information"
-          class="flex-1"
+          class="md:flex-1"
         />
         <CreateForm
           heading="Ingredients"
           form-label="Ingredients"
           placeholder="Ingredient"
-          class="flex-1"
+          class="md:flex-1"
         />
       </div>
-      <div class="flex gap-8">
+      <div class="flex flex-col gap-10 md:flex-row md:gap-8">
         <CreateForm
           heading="Kitchen Equipment"
           form-label="kitchen-equipment"
           placeholder="Equipment"
-          class="flex-1"
+          class="md:flex-1"
         />
         <CreateForm
           heading="Steps"
           form-label="steps"
           placeholder="Step"
-          class="flex-1"
+          class="md:flex-1"
         />
       </div>
     </div>

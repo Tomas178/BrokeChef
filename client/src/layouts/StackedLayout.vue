@@ -36,7 +36,7 @@ const navigation = computed(() =>
 
     <template #default="{ isShowMenu }">
       <FwbNavbarCollapse
-        class="top-12 right-0 md:static"
+        class="absolute top-12 right-0 md:static"
         :is-show-menu="isShowMenu"
       >
         <FwbNavbarLink
@@ -59,16 +59,16 @@ const navigation = computed(() =>
 </template>
 
 <style scoped>
-:deep(ul) {
+:deep(ul > a) {
   background-color: var(--color-background-form);
 }
 
-:deep(.router-link-exact-active) {
+:deep(ul .router-link-exact-active) {
   background-color: var(--color-primary-green);
 }
 
-@media ((width >=768px)) {
-  :deep(ul) {
+@media ((width >= 768px)) {
+  :deep(ul .router-link-exact-active) {
     background-color: white;
   }
 
