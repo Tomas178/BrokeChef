@@ -2,6 +2,7 @@ import * as z from 'zod';
 import type { Recipes } from '@server/database';
 import type { Selectable } from 'kysely';
 import {
+  arrayStringSchema,
   createdAtSchema,
   integerIdSchema,
   oauthUserIdSchema,
@@ -14,7 +15,7 @@ export const recipesSchema = z.object({
   userId: oauthUserIdSchema,
   title: z.string().nonempty(),
   duration: z.string().nonempty(),
-  steps: z.array(z.string().min(1)),
+  steps: arrayStringSchema,
   createdAt: createdAtSchema,
   updatedAt: updatedAtSchema,
 });
