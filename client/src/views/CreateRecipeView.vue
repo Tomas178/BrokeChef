@@ -8,6 +8,9 @@ import useErrorMessage from '@/composables/useErrorMessage';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const recipeForm = reactive<CreateRecipeInput>({
   title: '',
@@ -44,6 +47,13 @@ const [createRecipe] = useErrorMessage(async () => {
   recipeForm.steps = [''];
   recipeForm.ingredients = [''];
   recipeForm.tools = [''];
+
+  if (recipe) {
+    router.push({
+      name: 'Recipe',
+      params: { id: recipe?.id },
+    });
+  }
 });
 </script>
 
