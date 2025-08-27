@@ -12,6 +12,7 @@ interface SavedRecipesRepository {
     recipeToSave: Insertable<SavedRecipes>
   ) => Promise<savedRecipesPublic>;
   remove: (recipeId: number, userId: string) => Promise<savedRecipesPublic>;
+  isSaved: (recipeId: number, userId: string) => Promise<boolean>;
 }
 
 export function savedRecipesRepository(
@@ -33,6 +34,17 @@ export function savedRecipesRepository(
         .where('userId', '=', userId)
         .returning(savedRecipesKeysPublic)
         .executeTakeFirstOrThrow();
+    },
+
+    async isSaved(recipeId, userId) {
+      const exists = await database
+        .selectFrom(TABLE)
+        .select('userId')
+        .where('recipeId', '=', recipeId)
+        .where('userId', '=', userId)
+        .executeTakeFirst();
+
+      return !!exists;
     },
   };
 }
