@@ -7,11 +7,13 @@ export const useUserStore = defineStore('user', () => {
   const authToken = ref<string | null>(localStorage.getItem('authToken'));
 
   const session = authClient.useSession();
+  const id = ref<string | undefined>(undefined);
 
   watch(
-    () => session.value?.data?.session?.token,
-    (token) => {
-      if (token) setToken(token);
+    () => session.value?.data?.session,
+    (session) => {
+      if (session?.token) setToken(session.token);
+      if (session?.id) id.value = session.userId;
     },
     { immediate: true }
   );
@@ -122,6 +124,7 @@ export const useUserStore = defineStore('user', () => {
   return {
     authToken,
     isLoggedIn,
+    id,
     signup,
     login,
     socialLogin,
