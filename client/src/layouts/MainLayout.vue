@@ -6,7 +6,6 @@ import { useRouter } from 'vue-router';
 import { computed } from 'vue';
 
 const user = useUserStore();
-console.log(user.isLoggedIn);
 
 const router = useRouter();
 
