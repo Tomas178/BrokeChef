@@ -61,7 +61,7 @@ const [createRecipe] = useErrorMessage(async () => {
       <div class="flex items-end justify-end">
         <FwbButton
           type="submit"
-          class="gradient-action-button text-submit-text px-6 py-2 hover:scale-105"
+          class="gradient-action-button text-submit-text rounded-3xl px-6 py-2 hover:scale-105"
         >
           <template #prefix>
             <svg
