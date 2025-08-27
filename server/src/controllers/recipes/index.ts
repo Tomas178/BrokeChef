@@ -5,6 +5,7 @@ import findById from './findById';
 import remove from './remove';
 import findCreated from './findCreated';
 import findSaved from './findSaved';
+import isAuthor from './isAuthor';
 
 export default router({
   create,
@@ -13,4 +14,5 @@ export default router({
   remove,
   findCreated,
   findSaved,
+  isAuthor,
 });
