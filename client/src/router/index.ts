@@ -4,6 +4,7 @@ import MainLayout from '@/layouts/MainLayout.vue';
 import AuthenticationLayout from '@/layouts/AuthenticationLayout.vue';
 import {
   createRecipePath,
+  individualRecipePath,
   loginPath,
   requestResetPasswordPath,
   resetPasswordPath,
@@ -28,6 +29,11 @@ const router = createRouter({
           path: createRecipePath,
           name: 'CreateRecipe',
           component: () => import('../views/CreateRecipeView.vue'),
+        },
+        {
+          path: individualRecipePath,
+          name: 'Recipe',
+          component: () => import('../views/RecipeView.vue'),
         },
       ],
     },
