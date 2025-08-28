@@ -4,7 +4,7 @@ import { FwbHeading, FwbInput, FwbButton } from 'flowbite-vue';
 const inputs = defineModel<string[]>({ required: true });
 
 const props = defineProps<{
-  heading: string;
+  heading: 'Ingredients' | 'Kitchen Equipment' | 'Steps';
   formLabel: string;
   placeholder: string;
 }>();
@@ -43,7 +43,7 @@ function removeInput(index: number) {
             class="bg-white"
             wrapper-class="flex-1"
             :minlength="1"
-            :maxlength="100"
+            :maxlength="props.heading !== 'Steps' ? 100 : undefined"
             :required="true"
           />
           <FwbButton
