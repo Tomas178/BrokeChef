@@ -42,7 +42,7 @@ export function recipesRepository(database: Database): RecipesRepository {
         .executeTakeFirstOrThrow();
     },
 
-    async findById(id: number): Promise<RecipesPublic | undefined> {
+    async findById(id) {
       return database
         .selectFrom(TABLE)
         .select(recipesKeysPublic)
