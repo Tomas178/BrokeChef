@@ -107,9 +107,11 @@ const [createRecipe] = useErrorMessage(async () => {
           Publish Recipe
         </FwbButton>
       </div>
-      <div class="flex flex-col gap-10 md:flex-row md:gap-8">
-        <div class="flex flex-col gap-6 md:flex-1">
-          <FwbHeading tag="h2">General Recipe Information</FwbHeading>
+      <div class="flex flex-col gap-10 md:gap-8 lg:flex-row">
+        <div class="flex flex-col gap-6 lg:flex-1">
+          <FwbHeading tag="h2" class="lg:text-nowrap"
+            >General Recipe Information
+          </FwbHeading>
           <div class="rounded-4xl bg-white">
             <div class="m-4 flex flex-col gap-4 md:m-16">
               <FwbInput
@@ -120,6 +122,7 @@ const [createRecipe] = useErrorMessage(async () => {
                 class="bg-white"
                 wrapper-class="flex-1"
                 :minlength="2"
+                :maxlength="64"
                 :required="true"
               />
               <FwbInput
@@ -130,6 +133,7 @@ const [createRecipe] = useErrorMessage(async () => {
                 class="bg-white"
                 wrapper-class="flex-1"
                 :min="1"
+                :max="1000"
                 :required="true"
               >
                 <template #suffix><span>minutes</span></template>
@@ -144,7 +148,7 @@ const [createRecipe] = useErrorMessage(async () => {
           v-model="recipeForm.ingredients"
         />
       </div>
-      <div class="flex flex-col gap-10 md:flex-row md:gap-8">
+      <div class="flex flex-col gap-10 md:gap-8 lg:flex-row">
         <CreateForm
           heading="Kitchen Equipment"
           form-label="kitchen-equipment"
