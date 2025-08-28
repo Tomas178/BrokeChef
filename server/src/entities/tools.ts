@@ -17,3 +17,5 @@ export type ToolsPublic = Pick<
   Selectable<Tools>,
   (typeof toolsKeysPublic)[number]
 >;
+
+export type ToolsName = Pick<ToolsPublic, 'name'>['name'];

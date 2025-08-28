@@ -18,3 +18,5 @@ export type IngredientsPublic = Pick<
   Selectable<Ingredients>,
   (typeof ingredientsKeysPublic)[number]
 >;
+
+export type IngredientsName = Pick<IngredientsPublic, 'name'>['name'];
