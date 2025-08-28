@@ -18,7 +18,7 @@ export const useUserStore = defineStore('user', () => {
     { immediate: true }
   );
 
-  const isLoggedIn = computed(() => !!session.value?.data);
+  const isLoggedIn = computed(() => !!authToken.value);
 
   function setToken(token: string | null) {
     authToken.value = token;
