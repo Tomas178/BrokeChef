@@ -15,8 +15,8 @@ import type { ToolsName } from './tools';
 export const recipesSchema = z.object({
   id: integerIdSchema,
   userId: oauthUserIdSchema,
-  title: z.string().nonempty(),
-  duration: z.number().int().min(1),
+  title: z.string().trim().min(1).max(64),
+  duration: z.number().int().min(1).max(1000),
   steps: arrayStringSchema,
   createdAt: createdAtSchema,
   updatedAt: updatedAtSchema,
