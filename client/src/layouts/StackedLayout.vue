@@ -21,7 +21,7 @@ const navigation = computed(() =>
 </script>
 
 <template>
-  <FwbNavbar class="relative">
+  <FwbNavbar class="relative z-50">
     <template #logo>
       <RouterLink
         :to="{ name: 'Home' }"
