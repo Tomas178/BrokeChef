@@ -99,9 +99,9 @@ export async function insertIngredients(
     existingIngredients.map(ingredient => ingredient.name)
   );
 
-  const newIngredients = ingredients.filter(
-    name => !existingIngredientsNames.has(name)
-  );
+  const newIngredients = [
+    ...new Set(ingredients.filter(name => !existingIngredientsNames.has(name))),
+  ];
 
   let createdIngredients: IngredientsPublic[] = [];
   if (newIngredients.length > 0) {
@@ -132,7 +132,9 @@ export async function insertTools(
   const existingTools = await repo.findByNames(tools);
   const existingToolsNames = new Set(existingTools.map(tool => tool.name));
 
-  const newTools = tools.filter(name => !existingToolsNames.has(name));
+  const newTools = [
+    ...new Set(tools.filter(name => !existingToolsNames.has(name))),
+  ];
 
   let createdTools: ToolsPublic[] = [];
   if (newTools.length > 0) {

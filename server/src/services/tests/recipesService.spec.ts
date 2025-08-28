@@ -144,6 +144,67 @@ describe('insertTools', () => {
     expect(toolsInDatabase).toHaveLength(tools.length);
     expect(toolsInDatabase).toEqual([insertedToolOne, insertedToolTwo]);
   });
+
+  it('Should handle insertion with single duplicate without throwing', async () => {
+    const [createdRecipe] = await insertAll(
+      database,
+      'recipes',
+      fakeRecipe({ userId: user.id })
+    );
+
+    const [toolOne, toolTwo] = [fakeTool(), fakeTool()];
+
+    const toolsWithDuplicates: string[] = [
+      toolOne.name,
+      toolTwo.name,
+      toolOne.name, // duplicate
+    ];
+
+    await insertTools(
+      createdRecipe.id,
+      toolsWithDuplicates,
+      toolsRepository,
+      recipesToolsRepository
+    );
+
+    const toolsInDatabase = await selectAll(database, 'tools');
+
+    expect(toolsInDatabase).toHaveLength(toolsWithDuplicates.length - 1);
+
+    expect(toolsInDatabase[0]).toMatchObject({ name: toolOne.name });
+    expect(toolsInDatabase[1]).toMatchObject({ name: toolTwo.name });
+  });
+
+  it('Should handle insertion with multiple duplicate without throwing', async () => {
+    const [createdRecipe] = await insertAll(
+      database,
+      'recipes',
+      fakeRecipe({ userId: user.id })
+    );
+
+    const [toolOne, toolTwo] = [fakeTool(), fakeTool()];
+
+    const toolsWithDuplicates: string[] = [
+      toolOne.name,
+      toolTwo.name,
+      toolOne.name, // first duplicate
+      toolTwo.name, // second duplicate
+    ];
+
+    await insertTools(
+      createdRecipe.id,
+      toolsWithDuplicates,
+      toolsRepository,
+      recipesToolsRepository
+    );
+
+    const toolsInDatabase = await selectAll(database, 'tools');
+
+    expect(toolsInDatabase).toHaveLength(toolsWithDuplicates.length - 2);
+
+    expect(toolsInDatabase[0]).toMatchObject({ name: toolOne.name });
+    expect(toolsInDatabase[1]).toMatchObject({ name: toolTwo.name });
+  });
 });
 
 describe('insertIngredients', () => {
@@ -221,5 +282,78 @@ describe('insertIngredients', () => {
       insertedIngredientOne,
       insertedIngredientTwo,
     ]);
+  });
+
+  it('Should handle insertion with single duplicate without throwing', async () => {
+    const [createdRecipe] = await insertAll(
+      database,
+      'recipes',
+      fakeRecipe({ userId: user.id })
+    );
+
+    const [ingredientOne, ingredientTwo] = [fakeIngredient(), fakeIngredient()];
+
+    const ingredientsWithDuplicates: string[] = [
+      ingredientOne.name,
+      ingredientTwo.name,
+      ingredientOne.name, // duplicate
+    ];
+
+    await insertIngredients(
+      createdRecipe.id,
+      ingredientsWithDuplicates,
+      ingredientsRepository,
+      recipesIngredientsRepository
+    );
+
+    const ingredientsInDatabase = await selectAll(database, 'ingredients');
+
+    expect(ingredientsInDatabase).toHaveLength(
+      ingredientsWithDuplicates.length - 1
+    );
+
+    expect(ingredientsInDatabase[0]).toMatchObject({
+      name: ingredientOne.name,
+    });
+    expect(ingredientsInDatabase[1]).toMatchObject({
+      name: ingredientTwo.name,
+    });
+  });
+
+  it('Should handle insertion with multiple duplicate without throwing', async () => {
+    const [createdRecipe] = await insertAll(
+      database,
+      'recipes',
+      fakeRecipe({ userId: user.id })
+    );
+
+    const [ingredientOne, ingredientTwo] = [fakeIngredient(), fakeIngredient()];
+
+    const ingredientsWithDuplicates: string[] = [
+      ingredientOne.name,
+      ingredientTwo.name,
+      ingredientOne.name, // first duplicate
+      ingredientTwo.name, // second duplicate
+    ];
+
+    await insertIngredients(
+      createdRecipe.id,
+      ingredientsWithDuplicates,
+      ingredientsRepository,
+      recipesIngredientsRepository
+    );
+
+    const ingredientsInDatabase = await selectAll(database, 'ingredients');
+
+    expect(ingredientsInDatabase).toHaveLength(
+      ingredientsWithDuplicates.length - 2
+    );
+
+    expect(ingredientsInDatabase[0]).toMatchObject({
+      name: ingredientOne.name,
+    });
+    expect(ingredientsInDatabase[1]).toMatchObject({
+      name: ingredientTwo.name,
+    });
   });
 });
