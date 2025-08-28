@@ -24,10 +24,10 @@ const [recipe] = await insertAll(
   fakeRecipe({ userId: userSaved.id })
 );
 
-it('Should return false if no user id is provided', async () => {
+it('Should throw an error if user is not authenticated', async () => {
   const { isSaved } = createCaller(requestContext({ db: database }));
 
-  await expect(isSaved(recipe.id)).resolves.toBeFalsy();
+  await expect(isSaved(recipe.id)).rejects.toThrow(/unauthenticated/i);
 });
 
 it('Should return false if user has not saved the recipe', async () => {
