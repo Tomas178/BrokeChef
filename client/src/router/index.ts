@@ -31,6 +31,7 @@ const router = createRouter({
           component: () => import('../views/CreateRecipeView.vue'),
         },
         {
+          beforeEnter: [authenticate],
           path: individualRecipePath,
           name: 'Recipe',
           component: () => import('../views/RecipeView.vue'),
