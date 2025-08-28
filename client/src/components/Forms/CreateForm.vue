@@ -43,6 +43,7 @@ function removeInput(index: number) {
             class="bg-white"
             wrapper-class="flex-1"
             :minlength="1"
+            :maxlength="100"
             :required="true"
           />
           <FwbButton
