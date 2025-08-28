@@ -75,6 +75,8 @@ describe('findById', () => {
     expect(recipeById).toEqual({
       ...pick(recipeById, recipesKeysPublic),
       author: pick(userOne, usersKeysPublicWithoutId),
+      ingredients: [],
+      tools: [],
     });
   });
 });

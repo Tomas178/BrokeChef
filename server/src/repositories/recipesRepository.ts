@@ -2,6 +2,7 @@ import type { Database, DB, Recipes } from '@server/database';
 import {
   recipesKeysPublic,
   type RecipesPublic,
+  type RecipesPublicAllInfo,
 } from '@server/entities/recipes';
 import {
   usersKeysPublicWithoutId,
@@ -12,12 +13,13 @@ import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import { prefixTable } from '@server/utils/strings';
 import type { AliasedRawBuilder, ExpressionBuilder, Insertable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
+import { joinStepsToArray } from './utils/joinStepsToArray';
 
 const TABLE = 'recipes';
 
 export interface RecipesRepository {
   create: (recipe: Insertable<Recipes>) => Promise<RecipesPublic>;
-  findById: (id: number) => Promise<RecipesPublic | undefined>;
+  findById: (id: number) => Promise<RecipesPublicAllInfo | undefined>;
   findCreated: (
     userId: string,
     { offset, limit }: Pagination
@@ -43,12 +45,23 @@ export function recipesRepository(database: Database): RecipesRepository {
     },
 
     async findById(id) {
-      return database
+      const recipe = await database
         .selectFrom(TABLE)
         .select(recipesKeysPublic)
         .select(withAuthor)
+        .select(withIngredients)
+        .select(withTools)
         .where('id', '=', id)
         .executeTakeFirst();
+
+      if (!recipe) return;
+
+      return {
+        ...recipe,
+        steps: joinStepsToArray(recipe.steps),
+        ingredients: recipe.ingredients ?? [],
+        tools: recipe.tools ?? [],
+      };
     },
 
     async findCreated(userId, { offset, limit }) {
@@ -116,4 +129,26 @@ function withAuthor(eb: ExpressionBuilder<DB, 'recipes'>) {
       .select(usersKeysPublicWithoutId)
       .whereRef('users.id', '=', 'recipes.userId')
   ).as('author') as AliasedRawBuilder<UsersPublicWithoutId, 'author'>;
+}
+
+function withIngredients(eb: ExpressionBuilder<DB, 'recipes'>) {
+  return eb
+    .selectFrom('ingredients')
+    .innerJoin(
+      'recipesIngredients',
+      'recipesIngredients.ingredientId',
+      'ingredients.id'
+    )
+    .select(eb => eb.fn.jsonAgg('name').as('ingredients'))
+    .whereRef('recipesIngredients.recipeId', '=', 'recipes.id')
+    .as('ingredients') as unknown as AliasedRawBuilder<string[], 'ingredients'>;
+}
+
+function withTools(eb: ExpressionBuilder<DB, 'recipes'>) {
+  return eb
+    .selectFrom('tools')
+    .innerJoin('recipesTools', 'recipesTools.toolId', 'tools.id')
+    .select(eb => eb.fn.jsonAgg('tools.name').as('tools'))
+    .whereRef('recipesTools.recipeId', '=', 'recipes.id')
+    .as('tools') as unknown as AliasedRawBuilder<string[], 'tools'>;
 }
