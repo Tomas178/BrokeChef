@@ -14,6 +14,8 @@ import { auth } from './auth';
 import type { Context } from './trpc/index';
 import { appRouter } from './controllers';
 import config from './config';
+import { recipeUpload } from './utils/upload/recipeUpload';
+import { profileUpload } from './utils/upload/profileUpload';
 
 export default function createApp(db: Database) {
   const app = express();
@@ -31,6 +33,16 @@ export default function createApp(db: Database) {
 
   app.use('/api/health', (_, res) => {
     res.status(StatusCodes.OK).send('OK');
+  });
+
+  app.post('/api/upload/recipe', recipeUpload.single('file'), (req, res) => {
+    const file = req.file as Express.MulterS3.File;
+    res.status(StatusCodes.OK).json({ imageUrl: file.location });
+  });
+
+  app.post('/api/upload/profile', profileUpload.single('file'), (req, res) => {
+    const file = req.file as Express.MulterS3.File;
+    res.status(StatusCodes.OK).json({ imageUrl: file.location });
   });
 
   app.use(

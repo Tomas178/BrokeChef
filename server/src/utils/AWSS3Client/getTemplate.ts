@@ -1,6 +1,9 @@
 import { GetObjectCommand, type S3Client } from '@aws-sdk/client-s3';
 
-type EmailTemplates = 'verifyEmail.html' | 'resetPassword.html';
+export enum EmailTemplates {
+  VerifyEmail = 'verifyEmail.html',
+  ResetPassword = 'resetPassword.html',
+}
 
 export async function getTemplate(
   s3Client: S3Client,

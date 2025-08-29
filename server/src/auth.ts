@@ -5,7 +5,7 @@ import { sendMail } from './utils/sendMail/sendMail';
 import { transporter } from './utils/sendMail/client';
 import { s3Client } from './utils/AWSS3Client/client';
 import { formEmailTemplate } from './utils/sendMail/formEmailTemplate';
-import { getTemplate } from './utils/AWSS3Client/getTemplate';
+import { EmailTemplates, getTemplate } from './utils/AWSS3Client/getTemplate';
 
 const createdAndUpdated = {
   createdAt: 'created_at',
@@ -67,7 +67,7 @@ export const auth = betterAuth({
       const resetPasswordTemplate = await getTemplate(
         s3Client,
         config.auth.aws.s3.buckets.emailTemplates,
-        'resetPassword.html'
+        EmailTemplates.ResetPassword
       );
       const htmlContent = await formEmailTemplate(resetPasswordTemplate, {
         username: user.name,
@@ -89,7 +89,7 @@ export const auth = betterAuth({
       const verifyEmailTemplate = await getTemplate(
         s3Client,
         config.auth.aws.s3.buckets.emailTemplates,
-        'verifyEmail.html'
+        EmailTemplates.VerifyEmail
       );
       const htmlContent = await formEmailTemplate(verifyEmailTemplate, {
         username: user.name,

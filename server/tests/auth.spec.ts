@@ -1,12 +1,20 @@
 import { fakeUser } from '@server/entities/tests/fakes';
 import * as sendMailModule from '@server/utils/sendMail/sendMail';
 
-vi.mock('@server/utils/AWSS3Client/getTemplate', () => ({
-  getTemplate: vi.fn(() => 'hello {{username}} click this: {{url}}'),
-}));
+vi.mock('@server/utils/AWSS3Client/getTemplate', async importOriginal => {
+  const actual =
+    (await importOriginal()) as typeof import('@server/utils/AWSS3Client/getTemplate');
+  return {
+    ...actual,
+    getTemplate: vi.fn(() => 'hello {{username}} click this: {{url}}'), // mock only the function
+  };
+});
 
 import { auth } from '@server/auth';
-import { getTemplate } from '@server/utils/AWSS3Client/getTemplate';
+import {
+  EmailTemplates,
+  getTemplate,
+} from '@server/utils/AWSS3Client/getTemplate';
 import { formEmailTemplate } from '@server/utils/sendMail/formEmailTemplate';
 import type { S3Client } from '@aws-sdk/client-s3';
 
@@ -96,7 +104,7 @@ it('Email verification', async () => {
   const template = await getTemplate(
     {} as S3Client,
     'random',
-    'verifyEmail.html'
+    EmailTemplates.VerifyEmail
   );
 
   const expectedHtml = await formEmailTemplate(template, {
@@ -128,7 +136,7 @@ it('Password reset email', async () => {
   const fakePasswordResetUrl = 'http://localhost:5173/reset-password';
 
   const expectedHtml = await formEmailTemplate(
-    await getTemplate({} as S3Client, 'random', 'verifyEmail.html'),
+    await getTemplate({} as S3Client, 'random', EmailTemplates.VerifyEmail),
     { username: user.name, url: fakePasswordResetUrl }
   );
 
