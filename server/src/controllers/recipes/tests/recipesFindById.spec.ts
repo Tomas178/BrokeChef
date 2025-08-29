@@ -11,6 +11,12 @@ import {
 import { joinStepsToArray } from '@server/repositories/utils/joinStepsToArray';
 import recipesRouter from '..';
 
+const fakeImageUrl = 'https://signed-url.com/folder/image.png';
+
+vi.mock('@aws-sdk/s3-request-presigner', () => ({
+  getSignedUrl: vi.fn(() => fakeImageUrl),
+}));
+
 const createCaller = createCallerFactory(recipesRouter);
 const database = await wrapInRollbacks(createTestDatabase());
 
@@ -20,8 +26,8 @@ const [user, userOther] = await insertAll(database, 'users', [
 ]);
 
 const [recipeOne, recipeTwo] = await insertAll(database, 'recipes', [
-  fakeRecipe({ userId: user.id }),
-  fakeRecipe({ userId: userOther.id }),
+  fakeRecipe({ userId: user.id, imageUrl: fakeImageUrl }),
+  fakeRecipe({ userId: userOther.id, imageUrl: fakeImageUrl }),
 ]);
 
 const [ingredientOne, ingredientTwo] = await insertAll(
