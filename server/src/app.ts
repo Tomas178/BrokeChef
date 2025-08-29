@@ -16,6 +16,7 @@ import { appRouter } from './controllers';
 import config from './config';
 import { recipeUpload } from './utils/upload/recipeUpload';
 import { profileUpload } from './utils/upload/profileUpload';
+import { imageUrlToBucketKey } from './utils/imageUrlToBucketKey';
 
 export default function createApp(db: Database) {
   const app = express();
@@ -47,7 +48,7 @@ export default function createApp(db: Database) {
     const file = req.file as Express.MulterS3.File;
     res
       .status(StatusCodes.OK)
-      .json({ imageUrl: file.location.split('/').slice(-2).join('/') });
+      .json({ imageUrl: imageUrlToBucketKey(file.location) });
   });
 
   app.post('/api/upload/profile', profileUpload.single('file'), (req, res) => {
@@ -60,7 +61,9 @@ export default function createApp(db: Database) {
     }
 
     const file = req.file as Express.MulterS3.File;
-    res.status(StatusCodes.OK).json({ imageUrl: file.location });
+    res
+      .status(StatusCodes.OK)
+      .json({ imageUrl: imageUrlToBucketKey(file.location) });
   });
 
   app.use(

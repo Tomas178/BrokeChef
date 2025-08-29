@@ -69,7 +69,7 @@ describe('Image uploading', () => {
         .attach('file', Buffer.from('test'), 'recipe.png')
         .expect(StatusCodes.OK);
 
-      expect(body).toEqual({ imageUrl: 'https://mock-s3/recipe.png' });
+      expect(body).toEqual({ imageUrl: 'mock-s3/recipe.png' });
     });
   });
   describe('Profiles', () => {
@@ -110,7 +110,7 @@ describe('Image uploading', () => {
         .attach('file', Buffer.from('test'), 'profile.png')
         .expect(StatusCodes.OK);
 
-      expect(body).toEqual({ imageUrl: 'https://mock-s3/profile.png' });
+      expect(body).toEqual({ imageUrl: 'mock-s3/profile.png' });
     });
   });
 });
