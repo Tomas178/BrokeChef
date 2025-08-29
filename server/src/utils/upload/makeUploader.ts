@@ -4,7 +4,7 @@ import multerS3 from 'multer-s3';
 import config from '@server/config';
 import type { S3Client } from '@aws-sdk/client-s3';
 
-type Folders = 'Recipes' | 'Profiles';
+export type Folders = 'Recipes' | 'Profiles';
 
 export function makeUploader(folder: Folders, awsS3Client: S3Client) {
   return multer({

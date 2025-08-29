@@ -45,7 +45,9 @@ export default function createApp(db: Database) {
     }
 
     const file = req.file as Express.MulterS3.File;
-    res.status(StatusCodes.OK).json({ imageUrl: file.location });
+    res
+      .status(StatusCodes.OK)
+      .json({ imageUrl: file.location.split('/').slice(-2).join('/') });
   });
 
   app.post('/api/upload/profile', profileUpload.single('file'), (req, res) => {
