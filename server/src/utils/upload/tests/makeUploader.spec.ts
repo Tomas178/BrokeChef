@@ -1,6 +1,10 @@
+/* eslint-disable unicorn/no-null */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { S3Client } from '@aws-sdk/client-s3';
+import multer from 'multer';
 import multerS3 from 'multer-s3';
+import type { Mock } from 'vitest';
+import type { Request } from 'express';
 import { makeUploader } from '../makeUploader';
 
 vi.mock('multer', () => ({
@@ -82,5 +86,56 @@ describe('makeUploader', () => {
     );
 
     expect(uploader).toBe('mock-multer');
+  });
+
+  it('Should not allow any other file mimetype other than PNG or JPEG', () => {
+    const mockS33Client = {} as S3Client;
+    const uploader = makeUploader('Recipes', mockS33Client);
+
+    const multerOptions = (multer as unknown as Mock).mock.calls[0][0];
+    const { fileFilter } = multerOptions;
+
+    const request = {} as Request;
+    const file = { mimetype: 'application/pdf' } as Express.MulterS3.File;
+    const mockCallback = vi.fn();
+
+    fileFilter(request, file, mockCallback);
+
+    expect(mockCallback).toHaveBeenCalledWith(null, false);
+    expect(request.fileValidationError).toMatch(/.png|.jpg|.jpeg/i);
+  });
+
+  it('Should allow PNG format', () => {
+    const mockS33Client = {} as S3Client;
+    const uploader = makeUploader('Recipes', mockS33Client);
+
+    const multerOptions = (multer as unknown as Mock).mock.calls[0][0];
+    const { fileFilter } = multerOptions;
+
+    const request = {} as Request;
+    const file = { mimetype: 'image/png' } as Express.MulterS3.File;
+    const mockCallback = vi.fn();
+
+    fileFilter(request, file, mockCallback);
+
+    expect(mockCallback).toHaveBeenCalledWith(null, true);
+    expect(request.fileValidationError).toBeUndefined();
+  });
+
+  it('Should allow JPEG format', () => {
+    const mockS33Client = {} as S3Client;
+    const uploader = makeUploader('Recipes', mockS33Client);
+
+    const multerOptions = (multer as unknown as Mock).mock.calls[0][0];
+    const { fileFilter } = multerOptions;
+
+    const request = {} as Request;
+    const file = { mimetype: 'image/jpeg' } as Express.MulterS3.File;
+    const mockCallback = vi.fn();
+
+    fileFilter(request, file, mockCallback);
+
+    expect(mockCallback).toHaveBeenCalledWith(null, true);
+    expect(request.fileValidationError).toBeUndefined();
   });
 });

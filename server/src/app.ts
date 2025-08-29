@@ -36,11 +36,27 @@ export default function createApp(db: Database) {
   });
 
   app.post('/api/upload/recipe', recipeUpload.single('file'), (req, res) => {
+    if (req.fileValidationError) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        error: {
+          message: req.fileValidationError,
+        },
+      });
+    }
+
     const file = req.file as Express.MulterS3.File;
     res.status(StatusCodes.OK).json({ imageUrl: file.location });
   });
 
   app.post('/api/upload/profile', profileUpload.single('file'), (req, res) => {
+    if (req.fileValidationError) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        error: {
+          message: req.fileValidationError,
+        },
+      });
+    }
+
     const file = req.file as Express.MulterS3.File;
     res.status(StatusCodes.OK).json({ imageUrl: file.location });
   });
