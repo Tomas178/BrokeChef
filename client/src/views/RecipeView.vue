@@ -87,8 +87,8 @@ const [unsaveRecipe] = useErrorMessage(async () => {
   <div v-if="recipe">
     <div class="relative w-full">
       <img
-        src="@/assets/recipes-pictures/Waffles.png"
-        alt="Recipe Image"
+        :src="recipe.imageUrl"
+        :alt="`${recipe.title} Image`"
         class="h-64 w-full object-cover md:h-96"
       />
     </div>

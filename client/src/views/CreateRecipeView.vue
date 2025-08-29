@@ -1,24 +1,31 @@
 <script lang="ts" setup>
 import CreateForm from '@/components/Forms/CreateForm.vue';
-import type { CreateRecipeInput } from '@server/shared/types';
-import { FwbButton, FwbHeading, FwbInput } from 'flowbite-vue';
-import { reactive, computed } from 'vue';
+import type { CreateRecipeInput, RecipesPublic } from '@server/shared/types';
+import { FwbButton, FwbHeading, FwbInput, FwbFileInput } from 'flowbite-vue';
+import { reactive, computed, ref } from 'vue';
 import { trpc } from '@/trpc';
 import useErrorMessage from '@/composables/useErrorMessage';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
 import { useRouter } from 'vue-router';
+import axios from 'axios';
+import { apiOrigin } from '@/config';
 
 const router = useRouter();
 
 const recipeForm = reactive<CreateRecipeInput>({
   title: '',
   duration: 0,
+  imageUrl: '',
   steps: [''],
   ingredients: [''],
   tools: [''],
 });
+
+const fullEndpoint = `${apiOrigin}/api/upload/recipe`;
+
+const recipeImageFile = ref<File | undefined>(undefined);
 
 const durationString = computed({
   get: () => recipeForm.duration.toString(),
@@ -28,12 +35,39 @@ const durationString = computed({
   },
 });
 
+async function uploadAndCreateRecipe() {
+  if (!recipeImageFile.value) {
+    throw new Error('Recipe image is required');
+  }
+
+  const formData = new FormData();
+  formData.append('file', recipeImageFile.value);
+  console.log(recipeImageFile.value);
+
+  const { data } = await axios.post<Pick<RecipesPublic, 'imageUrl'>>(
+    fullEndpoint,
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } }
+  );
+
+  console.log(data.imageUrl);
+
+  recipeForm.imageUrl = data.imageUrl;
+
+  return trpc.recipes.create.mutate(recipeForm);
+}
+
 const [createRecipe] = useErrorMessage(async () => {
-  const recipe = await toast.promise(trpc.recipes.create.mutate(recipeForm), {
+  const recipe = await toast.promise(uploadAndCreateRecipe(), {
     pending: 'Creating recipe...',
     success: 'Recipe has been created!',
     error: {
       render(err) {
+        console.log(err);
+
+        if (err?.data?.response?.data?.error?.message)
+          return err.data.response.data.error.message;
+
         if (err?.data?.message) return err.data.message;
         return DEFAULT_SERVER_ERROR;
       },
@@ -47,6 +81,8 @@ const [createRecipe] = useErrorMessage(async () => {
   recipeForm.steps = [''];
   recipeForm.ingredients = [''];
   recipeForm.tools = [''];
+  recipeForm.imageUrl = '';
+  recipeImageFile.value = undefined;
 
   if (recipe) {
     router.push({
@@ -160,6 +196,15 @@ const [createRecipe] = useErrorMessage(async () => {
           form-label="steps"
           placeholder="Step"
           v-model="recipeForm.steps"
+        />
+      </div>
+      <div class="flex">
+        <FwbFileInput
+          v-model="recipeImageFile"
+          label="Recipe Image"
+          size="xs"
+          class="flex-1"
+          :required="true"
         />
       </div>
     </div>
