@@ -11,7 +11,7 @@ export default recipeAuthorProcedure.mutation(
     try {
       const deletedRecipe = await repos.recipesRepository.remove(recipeId);
 
-      const imageUrl = deletedRecipe.imageUrl.split('/').slice(-2).join('/');
+      const imageUrl = deletedRecipe.imageUrl;
 
       await deleteFile(s3Client, config.auth.aws.s3.buckets.images, imageUrl);
 
