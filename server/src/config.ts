@@ -62,6 +62,7 @@ const schema = z
           region: z.string().trim(),
           buckets: z.object({
             emailTemplates: z.string().trim(),
+            images: z.string().trim(),
           }),
         }),
       }),
@@ -113,6 +114,7 @@ const config = schema.parse({
         region: env.AWS_S3_REGION,
         buckets: {
           emailTemplates: env.AWS_S3_EMAIL_TEMPLATES_BUCKET_NAME,
+          images: env.AWS_S3_IMAGES_BUCKET_NAME,
         },
       },
     },
