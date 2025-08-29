@@ -1,7 +1,7 @@
 import { createCallerFactory } from '@server/trpc';
 import { wrapInRollbacks } from '@tests/utils/transactions';
 import { createTestDatabase } from '@tests/utils/database';
-import { clearTables, insertAll } from '@tests/utils/record';
+import { insertAll } from '@tests/utils/record';
 import {
   fakeRecipe,
   fakeSavedRecipe,
@@ -11,8 +11,6 @@ import recipesRouter from '..';
 
 const createCaller = createCallerFactory(recipesRouter);
 const database = await wrapInRollbacks(createTestDatabase());
-
-await clearTables(database, ['recipes', 'savedRecipes']);
 const [user] = await insertAll(database, 'users', fakeUser());
 
 const { findSaved } = createCaller({ db: database });
