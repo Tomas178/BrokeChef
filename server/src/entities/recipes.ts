@@ -17,6 +17,7 @@ export const recipesSchema = z.object({
   title: z.string().trim().min(1).max(64),
   duration: z.number().int().min(1).max(1000),
   steps: z.array(z.string().nonempty().trim()),
+  imageUrl: z.url().trim().nonempty(),
   createdAt: createdAtSchema,
   updatedAt: updatedAtSchema,
 });

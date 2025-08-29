@@ -44,6 +44,7 @@ export const fakeRecipe = <T extends Partial<Insertable<Recipes>>>(
     title: random.string(),
     duration: randomDuration(),
     steps: random.paragraph(),
+    imageUrl: random.url(),
     ...overrides,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -72,6 +73,7 @@ export const fakeCreateRecipeData = <
 ) => ({
   title: random.string(),
   duration: randomDuration(),
+  imageUrl: random.url(),
   steps: [random.string(), random.string()],
   ingredients: [random.word(), random.word()],
   tools: [random.word(), random.word()],

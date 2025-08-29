@@ -12,6 +12,7 @@ const createRecipeInputSchema = recipesSchema
     title: true,
     duration: true,
     steps: true,
+    imageUrl: true,
   })
   .extend({
     ingredients: arrayStringSchema,

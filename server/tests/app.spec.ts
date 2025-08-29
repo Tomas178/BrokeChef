@@ -26,10 +26,6 @@ vi.mock('@server/utils/upload/profileUpload', () => ({
 const database = await wrapInRollbacks(createTestDatabase());
 const app = createApp(database);
 
-afterAll(() => {
-  database.destroy();
-});
-
 describe('Server health check', () => {
   it('can launch the app', async () => {
     await supertest(app).get('/api/health').expect(StatusCodes.OK);

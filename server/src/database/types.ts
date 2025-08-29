@@ -38,6 +38,7 @@ export interface Recipes {
   createdAt: Generated<Timestamp>;
   duration: number;
   id: Generated<number>;
+  imageUrl: string;
   steps: string;
   title: string;
   updatedAt: Generated<Timestamp>;
