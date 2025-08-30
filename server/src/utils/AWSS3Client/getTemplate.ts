@@ -1,10 +1,10 @@
 import { GetObjectCommand, type S3Client } from '@aws-sdk/client-s3';
-import type { EmailTemplatesKeys } from '@server/enums/EmailTemplate';
+import type { EmailTemplateKeys } from '@server/enums/EmailTemplate';
 
 export async function getTemplate(
   s3Client: S3Client,
   bucketName: string,
-  key: EmailTemplatesKeys
+  key: EmailTemplateKeys
 ) {
   const command = new GetObjectCommand({
     Bucket: bucketName,
