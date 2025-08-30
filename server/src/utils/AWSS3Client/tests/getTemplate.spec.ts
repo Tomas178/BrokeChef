@@ -1,5 +1,6 @@
 import type { S3Client } from '@aws-sdk/client-s3';
-import { EmailTemplates, getTemplate } from '../getTemplate';
+import { EmailTemplates } from '@server/enums/EmailTemplates';
+import { getTemplate } from '../getTemplate';
 
 const mockSend = vi.fn();
 

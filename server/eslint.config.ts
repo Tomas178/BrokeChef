@@ -86,7 +86,7 @@ export default tseslint.config(
   },
 
   {
-    files: ['**/src/utils/errors/**'],
+    files: ['**/src/utils/errors/**', 'src/enums/**'],
     rules: {
       'unicorn/filename-case': [
         'error',

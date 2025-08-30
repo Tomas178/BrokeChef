@@ -11,12 +11,10 @@ vi.mock('@server/utils/AWSS3Client/getTemplate', async importOriginal => {
 });
 
 import { auth } from '@server/auth';
-import {
-  EmailTemplates,
-  getTemplate,
-} from '@server/utils/AWSS3Client/getTemplate';
+import { getTemplate } from '@server/utils/AWSS3Client/getTemplate';
 import { formEmailTemplate } from '@server/utils/sendMail/formEmailTemplate';
 import type { S3Client } from '@aws-sdk/client-s3';
+import { EmailTemplates } from '@server/enums/EmailTemplates';
 
 describe('Better-auth configuration', () => {
   it('Should be initialized with the correct model names', () => {

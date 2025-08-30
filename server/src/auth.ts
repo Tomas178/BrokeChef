@@ -5,7 +5,8 @@ import { sendMail } from './utils/sendMail/sendMail';
 import { transporter } from './utils/sendMail/client';
 import { s3Client } from './utils/AWSS3Client/client';
 import { formEmailTemplate } from './utils/sendMail/formEmailTemplate';
-import { EmailTemplates, getTemplate } from './utils/AWSS3Client/getTemplate';
+import { getTemplate } from './utils/AWSS3Client/getTemplate';
+import { EmailTemplates } from './enums/EmailTemplates';
 
 const createdAndUpdated = {
   createdAt: 'created_at',

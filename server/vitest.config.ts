@@ -17,6 +17,7 @@ export default defineConfig({
         '**/src/services/index.ts',
         'src/index.ts',
         'src/types/',
+        'src/enums',
       ],
     },
 
