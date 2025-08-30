@@ -38,7 +38,7 @@ beforeEach(
 );
 
 describe('createRecipe', () => {
-  it('Should create a new recipe', async () => {
+  it('Should create a new recipe with user given image', async () => {
     const recipeData = fakeCreateRecipeData();
 
     const stepsInASingleString = joinStepsToSingleString(recipeData.steps);
@@ -50,6 +50,30 @@ describe('createRecipe', () => {
       ...pick(recipeData, recipesKeysPublic),
       steps: stepsInASingleString,
       author: pick(user, usersKeysPublicWithoutId),
+    });
+  });
+
+  it('Should create a new recipe with generated image when user did not provide an image', async () => {
+    vi.mock('@server/utils/GoogleGenAiClient/generateRecipeImage', () => ({
+      generateRecipeImage: vi.fn(() => Buffer.from('image')),
+    }));
+
+    vi.mock('@server/utils/AWSS3Client/uploadImage', () => ({
+      uploadImage: vi.fn(() => 'fakeKey'),
+    }));
+
+    const recipeData = fakeCreateRecipeData({ imageUrl: '' });
+
+    const stepsInASingleString = joinStepsToSingleString(recipeData.steps);
+
+    const createdRecipe = await service.createRecipe(recipeData, user.id);
+
+    expect(createdRecipe).toMatchObject({
+      id: expect.any(Number),
+      ...pick(recipeData, recipesKeysPublic),
+      steps: stepsInASingleString,
+      author: pick(user, usersKeysPublicWithoutId),
+      imageUrl: 'fakeKey',
     });
   });
 

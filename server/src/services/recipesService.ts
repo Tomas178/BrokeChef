@@ -23,6 +23,12 @@ import UserNotFound from '@server/utils/errors/users/UserNotFound';
 import type { ToolsPublic } from '@server/entities/tools';
 import type { IngredientsPublic } from '@server/entities/ingredients';
 import type { RecipesPublic } from '@server/entities/recipes';
+import { generateRecipeImage } from '@server/utils/GoogleGenAiClient/generateRecipeImage';
+import { ai } from '@server/utils/GoogleGenAiClient/client';
+import { uploadImage } from '@server/utils/AWSS3Client/uploadImage';
+import { s3Client } from '@server/utils/AWSS3Client/client';
+import { ImageFolder } from '@server/enums/ImageFolder';
+import { ALLOWED_MIMETYPE } from '@server/enums/AllowedMimetype';
 import { joinStepsToSingleString } from './utils/joinStepsToSingleString';
 
 interface RecipesService {
@@ -45,12 +51,33 @@ export function recipesService(database: Database): RecipesService {
 
         const { ingredients, tools, ...recipeData } = recipe;
 
+        let imageUrl: string;
+
+        if (recipeData.imageUrl) {
+          imageUrl = recipeData.imageUrl; // user provided
+        } else {
+          const generatedImage = await generateRecipeImage(ai, {
+            title: recipeData.title,
+            ingredients,
+          });
+          const filename = `${recipeData.title}-by-AI`;
+
+          imageUrl = await uploadImage(
+            s3Client,
+            ImageFolder.RECIPES,
+            filename,
+            generatedImage,
+            ALLOWED_MIMETYPE.JPEG
+          );
+        }
+
         const stepsAsSingleString = joinStepsToSingleString(recipeData.steps);
 
         const recipeToInsert = {
           ...recipeData,
           steps: stepsAsSingleString,
           userId,
+          imageUrl,
         };
 
         try {
