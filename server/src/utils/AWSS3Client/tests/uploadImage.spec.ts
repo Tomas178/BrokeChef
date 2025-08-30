@@ -3,6 +3,10 @@ import { ALLOWED_MIMETYPE } from '@server/enums/AllowedMimetype';
 import { ImageFolder } from '@server/enums/ImageFolder';
 import { uploadImage } from '../uploadImage';
 
+vi.mock('@server/utils/formUniqueFilename', () => ({
+  formUniqueFilename: vi.fn(() => 'formed-file'),
+}));
+
 const mockSend = vi.fn();
 
 const mockS3Client = {
@@ -26,7 +30,7 @@ describe('uploadImage', () => {
       expect.objectContaining({
         input: {
           Bucket: expect.any(String),
-          Key: `${folder}/${fileName}`,
+          Key: `${folder}/formed-file`,
           Body: buffer,
           ContentType: contentType,
         },
