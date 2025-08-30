@@ -1,6 +1,6 @@
 export enum ALLOWED_MIMETYPE {
   PNG = 'image/png',
-  JPEG = 'images/jpeg',
+  JPEG = 'image/jpeg',
 }
 
 export type AllowedMimetypeKeys =
