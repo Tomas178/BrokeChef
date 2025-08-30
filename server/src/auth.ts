@@ -6,7 +6,7 @@ import { transporter } from './utils/sendMail/client';
 import { s3Client } from './utils/AWSS3Client/client';
 import { formEmailTemplate } from './utils/sendMail/formEmailTemplate';
 import { getTemplate } from './utils/AWSS3Client/getTemplate';
-import { EmailTemplates } from './enums/EmailTemplates';
+import { EmailTemplate } from './enums/EmailTemplate';
 
 const createdAndUpdated = {
   createdAt: 'created_at',
@@ -68,7 +68,7 @@ export const auth = betterAuth({
       const resetPasswordTemplate = await getTemplate(
         s3Client,
         config.auth.aws.s3.buckets.emailTemplates,
-        EmailTemplates.RESET_PASSWORD
+        EmailTemplate.RESET_PASSWORD
       );
       const htmlContent = await formEmailTemplate(resetPasswordTemplate, {
         username: user.name,
@@ -90,7 +90,7 @@ export const auth = betterAuth({
       const verifyEmailTemplate = await getTemplate(
         s3Client,
         config.auth.aws.s3.buckets.emailTemplates,
-        EmailTemplates.VERIFY_EMAIL
+        EmailTemplate.VERIFY_EMAIL
       );
       const htmlContent = await formEmailTemplate(verifyEmailTemplate, {
         username: user.name,

@@ -14,7 +14,7 @@ import { auth } from '@server/auth';
 import { getTemplate } from '@server/utils/AWSS3Client/getTemplate';
 import { formEmailTemplate } from '@server/utils/sendMail/formEmailTemplate';
 import type { S3Client } from '@aws-sdk/client-s3';
-import { EmailTemplates } from '@server/enums/EmailTemplates';
+import { EmailTemplate } from '@server/enums/EmailTemplate';
 
 describe('Better-auth configuration', () => {
   it('Should be initialized with the correct model names', () => {
@@ -102,7 +102,7 @@ it('Email verification', async () => {
   const template = await getTemplate(
     {} as S3Client,
     'random',
-    EmailTemplates.VERIFY_EMAIL
+    EmailTemplate.VERIFY_EMAIL
   );
 
   const expectedHtml = await formEmailTemplate(template, {
@@ -134,7 +134,7 @@ it('Password reset email', async () => {
   const fakePasswordResetUrl = 'http://localhost:5173/reset-password';
 
   const expectedHtml = await formEmailTemplate(
-    await getTemplate({} as S3Client, 'random', EmailTemplates.VERIFY_EMAIL),
+    await getTemplate({} as S3Client, 'random', EmailTemplate.VERIFY_EMAIL),
     { username: user.name, url: fakePasswordResetUrl }
   );
 

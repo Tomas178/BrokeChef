@@ -1,5 +1,5 @@
 import type { S3Client } from '@aws-sdk/client-s3';
-import { EmailTemplates } from '@server/enums/EmailTemplates';
+import { EmailTemplate } from '@server/enums/EmailTemplate';
 import { getTemplate } from '../getTemplate';
 
 const mockSend = vi.fn();
@@ -26,13 +26,13 @@ describe('getTemplates', () => {
     const result = await getTemplate(
       mockS3Client,
       bucket,
-      EmailTemplates.VERIFY_EMAIL
+      EmailTemplate.VERIFY_EMAIL
     );
 
     expect(result).toBe(htmlContent);
     expect(mockSend).toHaveBeenCalledWith(
       expect.objectContaining({
-        input: { Bucket: bucket, Key: EmailTemplates.VERIFY_EMAIL },
+        input: { Bucket: bucket, Key: EmailTemplate.VERIFY_EMAIL },
       })
     );
   });
@@ -41,7 +41,7 @@ describe('getTemplates', () => {
     mockSend.mockResolvedValueOnce({ Body: undefined });
 
     await expect(
-      getTemplate(mockS3Client, bucket, EmailTemplates.RESET_PASSWORD)
+      getTemplate(mockS3Client, bucket, EmailTemplate.RESET_PASSWORD)
     ).rejects.toThrow(/not found/i);
   });
 });
