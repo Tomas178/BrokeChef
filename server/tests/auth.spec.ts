@@ -102,7 +102,7 @@ it('Email verification', async () => {
   const template = await getTemplate(
     {} as S3Client,
     'random',
-    EmailTemplates.VerifyEmail
+    EmailTemplates.VERIFY_EMAIL
   );
 
   const expectedHtml = await formEmailTemplate(template, {
@@ -134,7 +134,7 @@ it('Password reset email', async () => {
   const fakePasswordResetUrl = 'http://localhost:5173/reset-password';
 
   const expectedHtml = await formEmailTemplate(
-    await getTemplate({} as S3Client, 'random', EmailTemplates.VerifyEmail),
+    await getTemplate({} as S3Client, 'random', EmailTemplates.VERIFY_EMAIL),
     { username: user.name, url: fakePasswordResetUrl }
   );
 

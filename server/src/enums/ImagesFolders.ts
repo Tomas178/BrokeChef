@@ -1,6 +1,6 @@
 export enum ImagesFolders {
-  Recipes = 'Recipes',
-  Profiles = 'Profiles',
+  RECIPES = 'Recipes',
+  PROFILES = 'Profiles',
 }
 
 export type ImagesFoldersKeys =

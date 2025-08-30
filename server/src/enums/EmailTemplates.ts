@@ -1,6 +1,6 @@
 export enum EmailTemplates {
-  VerifyEmail = 'verifyEmail.html',
-  ResetPassword = 'resetPassword.html',
+  VERIFY_EMAIL = 'verifyEmail.html',
+  RESET_PASSWORD = 'resetPassword.html',
 }
 
 export type EmailTemplatesKeys =

@@ -68,7 +68,7 @@ export const auth = betterAuth({
       const resetPasswordTemplate = await getTemplate(
         s3Client,
         config.auth.aws.s3.buckets.emailTemplates,
-        EmailTemplates.ResetPassword
+        EmailTemplates.RESET_PASSWORD
       );
       const htmlContent = await formEmailTemplate(resetPasswordTemplate, {
         username: user.name,
@@ -90,7 +90,7 @@ export const auth = betterAuth({
       const verifyEmailTemplate = await getTemplate(
         s3Client,
         config.auth.aws.s3.buckets.emailTemplates,
-        EmailTemplates.VerifyEmail
+        EmailTemplates.VERIFY_EMAIL
       );
       const htmlContent = await formEmailTemplate(verifyEmailTemplate, {
         username: user.name,

@@ -26,13 +26,13 @@ describe('getTemplates', () => {
     const result = await getTemplate(
       mockS3Client,
       bucket,
-      EmailTemplates.VerifyEmail
+      EmailTemplates.VERIFY_EMAIL
     );
 
     expect(result).toBe(htmlContent);
     expect(mockSend).toHaveBeenCalledWith(
       expect.objectContaining({
-        input: { Bucket: bucket, Key: EmailTemplates.VerifyEmail },
+        input: { Bucket: bucket, Key: EmailTemplates.VERIFY_EMAIL },
       })
     );
   });
@@ -41,7 +41,7 @@ describe('getTemplates', () => {
     mockSend.mockResolvedValueOnce({ Body: undefined });
 
     await expect(
-      getTemplate(mockS3Client, bucket, EmailTemplates.ResetPassword)
+      getTemplate(mockS3Client, bucket, EmailTemplates.RESET_PASSWORD)
     ).rejects.toThrow(/not found/i);
   });
 });
