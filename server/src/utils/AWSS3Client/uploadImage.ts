@@ -10,7 +10,7 @@ export async function uploadImage(
   filename: string,
   buffer: Buffer,
   contentType: AllowedMimetypeKeys
-) {
+): Promise<string> {
   const uniqueFilename = formUniqueFilename(filename);
 
   const key = `${folder}/${uniqueFilename}`;
@@ -23,4 +23,6 @@ export async function uploadImage(
   });
 
   await s3Client.send(command);
+
+  return key;
 }
