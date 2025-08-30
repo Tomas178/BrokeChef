@@ -4,6 +4,7 @@ import multerS3 from 'multer-s3';
 import config from '@server/config';
 import type { S3Client } from '@aws-sdk/client-s3';
 import { ALLOWED_MIMETYPE } from '@server/enums/AllowedMimetype';
+import { formUniqueFilename } from '../formUniqueFilename';
 
 export type Folders = 'Recipes' | 'Profiles';
 
@@ -16,7 +17,7 @@ export function makeUploader(folder: Folders, awsS3Client: S3Client) {
         callback(null, { fieldName: file.fieldname });
       },
       key: (_request, file, callback) => {
-        const uniqueName = `${Date.now()}-${file.originalname}`;
+        const uniqueName = formUniqueFilename(file.originalname);
         callback(null, `${folder}/${uniqueName}`);
       },
     }),
