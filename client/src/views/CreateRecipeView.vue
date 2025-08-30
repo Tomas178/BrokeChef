@@ -17,7 +17,7 @@ const router = useRouter();
 const recipeForm = reactive<CreateRecipeInput>({
   title: '',
   duration: 0,
-  imageUrl: '',
+  imageUrl: undefined,
   steps: [''],
   ingredients: [''],
   tools: [''],
@@ -36,23 +36,27 @@ const durationString = computed({
 });
 
 async function uploadAndCreateRecipe() {
-  if (!recipeImageFile.value) {
-    throw new Error('Recipe image is required');
+  if (recipeImageFile.value) {
+    const formData = new FormData();
+    formData.append('file', recipeImageFile.value);
+
+    console.log(recipeImageFile.value);
+
+    const { data } = await axios.post<Pick<RecipesPublic, 'imageUrl'>>(
+      fullEndpoint,
+      formData,
+      { headers: { 'Content-Type': 'multipart/form-data' } }
+    );
+
+    console.log(data.imageUrl);
+    recipeForm.imageUrl = data.imageUrl;
+
+    return trpc.recipes.create.mutate(recipeForm);
+  } else {
+    recipeForm.imageUrl = undefined;
   }
 
-  const formData = new FormData();
-  formData.append('file', recipeImageFile.value);
-  console.log(recipeImageFile.value);
-
-  const { data } = await axios.post<Pick<RecipesPublic, 'imageUrl'>>(
-    fullEndpoint,
-    formData,
-    { headers: { 'Content-Type': 'multipart/form-data' } }
-  );
-
-  console.log(data.imageUrl);
-
-  recipeForm.imageUrl = data.imageUrl;
+  console.log(recipeForm);
 
   return trpc.recipes.create.mutate(recipeForm);
 }
@@ -204,8 +208,13 @@ const [createRecipe] = useErrorMessage(async () => {
           label="Recipe Image"
           size="xs"
           class="flex-1"
-          :required="true"
-        />
+        >
+          <p
+            class="text-primary-green !mt-1 text-sm font-bold tracking-wide dark:text-gray-300"
+          >
+            If you do not provide an image then AI will create one :)
+          </p>
+        </FwbFileInput>
       </div>
     </div>
   </form>
