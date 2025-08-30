@@ -10,7 +10,7 @@ export async function generateRecipeImage(
 ): Promise<Buffer<ArrayBuffer>> {
   const response = await ai.models.generateImages({
     model: 'imagen-4.0-fast-generate-001',
-    prompt: `A realistic high-quality food photo of "${data.title}", made with ${data.ingredients.join(',')}.`,
+    prompt: `A realistic high-quality food photo of "${data.title}", made with ${data.ingredients.join(',')}. Food in the image should be as much as possible in the center`,
     config: {
       numberOfImages: 1,
       outputMimeType: ALLOWED_MIMETYPE.JPEG,
