@@ -18,6 +18,8 @@ jobs:
       CLIENT_ID_GOOGLE: ${{ secrets.CLIENT_ID_GOOGLE }}
       CLIENT_SECRET_GOOGLE: ${{ secrets.CLIENT_SECRET_GOOGLE }}
 
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
       BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
       BETTER_AUTH_URL: ${{ secrets.BETTER_AUTH_URL }}
 

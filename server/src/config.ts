@@ -34,6 +34,7 @@ const schema = z
       google: z.object({
         clientId: z.string(),
         clientSecret: z.string(),
+        geminiApiKey: z.string(),
       }),
 
       github: z.object({
@@ -94,6 +95,7 @@ const config = schema.parse({
     google: {
       clientId: env.CLIENT_ID_GOOGLE,
       clientSecret: env.CLIENT_SECRET_GOOGLE,
+      geminiApiKey: env.GEMINI_API_KEY,
     },
 
     github: {
