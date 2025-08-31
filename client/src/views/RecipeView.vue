@@ -108,7 +108,7 @@ const [unsaveRecipe] = useErrorMessage(async () => {
             <div class="flex items-start justify-between">
               <div class="justify-center">
                 <span class="text-submit-text text-3xl font-bold lg:text-6xl"
-                  >{{ titleCase(recipe.title) }}
+                  >{{ titleCase(recipe.title.toLowerCase()) }}
                 </span>
               </div>
               <div class="flex justify-start">
