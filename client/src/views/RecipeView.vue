@@ -10,6 +10,7 @@ import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
 import Card from '@/components/Card.vue';
+import Spinner from '@/components/Spinner.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -17,6 +18,8 @@ const router = useRouter();
 const recipe = ref<RecipesPublicAllInfo>();
 const isAuthor = ref(false);
 const isSaved = ref(false);
+
+const isLoading = ref(true);
 
 const recipeId = Number(route.params.id);
 
@@ -86,11 +89,16 @@ const [unsaveRecipe] = useErrorMessage(async () => {
 <template>
   <div v-if="recipe">
     <div class="relative w-full">
-      <img
-        :src="recipe.imageUrl"
-        :alt="recipe.title"
-        class="h-64 w-full object-cover lg:h-104"
-      />
+      <div class="flex h-64 w-full items-center justify-center lg:h-104">
+        <Spinner v-show="isLoading" />
+        <img
+          v-show="!isLoading"
+          :src="recipe.imageUrl"
+          :alt="recipe.title"
+          class="h-full w-full object-cover"
+          @load="isLoading = false"
+        />
+      </div>
     </div>
 
     <div class="mx-4 mt-8 mb-12 md:mx-32 md:mt-10 md:mb-14">
