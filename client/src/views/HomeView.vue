@@ -1,173 +1,67 @@
 <script setup lang="ts">
-import { authClient } from '@/lib/auth-client';
+import RecipeCard from '@/components/RecipeCard.vue';
 import { trpc } from '@/trpc';
-import { ref } from 'vue';
+import type { Pagination } from '@server/shared/pagination';
+import type { RecipesPublic } from '@server/shared/types';
+import { onMounted, reactive, ref } from 'vue';
 
-const signUpUsername = ref('');
-const signUpEmail = ref('');
-const signUpPassword = ref('');
+const recipes = ref<RecipesPublic[]>([]);
 
-const signInEmail = ref('');
-const signInPassword = ref('');
+const limit = 4;
 
-const userId = ref('');
+const pagination = reactive<Pagination>({
+  offset: 0,
+  limit: limit,
+});
 
-const newPassword = ref('');
+const fetchRecipes = async () => {
+  const fetchedRecipes = await trpc.recipes.findAll.query(pagination);
 
-const resetPassword = async (newPass: string) => {
-  const token = new URLSearchParams(window.location.search).get('token');
+  console.log(recipes.value);
 
-  if (!token) {
-    console.log('No token!');
-    return;
-  }
-
-  await authClient.resetPassword({
-    newPassword: newPass,
-    token,
-    fetchOptions: {
-      onSuccess: () => console.log('Password is resetted'),
-    },
-  });
+  recipes.value.push(...fetchedRecipes);
 };
 
-const sendPasswordResetLink = async () => {
-  const user = await trpc.users.findById.query(userId.value);
+const fetchMoreRecipes = async () => {
+  pagination.offset += limit;
 
-  if (user) {
-    await authClient.requestPasswordReset({
-      email: user.email,
-      redirectTo: 'http://localhost:5173',
-      fetchOptions: {
-        onSuccess: () => {
-          console.log(`Password reset link sent to: ${user.email}`);
-        },
-      },
-    });
-  }
+  await fetchRecipes();
 };
 
-const loginWithSocials = async (providerName: string) => {
-  await authClient.signIn.social({
-    provider: providerName,
-    callbackURL: 'http://localhost:5173',
-  });
-};
-
-const logout = async () => {
-  await authClient.signOut({
-    fetchOptions: {
-      onSuccess: () => {
-        console.log('User logged out successfully!');
-      },
-    },
-  });
-};
-
-const checkSession = async () => {
-  try {
-    const user = await trpc.auth.me.query();
-    console.log('User:', user);
-  } catch (err) {
-    console.error('Not authenticated:', err);
-  }
-};
-
-const checkUserById = async (id: string) => {
-  const user = await trpc.users.findById.query(id);
-  console.log({ user });
-};
-
-const signUp = async () => {
-  await authClient.signUp.email({
-    name: signUpUsername.value,
-    email: signUpEmail.value,
-    password: signUpPassword.value,
-    callbackURL: 'http://localhost:5173/',
-    fetchOptions: {
-      onSuccess: () => {
-        console.log(`${signUpEmail.value} Registered!`);
-      },
-    },
-  });
-};
-
-const signIn = async () => {
-  await authClient.signIn.email({
-    email: signInEmail.value,
-    password: signInPassword.value,
-    fetchOptions: {
-      onSuccess: () => {
-        console.log(`${signInEmail.value} Logged in!`);
-      },
-      onError: (ctx) => {
-        if (ctx.error.status === 403) {
-          alert('Please verify your email address');
-        }
-      },
-    },
-  });
-};
+onMounted(fetchRecipes);
 </script>
 
 <template>
-  <div id="sign-up">
-    <input type="text" v-model="signUpUsername" placeholder="Username:" />
-    <input type="email" v-model="signUpEmail" placeholder="Email:" />
-    <input type="password" v-model="signUpPassword" placeholder="Password:" />
-    <button class="sign" @click="signUp">Sign Up</button>
-  </div>
-
-  <div id="sign-in">
-    <input type="email" v-model="signInEmail" placeholder="Email:" />
-    <input type="password" v-model="signInPassword" placeholder="Password:" />
-    <button class="sign" @click="signIn">Sign In</button>
-  </div>
-
-  <button class="social-button" @click="loginWithSocials('github')">
-    Login with GitHub
-  </button>
-  <button class="social-button" @click="loginWithSocials('google')">
-    Login with Google
-  </button>
-  <button @click="checkSession">Check Session</button>
-
-  <input type="text" v-model="userId" placeholder="UserId:" />
-  <button @click="checkUserById(userId)">Check user by id</button>
-
-  <button @click="logout">Logout</button>
-
-  <div id="reset-password">
-    <input type="password" v-model="newPassword" placeholder="new password:" />
-    <button @click="sendPasswordResetLink">Get Link For Password Reset</button>
-    <button @click="resetPassword(newPassword)">Reset Password</button>
+  <div class="m-4 flex flex-col gap-10 lg:mx-32 lg:my-8 lg:gap-13">
+    <div
+      class="flex flex-col items-center justify-center gap-4 lg:mx-20 lg:gap-6"
+    >
+      <div class="flex flex-col text-center text-3xl font-bold lg:text-6xl">
+        <span class="text-primary-green">Explore Simple &</span>
+        <span class="text-header">Tasty Recipes</span>
+      </div>
+      <span class="text-center font-medium text-wrap lg:mx-9">
+        Dive into our recipes, where every dish is a memory in the making. Come,
+        cook, and create with us!
+      </span>
+    </div>
+    <div class="flex flex-col">
+      <div
+        class="grid grid-cols-1 justify-center gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3 lg:gap-10"
+      >
+        <RecipeCard
+          v-for="recipe in recipes"
+          :key="recipe.id"
+          :recipe="recipe"
+        />
+      </div>
+      <button
+        type="button"
+        @click="fetchMoreRecipes"
+        class="text-primary-green mt-4 cursor-pointer tracking-wide hover:scale-105 lg:text-4xl"
+      >
+        More
+      </button>
+    </div>
   </div>
 </template>
-
-<style>
-@reference '../assets/index.css';
-
-#sign-up {
-  @apply flex flex-col justify-center border-4;
-}
-
-input {
-  @apply ml-4;
-}
-
-#sign-in {
-  @apply my-4 flex flex-col justify-center border-4;
-}
-
-.sign {
-  @apply bg-amber-600;
-}
-
-.social-button {
-  @apply bg-blue-500;
-}
-
-button {
-  @apply mx-2 cursor-pointer;
-}
-</style>
