@@ -12,6 +12,12 @@ import { recipesKeysPublic } from '@server/entities/recipes';
 import { usersKeysPublicWithoutId } from '@server/entities/users';
 import { usersService } from '../usersService';
 
+const fakeImageUrl = 'https://signed-url.com/folder/image.png';
+
+vi.mock('@aws-sdk/s3-request-presigner', () => ({
+  getSignedUrl: vi.fn(() => fakeImageUrl),
+}));
+
 const database = await wrapInRollbacks(createTestDatabase());
 const service = usersService(database);
 
@@ -39,22 +45,26 @@ describe('getRecipes', () => {
     expect(createdOld).toEqual({
       ...pick(createdRecipeOne, recipesKeysPublic),
       author: pick(user, usersKeysPublicWithoutId),
+      imageUrl: fakeImageUrl,
     });
 
     expect(createdNew).toEqual({
       ...pick(createdRecipeTwo, recipesKeysPublic),
       author: pick(user, usersKeysPublicWithoutId),
+      imageUrl: fakeImageUrl,
     });
 
     // Check saved recipes ordered descendingly by id
     expect(savedOld).toEqual({
       ...pick(createdRecipeOne, recipesKeysPublic),
       author: pick(user, usersKeysPublicWithoutId),
+      imageUrl: fakeImageUrl,
     });
 
     expect(savedNew).toEqual({
       ...pick(createdRecipeTwo, recipesKeysPublic),
       author: pick(user, usersKeysPublicWithoutId),
+      imageUrl: fakeImageUrl,
     });
   });
 });
