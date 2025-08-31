@@ -15,6 +15,8 @@ const randomOAuthId = () => random.string({ length: 32 });
 
 const randomDuration = () => random.integer({ min: 1, max: 240 });
 
+const randomRecipeId = () => random.integer({ min: 1, max: 10_000_000 });
+
 export const fakeUser = <T extends Partial<Insertable<Users>>>(
   overrides: T = {} as T
 ) =>
@@ -54,13 +56,14 @@ export const fakeRecipe = <T extends Partial<Insertable<Recipes>>>(
 export const fakeRecipeWithAuthor = <T extends Partial<RecipesPublic>>(
   overrides: T = {} as T
 ) => ({
+  id: randomRecipeId(),
   userId: randomOAuthId(),
   title: random.string(),
   duration: randomDuration(),
   steps: random.paragraph(),
   imageUrl: random.url(),
   author: {
-    email: random.email,
+    email: random.email(),
     name: random.name(),
   },
   ...overrides,
@@ -71,13 +74,14 @@ export const fakeRecipeWithAuthor = <T extends Partial<RecipesPublic>>(
 export const fakeRecipeAllInfo = <T extends Partial<RecipesPublicAllInfo>>(
   overrides: T = {} as T
 ) => ({
+  id: randomRecipeId(),
   userId: randomOAuthId(),
   title: random.string(),
   duration: randomDuration(),
   steps: random.paragraph(),
   imageUrl: random.url(),
   author: {
-    email: random.email,
+    email: random.email(),
     name: random.name(),
   },
   ingredients: [random.string()],
