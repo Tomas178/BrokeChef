@@ -3,8 +3,7 @@ import { recipesRepository } from '@server/repositories/recipesRepository';
 import { publicProcedure } from '@server/trpc';
 import provideRepos from '@server/trpc/provideRepos';
 import { TRPCError } from '@trpc/server';
-import { s3Client } from '@server/utils/AWSS3Client/client';
-import { signUrl } from '@server/utils/AWSS3Client/signUrl';
+import { signRecipeImage } from '@server/utils/signRecipeImages';
 
 export default publicProcedure
   .use(provideRepos({ recipesRepository }))
@@ -19,7 +18,7 @@ export default publicProcedure
       });
     }
 
-    recipe.imageUrl = await signUrl(s3Client, recipe.imageUrl);
+    await signRecipeImage(recipe);
 
     return recipe;
   });

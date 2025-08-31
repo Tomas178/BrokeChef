@@ -5,6 +5,12 @@ import { clearTables, insertAll } from '@tests/utils/record';
 import { fakeRecipe, fakeUser } from '@server/entities/tests/fakes';
 import recipesRouter from '..';
 
+const fakeImageUrl = 'https://signed-url.com/folder/image.png';
+
+vi.mock('@aws-sdk/s3-request-presigner', () => ({
+  getSignedUrl: vi.fn(() => fakeImageUrl),
+}));
+
 const createCaller = createCallerFactory(recipesRouter);
 const database = await wrapInRollbacks(createTestDatabase());
 
@@ -40,6 +46,6 @@ it('Should return the latest recipe first', async () => {
 
   const recipes = await findAll({});
 
-  expect(recipes[0]).toMatchObject(recipeNew);
-  expect(recipes[1]).toMatchObject(recipeOld);
+  expect(recipes[0]).toMatchObject({ ...recipeNew, imageUrl: fakeImageUrl });
+  expect(recipes[1]).toMatchObject({ ...recipeOld, imageUrl: fakeImageUrl });
 });
