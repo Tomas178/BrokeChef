@@ -35,6 +35,7 @@ const router = createRouter({
           path: individualRecipePath,
           name: 'Recipe',
           component: () => import('../views/RecipeView.vue'),
+          props: true,
         },
       ],
     },
