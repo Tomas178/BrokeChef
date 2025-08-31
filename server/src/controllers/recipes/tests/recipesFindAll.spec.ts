@@ -20,7 +20,10 @@ const [user] = await insertAll(database, 'users', fakeUser());
 const { findAll } = createCaller({ db: database });
 
 it('Should return an empty list if there are no recipes', async () => {
-  expect(await findAll({})).toHaveLength(0);
+  const recipes = await findAll({});
+
+  expect(recipes.recipes).toHaveLength(0);
+  expect(recipes.hasMore).toBeFalsy();
 });
 
 it('Should return a list of recipes', async () => {
@@ -28,7 +31,8 @@ it('Should return a list of recipes', async () => {
 
   const recipes = await findAll({});
 
-  expect(recipes).toHaveLength(1);
+  expect(recipes.recipes).toHaveLength(1);
+  expect(recipes.hasMore).toBeFalsy();
 });
 
 it('Should return the latest recipe first', async () => {
@@ -46,6 +50,12 @@ it('Should return the latest recipe first', async () => {
 
   const recipes = await findAll({});
 
-  expect(recipes[0]).toMatchObject({ ...recipeNew, imageUrl: fakeImageUrl });
-  expect(recipes[1]).toMatchObject({ ...recipeOld, imageUrl: fakeImageUrl });
+  expect(recipes.recipes[0]).toMatchObject({
+    ...recipeNew,
+    imageUrl: fakeImageUrl,
+  });
+  expect(recipes.recipes[1]).toMatchObject({
+    ...recipeOld,
+    imageUrl: fakeImageUrl,
+  });
 });

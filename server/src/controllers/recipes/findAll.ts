@@ -3,6 +3,7 @@ import provideRepos from '@server/trpc/provideRepos';
 import { recipesRepository } from '@server/repositories/recipesRepository';
 import { paginationSchema } from '@server/entities/shared';
 import { signRecipeImage } from '@server/utils/signRecipeImages';
+import type { RecipesPaginated } from '@server/entities/recipes';
 
 export default publicProcedure
   .use(
@@ -11,10 +12,24 @@ export default publicProcedure
     })
   )
   .input(paginationSchema)
-  .query(async ({ input, ctx: { repos } }) => {
-    const recipes = await repos.recipesRepository.findAll(input);
+  .query(
+    async ({
+      input: { offset, limit },
+      ctx: { repos },
+    }): Promise<RecipesPaginated> => {
+      const allRecipes = await repos.recipesRepository.findAll({
+        offset,
+        limit: limit + 1,
+      });
 
-    await signRecipeImage(recipes);
+      const hasMore = allRecipes.length > limit;
+      const recipes = allRecipes.slice(0, limit);
 
-    return recipes;
-  });
+      await signRecipeImage(recipes);
+
+      return {
+        recipes,
+        hasMore,
+      };
+    }
+  );

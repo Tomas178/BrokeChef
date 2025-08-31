@@ -7,8 +7,7 @@ import { onMounted, reactive, ref } from 'vue';
 
 const recipes = ref<RecipesPublic[]>([]);
 
-const limit = 4;
-const lengthForDisplay = limit - 1;
+const limit = 3;
 const recipesLeft = ref(true);
 
 const pagination = reactive<Pagination>({
@@ -17,26 +16,18 @@ const pagination = reactive<Pagination>({
 });
 
 const fetchRecipes = async () => {
-  const fetchedRecipes = await trpc.recipes.findAll.query(pagination);
+  const { recipes: fetchedRecipes, hasMore } =
+    await trpc.recipes.findAll.query(pagination);
 
-  if (fetchedRecipes.length < limit) {
-    recipesLeft.value = false;
-  }
+  recipesLeft.value = hasMore;
 
   console.log(fetchedRecipes);
 
-  const recipesForDisplay =
-    fetchedRecipes.length === limit
-      ? fetchedRecipes.slice(0, -1)
-      : fetchedRecipes;
-
-  console.log(recipesForDisplay);
-
-  recipes.value.push(...recipesForDisplay);
+  recipes.value.push(...fetchedRecipes);
 };
 
 const fetchMoreRecipes = async () => {
-  pagination.offset += lengthForDisplay;
+  pagination.offset += limit;
 
   await fetchRecipes();
 };
