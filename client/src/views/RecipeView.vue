@@ -88,7 +88,7 @@ const [unsaveRecipe] = useErrorMessage(async () => {
     <div class="relative w-full">
       <img
         :src="recipe.imageUrl"
-        :alt="`${recipe.title} Image`"
+        :alt="recipe.title"
         class="h-64 w-full object-cover lg:h-104"
       />
     </div>
