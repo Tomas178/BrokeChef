@@ -78,7 +78,7 @@ function removeInput(index: number) {
         </div>
         <FwbButton
           type="button"
-          class="border-primary-green mt-6 border-2"
+          class="border-primary-green mt-6 cursor-pointer border-2"
           @click="addInput"
           color="light"
         >

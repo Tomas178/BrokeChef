@@ -108,7 +108,7 @@ const [unsaveRecipe] = useErrorMessage(async () => {
                   v-if="isAuthor"
                   @click="deleteRecipe"
                   type="button"
-                  class="rounded-3xl bg-red-400/90 px-6 py-2 text-xl leading-tight font-medium text-white hover:scale-105"
+                  class="cursor-pointer rounded-3xl bg-red-400/90 px-6 py-2 text-xl leading-tight font-medium text-white hover:scale-105"
                 >
                   Delete
                 </button>
@@ -116,7 +116,7 @@ const [unsaveRecipe] = useErrorMessage(async () => {
                   v-else-if="!isSaved"
                   @click="saveRecipe"
                   type="button"
-                  class="gradient-action-button rounded-3xl px-6 py-2 text-xl leading-tight font-medium text-white hover:scale-105"
+                  class="gradient-action-button cursor-pointer rounded-3xl px-6 py-2 text-xl leading-tight font-medium text-white hover:scale-105"
                 >
                   Save
                 </button>
@@ -124,7 +124,7 @@ const [unsaveRecipe] = useErrorMessage(async () => {
                   v-else
                   @click="unsaveRecipe"
                   type="button"
-                  class="gradient-action-button rounded-3xl px-6 py-2 text-xl leading-tight font-medium text-white hover:scale-105"
+                  class="gradient-action-button cursor-pointer rounded-3xl px-6 py-2 text-xl leading-tight font-medium text-white hover:scale-105"
                 >
                   Unsave
                 </button>
