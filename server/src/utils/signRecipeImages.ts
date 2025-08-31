@@ -1,9 +1,12 @@
-import type { RecipesPublic } from '@server/entities/recipes';
+import type {
+  RecipesPublic,
+  RecipesPublicAllInfo,
+} from '@server/entities/recipes';
 import { s3Client } from './AWSS3Client/client';
 import { signUrl } from './AWSS3Client/signUrl';
 
 export async function signRecipeImage(
-  recipes: RecipesPublic[] | RecipesPublic
+  recipes: RecipesPublic[] | RecipesPublicAllInfo
 ): Promise<void> {
   if (Array.isArray(recipes)) {
     await Promise.all(

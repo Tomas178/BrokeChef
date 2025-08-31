@@ -1,4 +1,7 @@
-import { fakeRecipeWithAuthor } from '@server/entities/tests/fakes';
+import {
+  fakeRecipeAllInfo,
+  fakeRecipeWithAuthor,
+} from '@server/entities/tests/fakes';
 import { signRecipeImage } from '../signRecipeImages';
 
 const fakeImageUrl = 'https://signed-url.com/folder/image.png';
@@ -20,7 +23,7 @@ describe('signRecipeImage', () => {
   });
 
   it('Should sign the image url of when given single recipe', async () => {
-    const recipe = fakeRecipeWithAuthor();
+    const recipe = fakeRecipeAllInfo();
 
     await signRecipeImage(recipe);
 
