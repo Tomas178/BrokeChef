@@ -39,8 +39,8 @@ function logoutUser() {
       </FwbNavbarLink>
     </template>
     <main>
-      <div class="flex min-h-screen flex-col">
-        <RouterView class="flex-1" />
+      <div class="@container flex min-h-screen flex-col">
+        <RouterView />
       </div>
     </main>
   </StackedLayout>

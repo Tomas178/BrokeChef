@@ -29,7 +29,7 @@ const [submitSendLink] = useErrorMessage(async () => {
 
 <template>
   <AuthenticationForm
-    :welcome-text="true"
+    :welcome-text="false"
     heading="Request reset password link"
     form-label="request-reset-password-link"
     @submit="submitSendLink"

@@ -44,7 +44,7 @@ const [submitResetPassword, errorMessage] = useErrorMessage(async () => {
 
 <template>
   <AuthenticationForm
-    :welcome-text="true"
+    :welcome-text="false"
     heading="Reset Password"
     form-label="reset-password"
     @submit="submitResetPassword"
