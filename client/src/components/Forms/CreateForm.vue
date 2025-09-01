@@ -51,6 +51,7 @@ function removeInput(index: number) {
             type="button"
             @click="removeInput(index)"
             color="light"
+            class="cursor-pointer"
           >
             <svg
               width="24"

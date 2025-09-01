@@ -99,7 +99,7 @@ const [createRecipe] = useErrorMessage(async () => {
 
 <template>
   <form
-    class="mx-4 mt-8 mb-12 md:mx-32 md:mt-14 md:mb-28"
+    class="mx-4 mt-8 mb-12 md:mx-16 md:mt-12 md:mb-20 lg:mx-32 lg:mt-14 lg:mb-28"
     aria-label="Recipe"
     @submit.prevent="createRecipe"
   >
