@@ -6,6 +6,7 @@ import remove from './remove';
 import findCreated from './findCreated';
 import findSaved from './findSaved';
 import isAuthor from './isAuthor';
+import totalCount from './totalCount';
 
 export default router({
   create,
@@ -15,4 +16,5 @@ export default router({
   findCreated,
   findSaved,
   isAuthor,
+  totalCount,
 });
