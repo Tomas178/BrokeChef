@@ -20,19 +20,19 @@ const [user] = await insertAll(database, 'users', fakeUser());
 const { findAll } = createCaller({ db: database });
 
 it('Should return an empty list if there are no recipes', async () => {
-  const recipes = await findAll({});
+  const { recipes, hasMore } = await findAll({});
 
-  expect(recipes.recipes).toHaveLength(0);
-  expect(recipes.hasMore).toBeFalsy();
+  expect(recipes).toHaveLength(0);
+  expect(hasMore).toBeFalsy();
 });
 
 it('Should return a list of recipes', async () => {
   await insertAll(database, 'recipes', fakeRecipe({ userId: user.id }));
 
-  const recipes = await findAll({});
+  const { recipes, hasMore } = await findAll({});
 
-  expect(recipes.recipes).toHaveLength(1);
-  expect(recipes.hasMore).toBeFalsy();
+  expect(recipes).toHaveLength(1);
+  expect(hasMore).toBeFalsy();
 });
 
 it('Should return the latest recipe first', async () => {
@@ -48,14 +48,43 @@ it('Should return the latest recipe first', async () => {
     fakeRecipe({ userId: user.id })
   );
 
-  const recipes = await findAll({});
+  const { recipes, hasMore } = await findAll({});
 
-  expect(recipes.recipes[0]).toMatchObject({
+  expect(recipes[0]).toMatchObject({
     ...recipeNew,
     imageUrl: fakeImageUrl,
   });
-  expect(recipes.recipes[1]).toMatchObject({
+  expect(recipes[1]).toMatchObject({
     ...recipeOld,
     imageUrl: fakeImageUrl,
   });
+
+  expect(hasMore).toBeFalsy();
+});
+
+it('Should return the latest reipes and hasMore to be true', async () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_recipeOne, recipeTwo, recipeThree] = await insertAll(
+    database,
+    'recipes',
+    [
+      fakeRecipe({ userId: user.id }),
+      fakeRecipe({ userId: user.id }),
+      fakeRecipe({ userId: user.id }),
+    ]
+  );
+
+  const { recipes, hasMore } = await findAll({ offset: 0, limit: 2 });
+
+  expect(recipes[0]).toMatchObject({
+    ...recipeThree,
+    imageUrl: fakeImageUrl,
+  });
+
+  expect(recipes[1]).toMatchObject({
+    ...recipeTwo,
+    imageUrl: fakeImageUrl,
+  });
+
+  expect(hasMore).toBeTruthy();
 });
