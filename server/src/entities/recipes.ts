@@ -38,8 +38,3 @@ export type RecipesPublicAllInfo = Omit<RecipesPublic, 'steps'> & {
   tools: ToolsName[];
   steps: string[];
 };
-
-export interface RecipesPaginated {
-  recipes: RecipesPublic[];
-  hasMore: boolean;
-}
