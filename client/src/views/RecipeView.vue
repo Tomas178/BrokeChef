@@ -52,12 +52,7 @@ const [deleteRecipe] = useErrorMessage(async () => {
 const [saveRecipe] = useErrorMessage(async () => {
   await toast.promise(trpc.savedRecipes.save.mutate(recipeId), {
     pending: 'Saving recipe...',
-    success: {
-      render() {
-        isSaved.value = true;
-        return 'Recipe saved successfully';
-      },
-    },
+    success: 'Recipe saved successfully',
     error: {
       render(err) {
         if (err?.data?.message) return err.data.message;
@@ -65,17 +60,14 @@ const [saveRecipe] = useErrorMessage(async () => {
       },
     },
   });
+
+  isSaved.value = true;
 });
 
 const [unsaveRecipe] = useErrorMessage(async () => {
   await toast.promise(trpc.savedRecipes.unsave.mutate(recipeId), {
     pending: 'Unsaving recipe...',
-    success: {
-      render() {
-        isSaved.value = false;
-        return 'Recipe unsaved successfully';
-      },
-    },
+    success: 'Recipe unsaved successfully',
     error: {
       render(err) {
         if (err?.data?.message) return err.data.message;
@@ -83,6 +75,8 @@ const [unsaveRecipe] = useErrorMessage(async () => {
       },
     },
   });
+
+  isSaved.value = false;
 });
 </script>
 
