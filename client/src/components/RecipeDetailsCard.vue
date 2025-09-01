@@ -11,9 +11,7 @@ defineProps<{
       <span class="text-3xl leading-12 font-bold break-words text-gray-500">{{
         title
       }}</span>
-      <ul
-        class="flex flex-col divide-y lg:list-inside lg:list-disc lg:divide-y-0"
-      >
+      <ul class="flex list-inside list-disc flex-col">
         <li
           v-for="item in items"
           :key="item"
