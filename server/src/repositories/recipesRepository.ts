@@ -29,6 +29,7 @@ export interface RecipesRepository {
     { offset, limit }: Pagination
   ) => Promise<RecipesPublic[]>;
   findAll: ({ offset, limit }: Pagination) => Promise<RecipesPublic[]>;
+  totalCount: () => Promise<number>;
   isAuthor: (recipeId: number, userId: string) => Promise<boolean>;
   remove: (id: number) => Promise<RecipesPublic>;
 }
@@ -98,6 +99,15 @@ export function recipesRepository(database: Database): RecipesRepository {
         .offset(offset)
         .limit(limit)
         .execute();
+    },
+
+    async totalCount() {
+      const result = await database
+        .selectFrom(TABLE)
+        .select(eb => eb.fn.count<number>('id').as('count'))
+        .executeTakeFirstOrThrow();
+
+      return Number(result.count);
     },
 
     async isAuthor(recipeId, userId) {

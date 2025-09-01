@@ -182,6 +182,12 @@ describe('findAll', () => {
   });
 });
 
+describe('totalCount', () => {
+  it('Should return correct count', async () => {
+    await expect(repository.totalCount()).resolves.toBe(defaultRecipes.length);
+  });
+});
+
 describe('isAuthor', () => {
   it('Should return true', async () => {
     const isAuthor = await repository.isAuthor(recipeOne.id, userOne.id);
