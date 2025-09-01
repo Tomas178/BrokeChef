@@ -33,8 +33,6 @@ const fetchPage = async (page: number) => {
     changeQueryParams(currentPage.value),
   ]);
 
-  console.log(fetchedRecipes);
-
   recipes.value = fetchedRecipes;
 };
 
@@ -46,7 +44,6 @@ const isValidPage = (pageNumber: string | number): boolean => {
   const pageNumberConverted = Number(pageNumber);
 
   if (Number.isNaN(pageNumberConverted)) return false;
-  console.log(`Inside isValidPage: ${totalPages.value}`);
 
   return pageNumberConverted >= 1 && pageNumberConverted <= totalPages.value;
 };
@@ -105,7 +102,8 @@ onMounted(async () => {
         show-icons
         enable-first-last
         @update:model-value="fetchPage(currentPage)"
-        class="mt-10 flex justify-center"
+        class="mt-10 flex justify-center [&_button]:cursor-pointer"
+        large
       />
     </div>
   </div>
