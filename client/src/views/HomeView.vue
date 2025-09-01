@@ -7,7 +7,7 @@ import { onMounted, reactive, ref } from 'vue';
 
 const recipes = ref<RecipesPublic[]>([]);
 
-const limit = 3;
+const limit = 4;
 const recipesLeft = ref(true);
 
 const pagination = reactive<Pagination>({
@@ -51,7 +51,7 @@ onMounted(fetchRecipes);
     </div>
     <div class="flex flex-col">
       <div
-        class="grid grid-cols-1 justify-center gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3 lg:gap-10"
+        class="grid grid-cols-1 justify-center gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 xl:gap-10"
       >
         <RecipeCard
           v-for="recipe in recipes"
