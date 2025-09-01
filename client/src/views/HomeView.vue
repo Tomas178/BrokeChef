@@ -1,38 +1,76 @@
 <script setup lang="ts">
 import RecipeCard from '@/components/RecipeCard.vue';
+import { FwbPagination } from 'flowbite-vue';
 import { trpc } from '@/trpc';
 import type { Pagination } from '@server/shared/pagination';
 import type { RecipesPublic } from '@server/shared/types';
 import { onMounted, reactive, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+const route = useRoute();
+const router = useRouter();
 
 const recipes = ref<RecipesPublic[]>([]);
 
-const limit = 4;
-const recipesLeft = ref(true);
+const limit = 36;
+
+const totalCount = ref(0);
+
+const totalPages = ref(1);
+const currentPage = ref(1);
 
 const pagination = reactive<Pagination>({
   offset: 0,
   limit,
 });
 
-const fetchRecipes = async () => {
-  const { recipes: fetchedRecipes, hasMore } =
-    await trpc.recipes.findAll.query(pagination);
+const fetchPage = async (page: number) => {
+  currentPage.value = page;
+  pagination.offset = (page - 1) * limit;
 
-  recipesLeft.value = hasMore;
+  const [fetchedRecipes] = await Promise.all([
+    trpc.recipes.findAll.query(pagination),
+    changeQueryParams(currentPage.value),
+  ]);
 
   console.log(fetchedRecipes);
 
-  recipes.value.push(...fetchedRecipes);
+  recipes.value = fetchedRecipes;
 };
 
-const fetchMoreRecipes = async () => {
-  pagination.offset += limit;
-
-  await fetchRecipes();
+const changeQueryParams = async (pageNumber: number) => {
+  await router.replace({ query: { page: pageNumber.toString() } });
 };
 
-onMounted(fetchRecipes);
+const isValidPage = (pageNumber: string | number): boolean => {
+  const pageNumberConverted = Number(pageNumber);
+
+  if (Number.isNaN(pageNumberConverted)) return false;
+  console.log(`Inside isValidPage: ${totalPages.value}`);
+
+  return pageNumberConverted >= 1 && pageNumberConverted <= totalPages.value;
+};
+
+const getParamPage = async (): Promise<number> => {
+  const rawPage = route.query.page;
+
+  const rawPageString = Array.isArray(rawPage)
+    ? (rawPage[0] ?? '')
+    : (rawPage ?? '');
+
+  const validPage = isValidPage(rawPageString);
+
+  return validPage ? Number(rawPageString) : 1;
+};
+
+onMounted(async () => {
+  totalCount.value = await trpc.recipes.totalCount.query();
+  totalPages.value = Math.ceil(totalCount.value / limit);
+
+  const pageNumber = await getParamPage();
+
+  await fetchPage(pageNumber);
+});
 </script>
 
 <template>
@@ -59,14 +97,16 @@ onMounted(fetchRecipes);
           :recipe="recipe"
         />
       </div>
-      <button
-        v-if="recipesLeft"
-        type="button"
-        @click="fetchMoreRecipes"
-        class="text-primary-green mt-4 cursor-pointer tracking-wide hover:scale-105 lg:text-4xl"
-      >
-        More
-      </button>
+      <FwbPagination
+        v-model="currentPage"
+        :total-items="totalCount"
+        :per-page="limit"
+        hide-labels
+        show-icons
+        enable-first-last
+        @update:model-value="fetchPage(currentPage)"
+        class="mt-10 flex justify-center"
+      />
     </div>
   </div>
 </template>
