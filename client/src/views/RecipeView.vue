@@ -101,7 +101,7 @@ const [unsaveRecipe] = useErrorMessage(async () => {
       </div>
     </div>
 
-    <div class="mx-4 mt-8 mb-12 md:mx-32 md:mt-10 md:mb-14">
+    <div class="mx-4 mt-8 mb-12 md:mx-16 md:mt-10 md:mb-14 lg:mx-32">
       <div class="flex flex-col gap-20">
         <div class="flex flex-col gap-10">
           <div class="flex w-full flex-col gap-2">
