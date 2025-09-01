@@ -9,7 +9,7 @@ import useErrorMessage from '@/composables/useErrorMessage';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
-import Card from '@/components/Card.vue';
+import RecipeDetailsCard from '@/components/RecipeDetailsCard.vue';
 import Spinner from '@/components/Spinner.vue';
 
 const route = useRoute();
@@ -153,8 +153,11 @@ const [unsaveRecipe] = useErrorMessage(async () => {
           <div
             class="flex flex-col gap-4 self-stretch lg:flex-row lg:justify-between"
           >
-            <Card title="Ingredients" :items="recipe.ingredients" />
-            <Card title="Tools" :items="recipe.tools" />
+            <RecipeDetailsCard
+              title="Ingredients"
+              :items="recipe.ingredients"
+            />
+            <RecipeDetailsCard title="Tools" :items="recipe.tools" />
           </div>
         </div>
         <div class="flex flex-col gap-6">
