@@ -4,6 +4,7 @@ export const requestResetPasswordPath = '/request-reset-password';
 export const resetPasswordPath = '/reset-password';
 export const createRecipePath = '/create-recipe';
 export const individualRecipePath = '/recipe/:id';
+export const profilePath = '/profile/:id';
 
 export const apiOrigin =
   (import.meta.env.VITE_API_ORIGIN as string) || window.location.origin;

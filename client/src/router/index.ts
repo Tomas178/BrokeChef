@@ -6,6 +6,7 @@ import {
   createRecipePath,
   individualRecipePath,
   loginPath,
+  profilePath,
   requestResetPasswordPath,
   resetPasswordPath,
   signupPath,
@@ -29,6 +30,11 @@ const router = createRouter({
           path: createRecipePath,
           name: 'CreateRecipe',
           component: () => import('../views/CreateRecipeView.vue'),
+        },
+        {
+          path: profilePath,
+          name: 'Profile',
+          component: () => import('../views/ProfileView.vue'),
         },
         {
           beforeEnter: [authenticate],
