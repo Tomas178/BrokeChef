@@ -3,26 +3,12 @@ import type { Users } from '@server/database';
 import type { Selectable } from 'kysely';
 import { createdAtSchema, oauthUserIdSchema, updatedAtSchema } from './shared';
 
-const imageUrlSchema = z.url().refine(
-  url => {
-    return (
-      /^https:\/\/avatars\.githubusercontent\.com\/u\/\d+\?v=\d+$/.test(url) ||
-      /^https:\/\/lh3\.googleusercontent\.com\/a\/[\w-]+(?:=[\dA-Za-z-]+)?$/.test(
-        url
-      )
-    );
-  },
-  {
-    message: 'Image URL must be from GitHub or Google',
-  }
-);
-
 export const usersSchema = z.object({
   id: oauthUserIdSchema,
   name: z.string().nonempty(),
   email: z.email(),
   emailVerified: z.boolean().default(false),
-  image: imageUrlSchema,
+  image: z.string().optional(),
   createdAt: createdAtSchema,
   updatedAt: updatedAtSchema,
 });

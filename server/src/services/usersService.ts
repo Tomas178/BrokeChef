@@ -1,6 +1,8 @@
 import type { Database } from '@server/database';
 import type { RecipesPublic } from '@server/entities/recipes';
+import type { UsersPublic } from '@server/entities/users';
 import { recipesRepository as buildRecipesRepository } from '@server/repositories/recipesRepository';
+import { usersRepository as buildUsersRepository } from '@server/repositories/usersRepository';
 import type { Pagination } from '@server/shared/pagination';
 import { signImages } from '@server/utils/signImages';
 
@@ -12,10 +14,12 @@ interface UsersService {
     created: RecipesPublic[];
     saved: RecipesPublic[];
   }>;
+  findById: (id: string) => Promise<UsersPublic>;
 }
 
 export function usersService(database: Database): UsersService {
   const recipesRepository = buildRecipesRepository(database);
+  const usersRepository = buildUsersRepository(database);
 
   return {
     async getRecipes(id, pagination) {
@@ -41,6 +45,22 @@ export function usersService(database: Database): UsersService {
       }
 
       return { created, saved };
+    },
+
+    async findById(id) {
+      const user = await usersRepository.findById(id);
+
+      if (user.image) {
+        const isOauthImage =
+          user.image.includes('googleusercontent') ||
+          user.image.includes('githubusercontent');
+
+        if (!isOauthImage) {
+          user.image = await signImages(user.image);
+        }
+      }
+
+      return user;
     },
   };
 }

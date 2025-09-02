@@ -9,7 +9,10 @@ import {
 import { initialPage } from '@server/shared/pagination';
 import { pick } from 'lodash-es';
 import { recipesKeysPublic } from '@server/entities/recipes';
-import { usersKeysPublicWithoutId } from '@server/entities/users';
+import {
+  usersKeysPublic,
+  usersKeysPublicWithoutId,
+} from '@server/entities/users';
 import { usersService } from '../usersService';
 
 const fakeImageUrl = 'https://signed-url.com/folder/image.png';
@@ -66,5 +69,37 @@ describe('getRecipes', () => {
       author: pick(user, usersKeysPublicWithoutId),
       imageUrl: fakeImageUrl,
     });
+  });
+});
+
+describe('findById', () => {
+  it('Should return user by id when image url is undefined', async () => {
+    const [userWithNull] = await insertAll(
+      database,
+      'users',
+      fakeUser({ image: undefined })
+    );
+
+    const userById = await service.findById(userWithNull.id);
+
+    expect(userById).toEqual(pick(userWithNull, usersKeysPublic));
+  });
+
+  it('Should return user by id with not signed url when image is from oauth provider', async () => {
+    const userById = await service.findById(user.id);
+
+    expect(userById).toEqual(pick(user, usersKeysPublic));
+  });
+
+  it('Should return user with signed url when url is from S3 storage', async () => {
+    const [userWithS3] = await insertAll(
+      database,
+      'users',
+      fakeUser({ image: 'image' })
+    );
+
+    const userById = await service.findById(userWithS3.id);
+
+    expect(userById).toEqual(pick(userById, usersKeysPublic));
   });
 });
