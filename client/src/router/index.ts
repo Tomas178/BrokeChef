@@ -34,8 +34,15 @@ const router = createRouter({
         {
           beforeEnter: [authenticate],
           path: profilePath,
-          name: 'Profile',
+          name: 'MyProfile',
           component: () => import('../views/ProfileView.vue'),
+        },
+        {
+          beforeEnter: [authenticate],
+          path: `${profilePath}/:id`,
+          name: 'UserProfile',
+          component: () => import('../views/ProfileView.vue'),
+          props: true,
         },
         {
           beforeEnter: [authenticate],

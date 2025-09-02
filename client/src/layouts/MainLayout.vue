@@ -13,7 +13,10 @@ const links = computed(() => [
   { label: 'Explore recipes', name: 'Home' },
 
   ...(user.isLoggedIn
-    ? [{ label: 'Create a recipe', name: 'CreateRecipe' }]
+    ? [
+        { label: 'Create a recipe', name: 'CreateRecipe' },
+        { label: 'Profile', name: 'MyProfile' },
+      ]
     : [
         { label: 'Login', name: 'Login' },
         { label: 'Signup', name: 'Signup' },
