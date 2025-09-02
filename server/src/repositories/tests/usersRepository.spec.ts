@@ -26,3 +26,24 @@ describe('findById', () => {
     );
   });
 });
+
+describe('updateImage', () => {
+  const imageUrlForUpdate = 'fake-url';
+
+  it('Should return an updated image url', async () => {
+    const updatedImageUrl = await repository.updateImage(
+      user.id,
+      imageUrlForUpdate
+    );
+
+    expect(updatedImageUrl).toBe(imageUrlForUpdate);
+  });
+
+  it('Should throw an error if user is not found', async () => {
+    const nonExistantId = user.id + 'a';
+
+    await expect(
+      repository.updateImage(nonExistantId, imageUrlForUpdate)
+    ).rejects.toThrow(/not found/i);
+  });
+});

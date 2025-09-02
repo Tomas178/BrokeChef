@@ -6,6 +6,7 @@ const TABLE = 'users';
 
 interface UsersRepository {
   findById: (id: string) => Promise<UsersPublic>;
+  updateImage: (id: string, image: string) => Promise<string>;
 }
 
 export function usersRepository(database: Database): UsersRepository {
@@ -16,6 +17,17 @@ export function usersRepository(database: Database): UsersRepository {
         .select(usersKeysPublic)
         .where('id', '=', id)
         .executeTakeFirstOrThrow(() => new UserNotFound(id));
+    },
+
+    async updateImage(id, image) {
+      const updated = await database
+        .updateTable(TABLE)
+        .set({ image })
+        .where('id', '=', id)
+        .returning(usersKeysPublic[3])
+        .executeTakeFirstOrThrow(() => new UserNotFound(id));
+
+      return updated.image!;
     },
   };
 }
