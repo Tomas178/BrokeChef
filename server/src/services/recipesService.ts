@@ -29,6 +29,8 @@ import { uploadImage } from '@server/utils/AWSS3Client/uploadImage';
 import { s3Client } from '@server/utils/AWSS3Client/client';
 import { ImageFolder } from '@server/enums/ImageFolder';
 import { ALLOWED_MIMETYPE } from '@server/enums/AllowedMimetype';
+import { deleteFile } from '@server/utils/AWSS3Client/deleteFile';
+import config from '@server/config';
 import { joinStepsToSingleString } from './utils/joinStepsToSingleString';
 
 interface RecipesService {
@@ -102,6 +104,16 @@ export function recipesService(database: Database): RecipesService {
 
           return createdRecipe;
         } catch (error) {
+          try {
+            await deleteFile(
+              s3Client,
+              config.auth.aws.s3.buckets.images,
+              recipeToInsert.imageUrl
+            );
+          } catch (S3Error) {
+            console.error('Failed to rollback S3 Object:', S3Error);
+          }
+
           assertPostgresError(error);
 
           if (error.code === PostgresError.FOREIGN_KEY_VIOLATION) {

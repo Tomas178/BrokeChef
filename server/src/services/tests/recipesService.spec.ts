@@ -22,6 +22,20 @@ import {
   insertTools,
 } from '../recipesService';
 
+const fakeImageKey = 'fakeKey';
+
+vi.mock('@server/utils/GoogleGenAiClient/generateRecipeImage', () => ({
+  generateRecipeImage: vi.fn(() => Buffer.from('image')),
+}));
+
+vi.mock('@server/utils/AWSS3Client/uploadImage', () => ({
+  uploadImage: vi.fn(() => fakeImageKey),
+}));
+
+vi.mock('@server/utils/AWSS3Client/deleteFile', () => ({
+  deleteFile: vi.fn(() => undefined),
+}));
+
 const database = await wrapInRollbacks(createTestDatabase());
 const service = recipesService(database);
 
@@ -54,14 +68,6 @@ describe('createRecipe', () => {
   });
 
   it('Should create a new recipe with generated image when user did not provide an image', async () => {
-    vi.mock('@server/utils/GoogleGenAiClient/generateRecipeImage', () => ({
-      generateRecipeImage: vi.fn(() => Buffer.from('image')),
-    }));
-
-    vi.mock('@server/utils/AWSS3Client/uploadImage', () => ({
-      uploadImage: vi.fn(() => 'fakeKey'),
-    }));
-
     const recipeData = fakeCreateRecipeData({ imageUrl: '' });
 
     const stepsInASingleString = joinStepsToSingleString(recipeData.steps);
@@ -73,7 +79,7 @@ describe('createRecipe', () => {
       ...pick(recipeData, recipesKeysPublic),
       steps: stepsInASingleString,
       author: pick(user, usersKeysPublicWithoutId),
-      imageUrl: 'fakeKey',
+      imageUrl: fakeImageKey,
     });
   });
 
