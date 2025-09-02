@@ -2,8 +2,8 @@ import { signImages } from '../signImages';
 
 const fakeImageUrl = 'https://signed-url.com/folder/image.png';
 
-vi.mock('@server/utils/AWSS3Client/signUrl', () => ({
-  signUrl: vi.fn(() => fakeImageUrl),
+vi.mock('@server/utils/AWSS3Client/signGetUrl', () => ({
+  signGetUrl: vi.fn(() => fakeImageUrl),
 }));
 
 describe('signImages', () => {
