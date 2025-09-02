@@ -8,7 +8,7 @@ export async function signGetUrl(s3Client: S3Client, imageUrl: string) {
     Key: imageUrl,
   });
 
-  const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+  const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 60 });
 
   return signedUrl;
 }
