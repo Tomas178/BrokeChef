@@ -18,5 +18,5 @@ export const paginationSchema = z.object({
 });
 
 export const userWithPaginationSchema = paginationSchema.extend({
-  userId: oauthUserIdSchema,
+  userId: oauthUserIdSchema.optional(),
 });

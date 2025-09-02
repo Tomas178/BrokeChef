@@ -1,16 +1,26 @@
-import { publicProcedure } from '@server/trpc';
 import provideServices from '@server/trpc/provideServices';
 import { usersService } from '@server/services/usersService';
 import { userWithPaginationSchema } from '@server/entities/shared';
+import { authenticatedProcedure } from '@server/trpc/authenticatedProcedure';
 
-export default publicProcedure
+export default authenticatedProcedure
   .use(provideServices({ usersService }))
   .input(userWithPaginationSchema)
-  .query(async ({ input: { userId, offset, limit }, ctx: { services } }) => {
-    const result = await services.usersService.getRecipes(userId, {
-      offset,
-      limit,
-    });
+  .query(
+    async ({
+      input: { userId, offset, limit },
+      ctx: { authUser, services },
+    }) => {
+      const result = await (userId
+        ? services.usersService.getRecipes(userId, {
+            offset,
+            limit,
+          })
+        : services.usersService.getRecipes(authUser.id, {
+            offset,
+            limit,
+          }));
 
-    return result;
-  });
+      return result;
+    }
+  );

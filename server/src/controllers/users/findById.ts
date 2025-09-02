@@ -1,16 +1,18 @@
-import { publicProcedure } from '@server/trpc';
 import { oauthUserIdSchema } from '@server/entities/shared';
 import provideRepos from '@server/trpc/provideRepos';
 import { usersRepository } from '@server/repositories/usersRepository';
 import UserNotFound from '@server/utils/errors/users/UserNotFound';
 import { TRPCError } from '@trpc/server';
+import { authenticatedProcedure } from '@server/trpc/authenticatedProcedure';
 
-export default publicProcedure
+export default authenticatedProcedure
   .use(provideRepos({ usersRepository }))
-  .input(oauthUserIdSchema)
-  .query(async ({ input: userId, ctx: { repos } }) => {
+  .input(oauthUserIdSchema.optional())
+  .query(async ({ input: userId, ctx: { authUser, repos } }) => {
     try {
-      const user = await repos.usersRepository.findById(userId);
+      const user = await (userId
+        ? repos.usersRepository.findById(userId)
+        : repos.usersRepository.findById(authUser.id));
 
       return user;
     } catch (error) {
