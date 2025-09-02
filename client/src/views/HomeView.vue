@@ -12,8 +12,6 @@ const router = useRouter();
 
 const recipes = ref<RecipesPublic[]>([]);
 
-const limit = 36;
-
 const totalCount = ref(0);
 
 const totalPages = ref(1);
@@ -21,12 +19,12 @@ const currentPage = ref(1);
 
 const pagination = reactive<Pagination>({
   offset: 0,
-  limit,
+  limit: 36,
 });
 
 const fetchPage = async (page: number) => {
   currentPage.value = page;
-  pagination.offset = (page - 1) * limit;
+  pagination.offset = (page - 1) * pagination.limit;
 
   const [fetchedRecipes] = await Promise.all([
     trpc.recipes.findAll.query(pagination),
@@ -62,7 +60,7 @@ const getParamPage = async (): Promise<number> => {
 
 onMounted(async () => {
   totalCount.value = await trpc.recipes.totalCount.query();
-  totalPages.value = Math.ceil(totalCount.value / limit);
+  totalPages.value = Math.ceil(totalCount.value / pagination.limit);
 
   const pageNumber = await getParamPage();
 
@@ -97,7 +95,7 @@ onMounted(async () => {
       <FwbPagination
         v-model="currentPage"
         :total-items="totalCount"
-        :per-page="limit"
+        :per-page="pagination.limit"
         hide-labels
         show-icons
         enable-first-last
