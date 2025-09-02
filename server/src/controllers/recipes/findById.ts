@@ -3,7 +3,7 @@ import { recipesRepository } from '@server/repositories/recipesRepository';
 import { publicProcedure } from '@server/trpc';
 import provideRepos from '@server/trpc/provideRepos';
 import { TRPCError } from '@trpc/server';
-import { signRecipeImage } from '@server/utils/signRecipeImages';
+import { signImages } from '@server/utils/signImages';
 
 export default publicProcedure
   .use(provideRepos({ recipesRepository }))
@@ -18,7 +18,7 @@ export default publicProcedure
       });
     }
 
-    await signRecipeImage(recipe);
+    recipe.imageUrl = await signImages(recipe.imageUrl);
 
     return recipe;
   });

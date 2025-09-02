@@ -2,7 +2,7 @@ import { publicProcedure } from '@server/trpc';
 import provideRepos from '@server/trpc/provideRepos';
 import { recipesRepository } from '@server/repositories/recipesRepository';
 import { paginationSchema } from '@server/entities/shared';
-import { signRecipeImage } from '@server/utils/signRecipeImages';
+import { signImages } from '@server/utils/signImages';
 
 export default publicProcedure
   .use(
@@ -17,7 +17,12 @@ export default publicProcedure
       limit,
     });
 
-    await signRecipeImage(recipes);
+    const imageUrls = recipes.map(recipe => recipe.imageUrl);
+    const signedUrls = await signImages(imageUrls);
+
+    for (const [index, recipe] of recipes.entries()) {
+      recipe.imageUrl = signedUrls[index];
+    }
 
     return recipes;
   });
