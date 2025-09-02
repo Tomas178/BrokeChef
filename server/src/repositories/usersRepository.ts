@@ -24,7 +24,7 @@ export function usersRepository(database: Database): UsersRepository {
         .updateTable(TABLE)
         .set({ image })
         .where('id', '=', id)
-        .returning(usersKeysPublic[3])
+        .returning('image')
         .executeTakeFirstOrThrow(() => new UserNotFound(id));
 
       return updated.image!;

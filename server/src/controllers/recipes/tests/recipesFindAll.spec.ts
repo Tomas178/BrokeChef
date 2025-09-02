@@ -7,8 +7,13 @@ import recipesRouter from '..';
 
 const fakeImageUrl = 'https://signed-url.com/folder/image.png';
 
-vi.mock('@aws-sdk/s3-request-presigner', () => ({
-  getSignedUrl: vi.fn(() => fakeImageUrl),
+vi.mock('@server/utils/signImages', () => ({
+  signImages: vi.fn((images: string | string[]) => {
+    if (Array.isArray(images)) {
+      return images.map(() => fakeImageUrl);
+    }
+    return fakeImageUrl;
+  }),
 }));
 
 const createCaller = createCallerFactory(recipesRouter);
