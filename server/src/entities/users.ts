@@ -29,7 +29,7 @@ export const usersSchema = z.object({
 
 export const usersKeysAll = Object.keys(usersSchema.shape) as (keyof Users)[];
 
-export const usersKeysPublic = ['id', 'name', 'email'] as const;
+export const usersKeysPublic = ['id', 'name', 'email', 'image'] as const;
 
 export const usersKeysPublicWithoutId = ['name', 'email'] as const;
 
