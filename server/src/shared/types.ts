@@ -7,5 +7,6 @@ export type * from '@server/entities/recipesTools';
 export type * from '@server/entities/savedRecipes';
 export type * from '@server/entities/tools';
 export type * from '@server/entities/users';
+export type * from '@server/entities/shared';
 
 export type * from '@server/controllers/recipes/create';

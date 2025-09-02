@@ -20,3 +20,5 @@ export const paginationSchema = z.object({
 export const userWithPaginationSchema = paginationSchema.extend({
   userId: oauthUserIdSchema.optional(),
 });
+
+export type UserWithPagination = z.infer<typeof userWithPaginationSchema>;
