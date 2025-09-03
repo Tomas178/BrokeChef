@@ -5,12 +5,13 @@ import { FwbButton, FwbHeading, FwbInput, FwbFileInput } from 'flowbite-vue';
 import { reactive, computed, ref } from 'vue';
 import { trpc } from '@/trpc';
 import useErrorMessage from '@/composables/useErrorMessage';
-import { toast } from 'vue3-toastify';
-import 'vue3-toastify/dist/index.css';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { apiOrigin } from '@/config';
+import useToast from '@/composables/useToast';
+
+const { showLoading, updateToast } = useToast();
 
 const router = useRouter();
 
@@ -60,18 +61,12 @@ const [createRecipe, errorMessage] = useErrorMessage(async () => {
 });
 
 async function handleCreateRecipe() {
-  const id = toast.loading('Creating recipe...');
+  const id = showLoading('Creating recipe...');
 
   try {
     const recipe = await createRecipe();
 
-    toast.update(id, {
-      render: 'Recipe has been created!',
-      type: 'success',
-      isLoading: false,
-      autoClose: 3000,
-      closeOnClick: true,
-    });
+    updateToast(id, 'success', 'Recipe has been created!');
 
     console.log(recipe);
 
@@ -90,76 +85,9 @@ async function handleCreateRecipe() {
       });
     }
   } catch {
-    toast.update(id, {
-      render: errorMessage.value || DEFAULT_SERVER_ERROR,
-      type: 'error',
-      isLoading: false,
-      autoClose: 3000,
-      closeOnClick: true,
-    });
+    updateToast(id, 'error', errorMessage.value || DEFAULT_SERVER_ERROR);
   }
 }
-
-// async function uploadAndCreateRecipe() {
-//   if (recipeImageFile.value) {
-//     const formData = new FormData();
-//     formData.append('file', recipeImageFile.value);
-
-//     console.log(recipeImageFile.value);
-
-//     const { data } = await axios.post<Pick<RecipesPublic, 'imageUrl'>>(
-//       fullEndpoint,
-//       formData,
-//       { headers: { 'Content-Type': 'multipart/form-data' } }
-//     );
-
-//     console.log(data.imageUrl);
-//     recipeForm.imageUrl = data.imageUrl;
-
-//     return trpc.recipes.create.mutate(recipeForm);
-//   } else {
-//     recipeForm.imageUrl = undefined;
-//   }
-
-//   console.log(recipeForm);
-
-//   return trpc.recipes.create.mutate(recipeForm);
-// }
-
-// const [createRecipe] = useErrorMessage(async () => {
-//   const recipe = await toast.promise(uploadAndCreateRecipe(), {
-//     pending: 'Creating recipe...',
-//     success: 'Recipe has been created!',
-//     error: {
-//       render(err) {
-//         console.log(err);
-
-//         if (err?.data?.response?.data?.error?.message)
-//           return err.data.response.data.error.message;
-
-//         if (err?.data?.message) return err.data.message;
-//         return DEFAULT_SERVER_ERROR;
-//       },
-//     },
-//   });
-
-//   console.log(recipe);
-
-//   recipeForm.title = '';
-//   recipeForm.duration = 0;
-//   recipeForm.steps = [''];
-//   recipeForm.ingredients = [''];
-//   recipeForm.tools = [''];
-//   recipeForm.imageUrl = '';
-//   recipeImageFile.value = undefined;
-
-//   if (recipe) {
-//     router.push({
-//       name: 'Recipe',
-//       params: { id: recipe?.id },
-//     });
-//   }
-// });
 </script>
 
 <template>

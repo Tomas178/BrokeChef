@@ -6,12 +6,12 @@ import { onBeforeMount, ref } from 'vue';
 import { titleCase } from 'title-case';
 import { format } from 'date-fns';
 import useErrorMessage from '@/composables/useErrorMessage';
-import 'vue3-toastify/dist/index.css';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
 import RecipeDetailsCard from '@/components/RecipeDetailsCard.vue';
 import Spinner from '@/components/Spinner.vue';
-import { toast } from 'vue3-toastify';
-import 'vue3-toastify/dist/index.css';
+import useToast from '@/composables/useToast';
+
+const { showLoading, updateToast } = useToast();
 
 const route = useRoute();
 const router = useRouter();
@@ -39,30 +39,18 @@ const [deleteRecipe, deleteErrorMessage] = useErrorMessage(
 );
 
 async function handleDelete() {
-  const id = toast.loading('Removing Recipe...');
+  const id = showLoading('Removing Recipe...');
 
   try {
     await deleteRecipe();
 
-    toast.update(id, {
-      render: 'Recipe Removed!',
-      type: 'success',
-      isLoading: false,
-      autoClose: 3000,
-      closeOnClick: true,
-    });
+    updateToast(id, 'success', 'Recipe Removed!');
 
     router.push({
       name: 'Home',
     });
   } catch {
-    toast.update(id, {
-      render: deleteErrorMessage.value || DEFAULT_SERVER_ERROR,
-      type: 'error',
-      isLoading: false,
-      autoClose: 3000,
-      closeOnClick: true,
-    });
+    updateToast(id, 'error', deleteErrorMessage.value || DEFAULT_SERVER_ERROR);
   }
 }
 
@@ -72,27 +60,16 @@ const [saveRecipe, saveErrorMessage] = useErrorMessage(
 );
 
 async function handleSave() {
-  const id = toast.loading('Saving recipe...');
+  const id = showLoading('Saving recipe...');
 
   try {
     await saveRecipe();
-    toast.update(id, {
-      render: 'Recipe saved successfully',
-      type: 'success',
-      isLoading: false,
-      autoClose: 3000,
-      closeOnClick: true,
-    });
+
+    updateToast(id, 'success', 'Recipe saved successfully');
 
     isSaved.value = true;
   } catch {
-    toast.update(id, {
-      render: saveErrorMessage.value || DEFAULT_SERVER_ERROR,
-      type: 'error',
-      isLoading: false,
-      autoClose: 3000,
-      closeOnClick: true,
-    });
+    updateToast(id, 'error', saveErrorMessage.value || DEFAULT_SERVER_ERROR);
   }
 }
 
@@ -102,28 +79,16 @@ const [unsaveRecipe, unsaveErrorMessage] = useErrorMessage(
 );
 
 async function handleUnsave() {
-  const id = toast.loading('Unsaving recipe...');
+  const id = showLoading('Unsaving recipe...');
 
   try {
     await unsaveRecipe();
 
-    toast.update(id, {
-      render: 'Recipe unsaved successfully',
-      type: 'success',
-      isLoading: false,
-      autoClose: 3000,
-      closeOnClick: true,
-    });
+    updateToast(id, 'success', 'Recipe unsaved successfully');
 
     isSaved.value = false;
   } catch {
-    toast.update(id, {
-      render: unsaveErrorMessage.value || DEFAULT_SERVER_ERROR,
-      type: 'error',
-      isLoading: false,
-      autoClose: 3000,
-      closeOnClick: true,
-    });
+    updateToast(id, 'error', unsaveErrorMessage.value || DEFAULT_SERVER_ERROR);
   }
 }
 </script>

@@ -3,13 +3,14 @@ import AuthenticationForm from '@/components/Forms/AuthenticationForm/Authentica
 import AuthActions from '@/components/Forms/AuthenticationForm/AuthActions.vue';
 import { FwbInput } from 'flowbite-vue';
 import { ref } from 'vue';
-import { toast } from 'vue3-toastify';
-import 'vue3-toastify/dist/index.css';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
 import useErrorMessage from '@/composables/useErrorMessage';
 import { useUserStore } from '@/stores/user';
 import { requestResetPasswordPath, signupPath } from '@/config';
 import { useRouter } from 'vue-router';
+import useToast from '@/composables/useToast';
+
+const { showLoading, updateToast } = useToast();
 
 const { login } = useUserStore();
 
@@ -26,18 +27,12 @@ const [submitLogin, errorMessage] = useErrorMessage(
 );
 
 async function handleLogin() {
-  const id = toast.loading('Logging in...');
+  const id = showLoading('Logging in...');
 
   try {
     await submitLogin();
 
-    toast.update(id, {
-      render: 'You have logged in!',
-      type: 'success',
-      isLoading: false,
-      autoClose: 3000,
-      closeOnClick: true,
-    });
+    updateToast(id, 'success', 'You have logged in!');
 
     userForm.value.email = '';
     userForm.value.password = '';
@@ -46,13 +41,7 @@ async function handleLogin() {
       name: 'Home',
     });
   } catch {
-    toast.update(id, {
-      render: errorMessage.value || DEFAULT_SERVER_ERROR,
-      type: 'error',
-      isLoading: false,
-      autoClose: 3000,
-      closeOnClick: true,
-    });
+    updateToast(id, 'error', errorMessage.value || DEFAULT_SERVER_ERROR);
   }
 }
 

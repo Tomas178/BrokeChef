@@ -6,11 +6,12 @@ import { FwbInput } from 'flowbite-vue';
 import { ref } from 'vue';
 import useErrorMessage from '@/composables/useErrorMessage';
 import { useUserStore } from '@/stores/user';
-import { toast } from 'vue3-toastify';
-import 'vue3-toastify/dist/index.css';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
 import { isSamePassword } from '@/utils/isSamePassword';
 import { loginPath } from '@/config';
+import useToast from '@/composables/useToast';
+
+const { showLoading, updateToast } = useToast();
 
 const { signup } = useUserStore();
 
@@ -31,58 +32,25 @@ const [submitSignup, errorMessage] = useErrorMessage(async () => {
 }, true);
 
 async function handleSignup() {
-  const id = toast.loading('Creating Account...');
+  const id = showLoading('Creating Account...');
 
   try {
     await submitSignup();
 
-    toast.update(id, {
-      render: 'You have successfully signed up! Please verify your email!',
-      type: 'success',
-      isLoading: false,
-      autoClose: 3000,
-      closeOnClick: true,
-    });
+    updateToast(
+      id,
+      'success',
+      'You have successfully signed up! Please verify your email!'
+    );
 
     userForm.value.username = '';
     userForm.value.email = '';
     userForm.value.password = '';
     repeatPassword.value = '';
   } catch {
-    toast.update(id, {
-      render: errorMessage.value || DEFAULT_SERVER_ERROR,
-      type: 'error',
-      isLoading: false,
-      autoClose: 3000,
-      closeOnClick: true,
-    });
+    updateToast(id, 'error', errorMessage.value || DEFAULT_SERVER_ERROR);
   }
 }
-
-// const [submitSignup, errorMessage] = useErrorMessage(async () => {
-//   if (!isSamePassword(userForm.value.password, repeatPassword.value)) {
-//     throw new Error("Passwords don't match");
-//   }
-
-//   toast.promise(signup(userForm.value), {
-//     pending: 'Creating account...',
-//     success: {
-//       render() {
-//         userForm.value.username = '';
-//         userForm.value.email = '';
-//         userForm.value.password = '';
-//         repeatPassword.value = '';
-//         return 'You have successfully signed up! Please verify your email!';
-//       },
-//     },
-//     error: {
-//       render(err) {
-//         if (err?.data?.message) return err.data.message;
-//         return DEFAULT_SERVER_ERROR;
-//       },
-//     },
-//   });
-// });
 
 const formFooter = {
   text: 'Already have an account? ',

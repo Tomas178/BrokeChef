@@ -2,12 +2,13 @@
 import AuthenticationForm from '@/components/Forms/AuthenticationForm/AuthenticationForm.vue';
 import SubmitButton from '@/components/Forms/AuthenticationForm/SubmitButton.vue';
 import useErrorMessage from '@/composables/useErrorMessage';
+import useToast from '@/composables/useToast';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
 import { useUserStore } from '@/stores/user';
 import { FwbInput } from 'flowbite-vue';
 import { ref } from 'vue';
-import { toast } from 'vue3-toastify';
-import 'vue3-toastify/dist/index.css';
+
+const { showLoading, updateToast } = useToast();
 
 const { sendResetPasswordLink } = useUserStore();
 
@@ -19,26 +20,18 @@ const [submitSendLink, errorMessage] = useErrorMessage(
 );
 
 async function handleSendLink() {
-  const id = toast.loading('Sending link...');
+  const id = showLoading('Sending link...');
 
   try {
     await submitSendLink();
 
-    toast.update(id, {
-      render: 'Reset link has been sent. Please check your inbox!',
-      type: 'success',
-      isLoading: false,
-      autoClose: 3000,
-      closeOnClick: true,
-    });
+    updateToast(
+      id,
+      'success',
+      'Reset link has been sent. Please check your inbox!'
+    );
   } catch {
-    toast.update(id, {
-      render: errorMessage.value || DEFAULT_SERVER_ERROR,
-      type: 'error',
-      isLoading: false,
-      autoClose: 3000,
-      closeOnClick: true,
-    });
+    updateToast(id, 'error', errorMessage.value || DEFAULT_SERVER_ERROR);
   }
 }
 </script>

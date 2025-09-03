@@ -3,6 +3,7 @@ import AlertError from '@/components/AlertError.vue';
 import AuthenticationForm from '@/components/Forms/AuthenticationForm/AuthenticationForm.vue';
 import SubmitButton from '@/components/Forms/AuthenticationForm/SubmitButton.vue';
 import useErrorMessage from '@/composables/useErrorMessage';
+import useToast from '@/composables/useToast';
 import { loginPath } from '@/config';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
 import { useUserStore } from '@/stores/user';
@@ -10,8 +11,8 @@ import { isSamePassword } from '@/utils/isSamePassword';
 import { FwbInput } from 'flowbite-vue';
 import { ref } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
-import { toast } from 'vue3-toastify';
-import 'vue3-toastify/dist/index.css';
+
+const { showLoading, updateToast } = useToast();
 
 const { resetPassword } = useUserStore();
 
@@ -29,18 +30,12 @@ const [submitResetPassword, errorMessage] = useErrorMessage(async () => {
 }, true);
 
 async function handleResetPassword() {
-  const id = toast.loading('Resetting password...');
+  const id = showLoading('Resetting password...');
 
   try {
     await submitResetPassword();
 
-    toast.update(id, {
-      render: 'Password has been changed now you can log in!',
-      type: 'success',
-      isLoading: false,
-      autoClose: 3000,
-      closeOnClick: true,
-    });
+    updateToast(id, 'success', 'Password has been changed now you can log in!');
 
     password.value = '';
     repeatPassword.value = '';
@@ -49,38 +44,9 @@ async function handleResetPassword() {
       name: 'Login',
     });
   } catch {
-    toast.update(id, {
-      render: errorMessage.value || DEFAULT_SERVER_ERROR,
-      type: 'error',
-      isLoading: false,
-      autoClose: 3000,
-      closeOnClick: true,
-    });
+    updateToast(id, 'error', errorMessage.value || DEFAULT_SERVER_ERROR);
   }
 }
-
-// const [submitResetPassword, errorMessage] = useErrorMessage(async () => {
-//   if (!isSamePassword(password.value, repeatPassword.value)) {
-//     throw new Error("Passwords don't match");
-//   }
-
-//   toast.promise(resetPassword(password.value), {
-//     pending: 'Resetting password...',
-//     success: {
-//       render() {
-//         password.value = '';
-//         repeatPassword.value = '';
-//         return 'Password has been changed now you can log in!';
-//       },
-//     },
-//     error: {
-//       render(err) {
-//         if (err?.data?.message) return err.data.message;
-//         return DEFAULT_SERVER_ERROR;
-//       },
-//     },
-//   });
-// });
 </script>
 
 <template>

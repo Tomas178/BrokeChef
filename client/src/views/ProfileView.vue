@@ -13,9 +13,10 @@ import useErrorMessage from '@/composables/useErrorMessage';
 import Spinner from '@/components/Spinner.vue';
 import axios from 'axios';
 import { apiOrigin } from '@/config';
-import { toast } from 'vue3-toastify';
-import 'vue3-toastify/dist/index.css';
 import { DEFAULT_SERVER_ERROR } from '../consts';
+import useToast from '@/composables/useToast';
+
+const { showLoading, updateToast } = useToast();
 
 const props = defineProps<{
   id?: string;
@@ -72,26 +73,14 @@ const [uploadImage, errorMessage] = useErrorMessage(async () => {
 });
 
 async function handleUpload() {
-  const id = toast.loading('Changing Profile image...');
+  const id = showLoading('Changing Profile image...');
 
   try {
     await uploadImage();
 
-    toast.update(id, {
-      render: 'Image updated!',
-      type: 'success',
-      isLoading: false,
-      autoClose: 3000,
-      closeOnClick: true,
-    });
+    updateToast(id, 'success', 'Image updated!');
   } catch {
-    toast.update(id, {
-      render: errorMessage.value || DEFAULT_SERVER_ERROR,
-      type: 'error',
-      isLoading: false,
-      autoClose: 3000,
-      closeOnClick: true,
-    });
+    updateToast(id, 'error', errorMessage.value || DEFAULT_SERVER_ERROR);
   }
 }
 
