@@ -110,7 +110,7 @@ describe('Image uploading', () => {
         .attach('file', Buffer.from('test'), 'profile.png')
         .expect(StatusCodes.OK);
 
-      expect(body).toEqual({ imageUrl: 'mock-s3/profile.png' });
+      expect(body).toEqual({ image: 'mock-s3/profile.png' });
     });
   });
 });

@@ -63,7 +63,7 @@ export default function createApp(db: Database) {
     const file = req.file as Express.MulterS3.File;
     res
       .status(StatusCodes.OK)
-      .json({ imageUrl: imageUrlToBucketKey(file.location) });
+      .json({ image: imageUrlToBucketKey(file.location) });
   });
 
   app.use(

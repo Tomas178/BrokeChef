@@ -38,7 +38,7 @@ const [user] = await insertAll(database, 'users', fakeUser());
 const { updateImage } = createCaller(authContext({ db: database }, user));
 
 it('Should return a signed image url if updated successfully', async () => {
-  mockSignImages.mockResolvedValueOnce(fakeImageUrl);
+  mockUpdateImage.mockResolvedValueOnce(fakeImageUrl);
 
   await expect(updateImage('image')).resolves.toBe(fakeImageUrl);
 });
@@ -64,8 +64,6 @@ it('Should throw an error if user is not found', async () => {
 
 it('Should throw a general server error', async () => {
   mockUpdateImage.mockRejectedValueOnce(new Error('Service Failed'));
-
-  const { updateImage } = createCaller(authContext({ db: database }, user));
 
   await expect(updateImage('image')).rejects.toThrow(/failed/i);
   expect(mockUpdateImage).toHaveBeenCalledWith(expect.any(String), 'image');
