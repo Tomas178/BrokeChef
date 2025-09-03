@@ -27,25 +27,58 @@ const [submitSignup, errorMessage] = useErrorMessage(async () => {
     throw new Error("Passwords don't match");
   }
 
-  toast.promise(signup(userForm.value), {
-    pending: 'Creating account...',
-    success: {
-      render() {
-        userForm.value.username = '';
-        userForm.value.email = '';
-        userForm.value.password = '';
-        repeatPassword.value = '';
-        return 'You have successfully signed up! Please verify your email!';
-      },
-    },
-    error: {
-      render(err) {
-        if (err?.data?.message) return err.data.message;
-        return DEFAULT_SERVER_ERROR;
-      },
-    },
-  });
-});
+  await signup(userForm.value);
+}, true);
+
+async function handleSignup() {
+  const id = toast.loading('Creating Account...');
+
+  try {
+    await submitSignup();
+
+    toast.update(id, {
+      render: 'You have successfully signed up! Please verify your email!',
+      type: 'success',
+      isLoading: false,
+    });
+
+    userForm.value.username = '';
+    userForm.value.email = '';
+    userForm.value.password = '';
+    repeatPassword.value = '';
+  } catch {
+    toast.update(id, {
+      render: errorMessage.value || DEFAULT_SERVER_ERROR,
+      type: 'error',
+      isLoading: false,
+    });
+  }
+}
+
+// const [submitSignup, errorMessage] = useErrorMessage(async () => {
+//   if (!isSamePassword(userForm.value.password, repeatPassword.value)) {
+//     throw new Error("Passwords don't match");
+//   }
+
+//   toast.promise(signup(userForm.value), {
+//     pending: 'Creating account...',
+//     success: {
+//       render() {
+//         userForm.value.username = '';
+//         userForm.value.email = '';
+//         userForm.value.password = '';
+//         repeatPassword.value = '';
+//         return 'You have successfully signed up! Please verify your email!';
+//       },
+//     },
+//     error: {
+//       render(err) {
+//         if (err?.data?.message) return err.data.message;
+//         return DEFAULT_SERVER_ERROR;
+//       },
+//     },
+//   });
+// });
 
 const formFooter = {
   text: 'Already have an account? ',
@@ -59,7 +92,7 @@ const formFooter = {
     :welcome-text="true"
     heading="Sign up"
     form-label="Signup"
-    @submit="submitSignup"
+    @submit="handleSignup"
   >
     <template #default>
       <fwb-input

@@ -9,32 +9,48 @@ import { DEFAULT_SERVER_ERROR } from '@/consts';
 import useErrorMessage from '@/composables/useErrorMessage';
 import { useUserStore } from '@/stores/user';
 import { requestResetPasswordPath, signupPath } from '@/config';
+import { useRouter } from 'vue-router';
 
 const { login } = useUserStore();
+
+const router = useRouter();
 
 const userForm = ref({
   email: '',
   password: '',
 });
 
-const [submitLogin] = useErrorMessage(async () => {
-  toast.promise(login(userForm.value), {
-    pending: 'Logging in...',
-    success: {
-      render() {
-        userForm.value.email = '';
-        userForm.value.password = '';
-        return 'You have logged in!';
-      },
-    },
-    error: {
-      render(err) {
-        if (err?.data?.message) return err.data.message;
-        return DEFAULT_SERVER_ERROR;
-      },
-    },
-  });
-});
+const [submitLogin, errorMessage] = useErrorMessage(
+  async () => await login(userForm.value),
+  true
+);
+
+async function handleLogin() {
+  const id = toast.loading('Logging in...');
+
+  try {
+    await submitLogin();
+
+    toast.update(id, {
+      render: 'You have logged in!',
+      type: 'success',
+      isLoading: false,
+    });
+
+    userForm.value.email = '';
+    userForm.value.password = '';
+
+    router.push({
+      name: 'Home',
+    });
+  } catch {
+    toast.update(id, {
+      render: errorMessage.value || DEFAULT_SERVER_ERROR,
+      type: 'error',
+      isLoading: false,
+    });
+  }
+}
 
 const formFooter = {
   text: 'Don’t have an account? ',
@@ -48,7 +64,7 @@ const formFooter = {
     :welcome-text="true"
     heading="Sign In"
     form-label="Signin"
-    @submit="submitLogin"
+    @submit="handleLogin"
   >
     <template #default>
       <fwb-input

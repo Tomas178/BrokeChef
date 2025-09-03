@@ -16,7 +16,6 @@ import { apiOrigin } from '@/config';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 import { DEFAULT_SERVER_ERROR } from '../consts';
-import { TRPCClientError } from '@trpc/client';
 
 const props = defineProps<{
   id?: string;
@@ -53,48 +52,44 @@ const goBack = async () => {
   router.go(-1);
 };
 
-async function uploadImage() {
+const [uploadImage, errorMessage] = useErrorMessage(async () => {
   if (!profileImageFile.value) return null;
 
   isLoadingImage.value = true;
 
+  const formData = new FormData();
+  formData.append('file', profileImageFile.value);
+
+  const { data } = await axios.post<Pick<UsersPublic, 'image'>>(
+    fullEndpoint,
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } }
+  );
+
+  if (data.image && user.value) {
+    user.value.image = await trpc.users.updateImage.mutate(data.image);
+  }
+});
+
+async function handleUpload() {
+  const id = toast.loading('Changing Profile image...');
+
   try {
-    const formData = new FormData();
-    formData.append('file', profileImageFile.value);
+    await uploadImage();
 
-    const { data } = await axios.post<Pick<UsersPublic, 'image'>>(
-      fullEndpoint,
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
-    );
-
-    if (data.image && user.value) {
-      user.value.image = await trpc.users.updateImage.mutate(data.image);
-    }
-  } catch (error) {
-    if (error instanceof TRPCClientError) {
-      throw new Error(error.message);
-    }
+    toast.update(id, {
+      render: 'Image updated!',
+      type: 'success',
+      isLoading: false,
+    });
+  } catch {
+    toast.update(id, {
+      render: errorMessage.value || DEFAULT_SERVER_ERROR,
+      type: 'error',
+      isLoading: false,
+    });
   }
 }
-
-const [handleUpload] = useErrorMessage(async () => {
-  await toast.promise(uploadImage(), {
-    pending: 'Changing Profile image...',
-    success: 'Image updated!',
-    error: {
-      render(err) {
-        console.log(err);
-
-        if (err?.data?.response?.data?.error?.message)
-          return err.data.response.data.error.message;
-
-        if (err?.data?.message) return err.data.message;
-        return DEFAULT_SERVER_ERROR;
-      },
-    },
-  });
-});
 
 watch(
   () => user.value?.image,

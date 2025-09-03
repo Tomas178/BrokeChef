@@ -13,18 +13,30 @@ const { sendResetPasswordLink } = useUserStore();
 
 const email = ref('');
 
-const [submitSendLink] = useErrorMessage(async () => {
-  toast.promise(sendResetPasswordLink(email.value), {
-    pending: 'Sending link...',
-    success: 'Reset link has been sent. Please check your inbox!',
-    error: {
-      render(err) {
-        if (err?.data?.message) return err.data.message;
-        return DEFAULT_SERVER_ERROR;
-      },
-    },
-  });
-});
+const [submitSendLink, errorMessage] = useErrorMessage(
+  async () => sendResetPasswordLink(email.value),
+  true
+);
+
+async function handleSendLink() {
+  const id = toast.loading('Sending link...');
+
+  try {
+    await submitSendLink();
+
+    toast.update(id, {
+      render: 'Reset link has been sent. Please check your inbox!',
+      type: 'success',
+      isLoading: false,
+    });
+  } catch {
+    toast.update(id, {
+      render: errorMessage.value || DEFAULT_SERVER_ERROR,
+      type: 'error',
+      isLoading: false,
+    });
+  }
+}
 </script>
 
 <template>
@@ -32,7 +44,7 @@ const [submitSendLink] = useErrorMessage(async () => {
     :welcome-text="false"
     heading="Request reset password link"
     form-label="request-reset-password-link"
-    @submit="submitSendLink"
+    @submit="handleSendLink"
   >
     <template #default>
       <div class="flex flex-col gap-8">

@@ -35,7 +35,7 @@ const durationString = computed({
   },
 });
 
-async function uploadAndCreateRecipe() {
+const [createRecipe, errorMessage] = useErrorMessage(async () => {
   if (recipeImageFile.value) {
     const formData = new FormData();
     formData.append('file', recipeImageFile.value);
@@ -56,52 +56,113 @@ async function uploadAndCreateRecipe() {
     recipeForm.imageUrl = undefined;
   }
 
-  console.log(recipeForm);
-
   return trpc.recipes.create.mutate(recipeForm);
-}
+});
 
-const [createRecipe] = useErrorMessage(async () => {
-  const recipe = await toast.promise(uploadAndCreateRecipe(), {
-    pending: 'Creating recipe...',
-    success: 'Recipe has been created!',
-    error: {
-      render(err) {
-        console.log(err);
+async function handleCreateRecipe() {
+  const id = toast.loading('Creating recipe...');
 
-        if (err?.data?.response?.data?.error?.message)
-          return err.data.response.data.error.message;
+  try {
+    const recipe = await createRecipe();
 
-        if (err?.data?.message) return err.data.message;
-        return DEFAULT_SERVER_ERROR;
-      },
-    },
-  });
+    toast.update(id, {
+      render: 'Recipe has been created!',
+      type: 'success',
+      isLoading: false,
+    });
 
-  console.log(recipe);
+    console.log(recipe);
 
-  recipeForm.title = '';
-  recipeForm.duration = 0;
-  recipeForm.steps = [''];
-  recipeForm.ingredients = [''];
-  recipeForm.tools = [''];
-  recipeForm.imageUrl = '';
-  recipeImageFile.value = undefined;
+    recipeForm.title = '';
+    recipeForm.duration = 0;
+    recipeForm.steps = [''];
+    recipeForm.ingredients = [''];
+    recipeForm.tools = [''];
+    recipeForm.imageUrl = '';
+    recipeImageFile.value = undefined;
 
-  if (recipe) {
-    router.push({
-      name: 'Recipe',
-      params: { id: recipe?.id },
+    if (recipe) {
+      router.push({
+        name: 'Recipe',
+        params: { id: recipe?.id },
+      });
+    }
+  } catch {
+    toast.update(id, {
+      render: errorMessage.value || DEFAULT_SERVER_ERROR,
+      type: 'error',
+      isLoading: false,
     });
   }
-});
+}
+
+// async function uploadAndCreateRecipe() {
+//   if (recipeImageFile.value) {
+//     const formData = new FormData();
+//     formData.append('file', recipeImageFile.value);
+
+//     console.log(recipeImageFile.value);
+
+//     const { data } = await axios.post<Pick<RecipesPublic, 'imageUrl'>>(
+//       fullEndpoint,
+//       formData,
+//       { headers: { 'Content-Type': 'multipart/form-data' } }
+//     );
+
+//     console.log(data.imageUrl);
+//     recipeForm.imageUrl = data.imageUrl;
+
+//     return trpc.recipes.create.mutate(recipeForm);
+//   } else {
+//     recipeForm.imageUrl = undefined;
+//   }
+
+//   console.log(recipeForm);
+
+//   return trpc.recipes.create.mutate(recipeForm);
+// }
+
+// const [createRecipe] = useErrorMessage(async () => {
+//   const recipe = await toast.promise(uploadAndCreateRecipe(), {
+//     pending: 'Creating recipe...',
+//     success: 'Recipe has been created!',
+//     error: {
+//       render(err) {
+//         console.log(err);
+
+//         if (err?.data?.response?.data?.error?.message)
+//           return err.data.response.data.error.message;
+
+//         if (err?.data?.message) return err.data.message;
+//         return DEFAULT_SERVER_ERROR;
+//       },
+//     },
+//   });
+
+//   console.log(recipe);
+
+//   recipeForm.title = '';
+//   recipeForm.duration = 0;
+//   recipeForm.steps = [''];
+//   recipeForm.ingredients = [''];
+//   recipeForm.tools = [''];
+//   recipeForm.imageUrl = '';
+//   recipeImageFile.value = undefined;
+
+//   if (recipe) {
+//     router.push({
+//       name: 'Recipe',
+//       params: { id: recipe?.id },
+//     });
+//   }
+// });
 </script>
 
 <template>
   <form
     class="mx-4 mt-8 mb-12 md:mx-16 md:mt-12 md:mb-20 lg:mx-32 lg:mt-14 lg:mb-28"
     aria-label="Recipe"
-    @submit.prevent="createRecipe"
+    @submit.prevent="handleCreateRecipe"
   >
     <div class="flex flex-col gap-4 md:gap-6">
       <div class="justify-center text-3xl md:text-6xl">

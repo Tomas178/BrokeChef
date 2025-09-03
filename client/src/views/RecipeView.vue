@@ -6,11 +6,12 @@ import { onBeforeMount, ref } from 'vue';
 import { titleCase } from 'title-case';
 import { format } from 'date-fns';
 import useErrorMessage from '@/composables/useErrorMessage';
-import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
 import RecipeDetailsCard from '@/components/RecipeDetailsCard.vue';
 import Spinner from '@/components/Spinner.vue';
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
 
 const route = useRoute();
 const router = useRouter();
@@ -32,52 +33,87 @@ onBeforeMount(async () => {
   console.log(isSaved.value);
 });
 
-const [deleteRecipe] = useErrorMessage(async () => {
-  await toast.promise(trpc.recipes.remove.mutate(recipeId), {
-    pending: 'Removing recipe...',
-    success: 'Recipe removed!',
-    error: {
-      render(err) {
-        if (err?.data?.message) return err.data.message;
-        return DEFAULT_SERVER_ERROR;
-      },
-    },
-  });
+const [deleteRecipe, deleteErrorMessage] = useErrorMessage(
+  async () => await trpc.recipes.remove.mutate(recipeId),
+  true
+);
 
-  router.push({
-    name: 'Home',
-  });
-});
+async function handleDelete() {
+  const id = toast.loading('Removing Recipe...');
 
-const [saveRecipe] = useErrorMessage(async () => {
-  await toast.promise(trpc.savedRecipes.save.mutate(recipeId), {
-    pending: 'Saving recipe...',
-    success: 'Recipe saved successfully',
-    error: {
-      render(err) {
-        if (err?.data?.message) return err.data.message;
-        return DEFAULT_SERVER_ERROR;
-      },
-    },
-  });
+  try {
+    await deleteRecipe();
 
-  isSaved.value = true;
-});
+    toast.update(id, {
+      render: 'Recipe Removed!',
+      type: 'success',
+      isLoading: false,
+    });
 
-const [unsaveRecipe] = useErrorMessage(async () => {
-  await toast.promise(trpc.savedRecipes.unsave.mutate(recipeId), {
-    pending: 'Unsaving recipe...',
-    success: 'Recipe unsaved successfully',
-    error: {
-      render(err) {
-        if (err?.data?.message) return err.data.message;
-        return DEFAULT_SERVER_ERROR;
-      },
-    },
-  });
+    router.push({
+      name: 'Home',
+    });
+  } catch {
+    toast.update(id, {
+      render: deleteErrorMessage.value || DEFAULT_SERVER_ERROR,
+      type: 'error',
+      isLoading: false,
+    });
+  }
+}
 
-  isSaved.value = false;
-});
+const [saveRecipe, saveErrorMessage] = useErrorMessage(
+  async () => await trpc.savedRecipes.save.mutate(recipeId),
+  true
+);
+
+async function handleSave() {
+  const id = toast.loading('Saving recipe...');
+
+  try {
+    await saveRecipe();
+    toast.update(id, {
+      render: 'Recipe saved successfully',
+      type: 'success',
+      isLoading: false,
+    });
+
+    isSaved.value = true;
+  } catch {
+    toast.update(id, {
+      render: saveErrorMessage.value || DEFAULT_SERVER_ERROR,
+      type: 'error',
+      isLoading: false,
+    });
+  }
+}
+
+const [unsaveRecipe, unsaveErrorMessage] = useErrorMessage(
+  async () => await trpc.savedRecipes.unsave.mutate(recipeId),
+  true
+);
+
+async function handleUnsave() {
+  const id = toast.loading('Unsaving recipe...');
+
+  try {
+    await unsaveRecipe();
+
+    toast.update(id, {
+      render: 'Recipe unsaved successfully',
+      type: 'success',
+      isLoading: false,
+    });
+
+    isSaved.value = false;
+  } catch {
+    toast.update(id, {
+      render: unsaveErrorMessage.value || DEFAULT_SERVER_ERROR,
+      type: 'error',
+      isLoading: false,
+    });
+  }
+}
 </script>
 
 <template>
@@ -108,7 +144,7 @@ const [unsaveRecipe] = useErrorMessage(async () => {
               <div class="flex justify-start">
                 <button
                   v-if="isAuthor"
-                  @click="deleteRecipe"
+                  @click="handleDelete"
                   type="button"
                   class="cursor-pointer rounded-3xl bg-red-400/90 px-6 py-2 text-xl leading-tight font-medium text-white hover:scale-105"
                 >
@@ -116,7 +152,7 @@ const [unsaveRecipe] = useErrorMessage(async () => {
                 </button>
                 <button
                   v-else-if="!isSaved"
-                  @click="saveRecipe"
+                  @click="handleSave"
                   type="button"
                   class="gradient-action-button cursor-pointer rounded-3xl px-6 py-2 text-xl leading-tight font-medium text-white hover:scale-105"
                 >
@@ -124,7 +160,7 @@ const [unsaveRecipe] = useErrorMessage(async () => {
                 </button>
                 <button
                   v-else
-                  @click="unsaveRecipe"
+                  @click="handleUnsave"
                   type="button"
                   class="gradient-action-button cursor-pointer rounded-3xl px-6 py-2 text-xl leading-tight font-medium text-white hover:scale-105"
                 >

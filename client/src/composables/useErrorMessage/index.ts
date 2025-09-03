@@ -12,8 +12,8 @@ export default function useErrorMessage<
   Args extends unknown[],
   Return,
   T extends (...args: Args) => Return,
->(fn: T): [T, Ref<string>] {
+>(fn: T, doRethrow = false): [T, Ref<string>] {
   const errorMessage = ref('');
 
-  return [withError(errorMessage, fn), errorMessage];
+  return [withError(errorMessage, fn, doRethrow), errorMessage];
 }

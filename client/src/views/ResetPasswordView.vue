@@ -9,11 +9,13 @@ import { useUserStore } from '@/stores/user';
 import { isSamePassword } from '@/utils/isSamePassword';
 import { FwbInput } from 'flowbite-vue';
 import { ref } from 'vue';
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRouter } from 'vue-router';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 
 const { resetPassword } = useUserStore();
+
+const router = useRouter();
 
 const password = ref('');
 const repeatPassword = ref('');
@@ -23,23 +25,58 @@ const [submitResetPassword, errorMessage] = useErrorMessage(async () => {
     throw new Error("Passwords don't match");
   }
 
-  toast.promise(resetPassword(password.value), {
-    pending: 'Resetting password...',
-    success: {
-      render() {
-        password.value = '';
-        repeatPassword.value = '';
-        return 'Password has been changed now you can log in!';
-      },
-    },
-    error: {
-      render(err) {
-        if (err?.data?.message) return err.data.message;
-        return DEFAULT_SERVER_ERROR;
-      },
-    },
-  });
-});
+  await resetPassword(password.value);
+}, true);
+
+async function handleResetPassword() {
+  const id = toast.loading('Resetting password...');
+
+  try {
+    await submitResetPassword();
+
+    toast.update(id, {
+      render: 'Password has been changed now you can log in!',
+      type: 'success',
+      isLoading: false,
+    });
+
+    password.value = '';
+    repeatPassword.value = '';
+
+    router.push({
+      name: 'Login',
+    });
+  } catch {
+    toast.update(id, {
+      render: errorMessage.value || DEFAULT_SERVER_ERROR,
+      type: 'error',
+      isLoading: false,
+    });
+  }
+}
+
+// const [submitResetPassword, errorMessage] = useErrorMessage(async () => {
+//   if (!isSamePassword(password.value, repeatPassword.value)) {
+//     throw new Error("Passwords don't match");
+//   }
+
+//   toast.promise(resetPassword(password.value), {
+//     pending: 'Resetting password...',
+//     success: {
+//       render() {
+//         password.value = '';
+//         repeatPassword.value = '';
+//         return 'Password has been changed now you can log in!';
+//       },
+//     },
+//     error: {
+//       render(err) {
+//         if (err?.data?.message) return err.data.message;
+//         return DEFAULT_SERVER_ERROR;
+//       },
+//     },
+//   });
+// });
 </script>
 
 <template>
@@ -47,7 +84,7 @@ const [submitResetPassword, errorMessage] = useErrorMessage(async () => {
     :welcome-text="false"
     heading="Reset Password"
     form-label="reset-password"
-    @submit="submitResetPassword"
+    @submit="handleResetPassword"
   >
     <template #default>
       <fwb-input
