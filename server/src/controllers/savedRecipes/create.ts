@@ -19,7 +19,7 @@ export default authenticatedProcedure
     } catch (error) {
       if (error instanceof RecipeAlreadySaved) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
+          code: 'CONFLICT',
           message: error.message,
         });
       }
