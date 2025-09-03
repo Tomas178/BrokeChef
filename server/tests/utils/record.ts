@@ -40,7 +40,10 @@ export const clearTables = async <
   }
 
   // assume PostgreSQL, truncate all tables
-  const tableNamesSql = sql.join(tableNames.map(sql.table), sql.raw(', '));
+  const tableNamesSql = sql.join(
+    tableNames.map(element => sql.table(element)),
+    sql.raw(', ')
+  );
 
   await sql`TRUNCATE TABLE ${tableNamesSql} CASCADE;`.execute(database);
 };
