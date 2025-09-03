@@ -24,6 +24,10 @@ import {
 
 const fakeImageKey = 'fakeKey';
 
+const { mockDeleteFile } = vi.hoisted(() => ({
+  mockDeleteFile: vi.fn(),
+}));
+
 vi.mock('@server/utils/GoogleGenAiClient/generateRecipeImage', () => ({
   generateRecipeImage: vi.fn(() => Buffer.from('image')),
 }));
@@ -33,7 +37,7 @@ vi.mock('@server/utils/AWSS3Client/uploadImage', () => ({
 }));
 
 vi.mock('@server/utils/AWSS3Client/deleteFile', () => ({
-  deleteFile: vi.fn(() => undefined),
+  deleteFile: mockDeleteFile,
 }));
 
 const database = await wrapInRollbacks(createTestDatabase());
@@ -47,9 +51,10 @@ const recipesToolsRepository = buildRecipesToolsRepository(database);
 
 const [user] = await insertAll(database, 'users', [fakeUser()]);
 
-beforeEach(
-  async () => await clearTables(database, ['recipes', 'ingredients', 'tools'])
-);
+beforeEach(async () => {
+  await clearTables(database, ['recipes', 'ingredients', 'tools']);
+  vi.resetAllMocks();
+});
 
 describe('createRecipe', () => {
   it('Should create a new recipe with user given image', async () => {
@@ -101,6 +106,32 @@ describe('createRecipe', () => {
     await expect(selectAll(database, 'recipes')).resolves.toHaveLength(0);
     await expect(selectAll(database, 'ingredients')).resolves.toHaveLength(0);
     await expect(selectAll(database, 'tools')).resolves.toHaveLength(0);
+  });
+
+  it('Should delete an image from the S3 storage on insertion failure', async () => {
+    const consoleSpy = vi.spyOn(console, 'error');
+
+    const recipeData = fakeCreateRecipeData();
+    const nonExistantUserId = user.id + 'a';
+
+    mockDeleteFile.mockRejectedValueOnce(new Error('Failed to delete from S3'));
+
+    await expect(
+      service.createRecipe(recipeData, nonExistantUserId)
+    ).rejects.toThrow(/not found/i);
+
+    expect(mockDeleteFile).toHaveBeenCalledOnce();
+
+    expect(mockDeleteFile).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(String),
+      recipeData.imageUrl
+    );
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Failed to rollback S3 Object:',
+      expect.any(Error)
+    );
   });
 });
 
