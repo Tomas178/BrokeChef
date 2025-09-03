@@ -40,6 +40,8 @@ async function handleSignup() {
       render: 'You have successfully signed up! Please verify your email!',
       type: 'success',
       isLoading: false,
+      autoClose: 3000,
+      closeOnClick: true,
     });
 
     userForm.value.username = '';
@@ -51,6 +53,8 @@ async function handleSignup() {
       render: errorMessage.value || DEFAULT_SERVER_ERROR,
       type: 'error',
       isLoading: false,
+      autoClose: 3000,
+      closeOnClick: true,
     });
   }
 }

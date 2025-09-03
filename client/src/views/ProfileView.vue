@@ -81,12 +81,16 @@ async function handleUpload() {
       render: 'Image updated!',
       type: 'success',
       isLoading: false,
+      autoClose: 3000,
+      closeOnClick: true,
     });
   } catch {
     toast.update(id, {
       render: errorMessage.value || DEFAULT_SERVER_ERROR,
       type: 'error',
       isLoading: false,
+      autoClose: 3000,
+      closeOnClick: true,
     });
   }
 }

@@ -35,6 +35,8 @@ async function handleLogin() {
       render: 'You have logged in!',
       type: 'success',
       isLoading: false,
+      autoClose: 3000,
+      closeOnClick: true,
     });
 
     userForm.value.email = '';
@@ -48,6 +50,8 @@ async function handleLogin() {
       render: errorMessage.value || DEFAULT_SERVER_ERROR,
       type: 'error',
       isLoading: false,
+      autoClose: 3000,
+      closeOnClick: true,
     });
   }
 }

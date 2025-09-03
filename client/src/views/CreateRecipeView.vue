@@ -69,6 +69,8 @@ async function handleCreateRecipe() {
       render: 'Recipe has been created!',
       type: 'success',
       isLoading: false,
+      autoClose: 3000,
+      closeOnClick: true,
     });
 
     console.log(recipe);
@@ -92,6 +94,8 @@ async function handleCreateRecipe() {
       render: errorMessage.value || DEFAULT_SERVER_ERROR,
       type: 'error',
       isLoading: false,
+      autoClose: 3000,
+      closeOnClick: true,
     });
   }
 }

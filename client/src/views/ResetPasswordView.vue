@@ -38,6 +38,8 @@ async function handleResetPassword() {
       render: 'Password has been changed now you can log in!',
       type: 'success',
       isLoading: false,
+      autoClose: 3000,
+      closeOnClick: true,
     });
 
     password.value = '';
@@ -51,6 +53,8 @@ async function handleResetPassword() {
       render: errorMessage.value || DEFAULT_SERVER_ERROR,
       type: 'error',
       isLoading: false,
+      autoClose: 3000,
+      closeOnClick: true,
     });
   }
 }

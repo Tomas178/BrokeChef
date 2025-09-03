@@ -48,6 +48,8 @@ async function handleDelete() {
       render: 'Recipe Removed!',
       type: 'success',
       isLoading: false,
+      autoClose: 3000,
+      closeOnClick: true,
     });
 
     router.push({
@@ -58,6 +60,8 @@ async function handleDelete() {
       render: deleteErrorMessage.value || DEFAULT_SERVER_ERROR,
       type: 'error',
       isLoading: false,
+      autoClose: 3000,
+      closeOnClick: true,
     });
   }
 }
@@ -76,6 +80,8 @@ async function handleSave() {
       render: 'Recipe saved successfully',
       type: 'success',
       isLoading: false,
+      autoClose: 3000,
+      closeOnClick: true,
     });
 
     isSaved.value = true;
@@ -84,6 +90,8 @@ async function handleSave() {
       render: saveErrorMessage.value || DEFAULT_SERVER_ERROR,
       type: 'error',
       isLoading: false,
+      autoClose: 3000,
+      closeOnClick: true,
     });
   }
 }
@@ -103,6 +111,8 @@ async function handleUnsave() {
       render: 'Recipe unsaved successfully',
       type: 'success',
       isLoading: false,
+      autoClose: 3000,
+      closeOnClick: true,
     });
 
     isSaved.value = false;
@@ -111,6 +121,8 @@ async function handleUnsave() {
       render: unsaveErrorMessage.value || DEFAULT_SERVER_ERROR,
       type: 'error',
       isLoading: false,
+      autoClose: 3000,
+      closeOnClick: true,
     });
   }
 }
