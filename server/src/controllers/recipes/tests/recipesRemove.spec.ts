@@ -8,6 +8,7 @@ import * as deleteFileModule from '@server/utils/AWSS3Client/deleteFile';
 import type { Mock } from 'vitest';
 import { S3ServiceException } from '@aws-sdk/client-s3';
 import type { __ServiceExceptionOptions } from '@aws-sdk/client-s3/dist-types/models/S3ServiceException';
+import type { RecipesPublic } from '@server/entities/recipes';
 import recipesRouter from '..';
 
 vi.mock('@server/utils/AWSS3Client/deleteFile', () => ({
@@ -25,15 +26,16 @@ const authUser = {
 const repos = {
   recipesRepository: {
     isAuthor: vi.fn(async (): Promise<boolean> => true),
-    remove: vi.fn(async (id: number) =>
-      fakeRecipe({
-        id,
-        userId: authUser.id,
-        author: pick(
-          fakeUser({ id: authUser.id + 1 }),
-          usersKeysPublicWithoutId
-        ),
-      })
+    remove: vi.fn(
+      async (id: number): Promise<RecipesPublic> =>
+        fakeRecipe({
+          id,
+          userId: authUser.id,
+          author: pick(
+            fakeUser({ id: authUser.id + 1 }),
+            usersKeysPublicWithoutId
+          ),
+        })
     ),
   } satisfies Partial<RecipesRepository>,
 };

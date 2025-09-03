@@ -17,7 +17,7 @@ export const usersKeysAll = Object.keys(usersSchema.shape) as (keyof Users)[];
 
 export const usersKeysPublic = ['id', 'name', 'email', 'image'] as const;
 
-export const usersKeysPublicWithoutId = ['name', 'email'] as const;
+export const usersKeysPublicWithoutId = ['name', 'email', 'image'] as const;
 
 export type UsersPublic = Pick<
   Selectable<Users>,
