@@ -1,3 +1,12 @@
+const { mockDeleteFile, mockUpdateImage } = vi.hoisted(() => ({
+  mockDeleteFile: vi.fn(),
+  mockUpdateImage: vi.fn(),
+}));
+
+vi.mock('@server/utils/AWSS3Client/deleteFile', () => ({
+  deleteFile: mockDeleteFile,
+}));
+
 import { createTestDatabase } from '@tests/utils/database';
 import { wrapInRollbacks } from '@tests/utils/transactions';
 import { insertAll } from '@tests/utils/record';
@@ -16,6 +25,19 @@ import {
 import { usersService } from '../usersService';
 
 const fakeImageUrl = 'https://signed-url.com/folder/image.png';
+
+vi.mock('@server/repositories/usersRepository', async () => {
+  const actual: any = await vi.importActual(
+    '@server/repositories/usersRepository'
+  );
+  return {
+    ...actual,
+    usersRepository: (database_: any) => ({
+      ...actual.usersRepository(database_),
+      updateImage: mockUpdateImage,
+    }),
+  };
+});
 
 vi.mock('@aws-sdk/s3-request-presigner', () => ({
   getSignedUrl: vi.fn(() => fakeImageUrl),
@@ -101,5 +123,51 @@ describe('findById', () => {
     const userById = await service.findById(userWithS3.id);
 
     expect(userById).toEqual(pick(userById, usersKeysPublic));
+  });
+});
+
+describe('updateImage', () => {
+  const fakeImage = 'fake-image';
+
+  it('Should update the image', async () => {
+    const updatedImage = await service.updateImage(user.id, fakeImage);
+
+    expect(updatedImage).toBe(fakeImageUrl);
+  });
+
+  it('Should delete the image from S3 storage on failure', async () => {
+    mockUpdateImage.mockRejectedValueOnce(new Error('DB Failed'));
+
+    await expect(service.updateImage(user.id, fakeImage)).rejects.toThrow(
+      /db failed/i
+    );
+
+    expect(mockDeleteFile).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(String),
+      fakeImage
+    );
+  });
+
+  it('Should fail to delete the image on failure to insert to db and do console.error', async () => {
+    const consoleSpy = vi.spyOn(console, 'error');
+
+    mockUpdateImage.mockRejectedValueOnce(new Error('DB Failed'));
+    mockDeleteFile.mockRejectedValueOnce(new Error('Failed to delete from S3'));
+
+    await expect(service.updateImage(user.id, fakeImage)).rejects.toThrow(
+      /db failed/i
+    );
+
+    expect(mockDeleteFile).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(String),
+      fakeImage
+    );
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Failed to rollback S3 Object:',
+      expect.any(Error)
+    );
   });
 });

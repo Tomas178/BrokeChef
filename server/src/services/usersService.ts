@@ -4,7 +4,10 @@ import type { UsersPublic } from '@server/entities/users';
 import { recipesRepository as buildRecipesRepository } from '@server/repositories/recipesRepository';
 import { usersRepository as buildUsersRepository } from '@server/repositories/usersRepository';
 import type { Pagination } from '@server/shared/pagination';
+import { s3Client } from '@server/utils/AWSS3Client/client';
+import { deleteFile } from '@server/utils/AWSS3Client/deleteFile';
 import { signImages } from '@server/utils/signImages';
+import config from '@server/config';
 
 interface UsersService {
   getRecipes: (
@@ -15,6 +18,7 @@ interface UsersService {
     saved: RecipesPublic[];
   }>;
   findById: (id: string) => Promise<UsersPublic>;
+  updateImage: (id: string, image: string) => Promise<string>;
 }
 
 export function usersService(database: Database): UsersService {
@@ -61,6 +65,24 @@ export function usersService(database: Database): UsersService {
       }
 
       return user;
+    },
+
+    async updateImage(userId, image) {
+      try {
+        let updated = await usersRepository.updateImage(userId, image);
+
+        updated = await signImages(updated);
+
+        return updated;
+      } catch (error) {
+        try {
+          await deleteFile(s3Client, config.auth.aws.s3.buckets.images, image);
+        } catch (S3Error) {
+          console.error('Failed to rollback S3 Object:', S3Error);
+        }
+
+        throw error;
+      }
     },
   };
 }
