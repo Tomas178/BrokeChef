@@ -60,7 +60,7 @@ it('Should remove a recipe', async () => {
 });
 
 it('Should throw an error if recipe does not exist', async () => {
-  repos.recipesRepository.remove.mockRejectedValueOnce(new RecipeNotFound(1));
+  repos.recipesRepository.remove.mockRejectedValueOnce(new RecipeNotFound());
 
   await expect(remove(recipeId)).rejects.toThrow(
     /recipe.*not found|not found.*recipe/i

@@ -127,7 +127,7 @@ export function recipesRepository(database: Database): RecipesRepository {
         .where('id', '=', id)
         .returning(recipesKeysPublic)
         .returning(withAuthor)
-        .executeTakeFirstOrThrow(() => new RecipeNotFound(id));
+        .executeTakeFirstOrThrow(() => new RecipeNotFound());
     },
   };
 }
