@@ -94,7 +94,7 @@ const [handleUpload] = useErrorMessage(async () => {
       },
     },
   });
-}, true);
+});
 
 watch(
   () => user.value?.image,
