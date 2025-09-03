@@ -50,7 +50,7 @@ it('Should throw an error if user is not authenticated', async () => {
 });
 
 it('Should throw an error if user is not found', async () => {
-  mockUpdateImage.mockRejectedValueOnce(new UserNotFound('a'));
+  mockUpdateImage.mockRejectedValueOnce(new UserNotFound());
 
   const { updateImage } = createCaller(
     authContext(

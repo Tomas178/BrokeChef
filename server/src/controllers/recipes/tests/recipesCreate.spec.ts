@@ -62,7 +62,7 @@ it('Should create a persisted recipe', async () => {
 });
 
 it('Should throw an error on failure to create recipe when userId is not found', async () => {
-  mockCreateRecipe.mockRejectedValueOnce(new UserNotFound('1'));
+  mockCreateRecipe.mockRejectedValueOnce(new UserNotFound());
 
   const { create } = createCaller(
     authContext(

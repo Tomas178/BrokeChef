@@ -30,9 +30,9 @@ export function savedRecipesService(database: Database): SavedRecipesService {
     async create(userId, recipeId) {
       const recipeById = await recipesRepository.findById(recipeId);
 
-      if (!recipeById) throw new RecipeNotFound(recipeId);
+      if (!recipeById) throw new RecipeNotFound();
 
-      if (recipeById.userId === userId) throw new CannotSaveOwnRecipe(recipeId);
+      if (recipeById.userId === userId) throw new CannotSaveOwnRecipe();
 
       try {
         const createdRecipe = await savedRecipesRepository.create({
@@ -45,7 +45,7 @@ export function savedRecipesService(database: Database): SavedRecipesService {
         assertPostgresError(error);
 
         if (error.code === PostgresError.UNIQUE_VIOLATION) {
-          throw new RecipeAlreadySaved(recipeId);
+          throw new RecipeAlreadySaved();
         }
       }
     },
@@ -53,10 +53,9 @@ export function savedRecipesService(database: Database): SavedRecipesService {
     async remove(recipeId, userId) {
       const recipeById = await recipesRepository.findById(recipeId);
 
-      if (!recipeById) throw new RecipeNotFound(recipeId);
+      if (!recipeById) throw new RecipeNotFound();
 
-      if (recipeById.userId === userId)
-        throw new CannotUnsaveOwnRecipe(recipeId);
+      if (recipeById.userId === userId) throw new CannotUnsaveOwnRecipe();
 
       try {
         const unsavedRecipe = await savedRecipesRepository.remove(

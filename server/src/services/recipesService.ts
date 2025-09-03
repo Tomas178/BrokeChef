@@ -117,7 +117,7 @@ export function recipesService(database: Database): RecipesService {
           assertPostgresError(error);
 
           if (error.code === PostgresError.FOREIGN_KEY_VIOLATION) {
-            throw new UserNotFound(userId);
+            throw new UserNotFound();
           }
         }
       });

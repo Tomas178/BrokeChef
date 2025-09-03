@@ -16,7 +16,7 @@ export function usersRepository(database: Database): UsersRepository {
         .selectFrom(TABLE)
         .select(usersKeysPublic)
         .where('id', '=', id)
-        .executeTakeFirstOrThrow(() => new UserNotFound(id));
+        .executeTakeFirstOrThrow(() => new UserNotFound());
     },
 
     async updateImage(id, image) {
@@ -25,7 +25,7 @@ export function usersRepository(database: Database): UsersRepository {
         .set({ image })
         .where('id', '=', id)
         .returning('image')
-        .executeTakeFirstOrThrow(() => new UserNotFound(id));
+        .executeTakeFirstOrThrow(() => new UserNotFound());
 
       return updated.image!;
     },
