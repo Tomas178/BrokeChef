@@ -147,7 +147,13 @@ async function handleUnsave() {
             </div>
             <div class="flex flex-col">
               <div class="justify-center leading-loose text-gray-500">
-                <span class="">{{ recipe.author.name }} </span>
+                <span class="text-primary-green">
+                  <RouterLink
+                    :to="{ name: 'UserProfile', params: { id: recipe.userId } }"
+                  >
+                    {{ recipe.author.name }}
+                  </RouterLink>
+                </span>
                 <span class="">
                   • {{ format(recipe.createdAt, 'd MMM yyyy') }}
                 </span>
