@@ -94,17 +94,65 @@ describe('getRecipes', () => {
   });
 });
 
+describe('getCreatedRecipes', () => {
+  it('Should return created recipes by user', async () => {
+    const createdRecipes = await service.getCreatedRecipes(
+      user.id,
+      initialPage
+    );
+
+    const [createdNew, createdOld] = createdRecipes;
+
+    expect(createdOld).toEqual({
+      ...pick(createdRecipeOne, recipesKeysPublic),
+      author: pick(user, usersKeysPublicWithoutId),
+      imageUrl: fakeImageUrl,
+    });
+
+    expect(createdNew).toEqual({
+      ...pick(createdRecipeTwo, recipesKeysPublic),
+      author: pick(user, usersKeysPublicWithoutId),
+      imageUrl: fakeImageUrl,
+    });
+  });
+});
+
+describe('getSavedRecipes', () => {
+  it('Should return saved recipes by user', async () => {
+    await insertAll(database, 'savedRecipes', [
+      fakeSavedRecipe({ userId: user.id, recipeId: createdRecipeOne.id }),
+      fakeSavedRecipe({ userId: user.id, recipeId: createdRecipeTwo.id }),
+    ]);
+
+    const savedRecipes = await service.getSavedRecipes(user.id, initialPage);
+
+    const [savedNew, savedOld] = savedRecipes;
+
+    expect(savedOld).toEqual({
+      ...pick(createdRecipeOne, recipesKeysPublic),
+      author: pick(user, usersKeysPublicWithoutId),
+      imageUrl: fakeImageUrl,
+    });
+
+    expect(savedNew).toEqual({
+      ...pick(createdRecipeTwo, recipesKeysPublic),
+      author: pick(user, usersKeysPublicWithoutId),
+      imageUrl: fakeImageUrl,
+    });
+  });
+});
+
 describe('findById', () => {
   it('Should return user by id when image url is undefined', async () => {
-    const [userWithNull] = await insertAll(
+    const [userWithUndefined] = await insertAll(
       database,
       'users',
       fakeUser({ image: undefined })
     );
 
-    const userById = await service.findById(userWithNull.id);
+    const userById = await service.findById(userWithUndefined.id);
 
-    expect(userById).toEqual(pick(userWithNull, usersKeysPublic));
+    expect(userById).toEqual(pick(userWithUndefined, usersKeysPublic));
   });
 
   it('Should return user by id with not signed url when image is from oauth provider', async () => {

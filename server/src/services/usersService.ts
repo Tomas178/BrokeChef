@@ -17,6 +17,14 @@ interface UsersService {
     created: RecipesPublic[];
     saved: RecipesPublic[];
   }>;
+  getCreatedRecipes: (
+    id: string,
+    pagination: Pagination
+  ) => Promise<RecipesPublic[]>;
+  getSavedRecipes: (
+    id: string,
+    pagination: Pagination
+  ) => Promise<RecipesPublic[]>;
   findById: (id: string) => Promise<UsersPublic>;
   updateImage: (id: string, image: string) => Promise<string>;
 }
@@ -49,6 +57,37 @@ export function usersService(database: Database): UsersService {
       }
 
       return { created, saved };
+    },
+
+    async getCreatedRecipes(id, pagination) {
+      const createdRecipes = await recipesRepository.findCreated(
+        id,
+        pagination
+      );
+
+      const urls = createdRecipes.map(recipe => recipe.imageUrl);
+
+      const signedUrls = await signImages(urls);
+
+      for (const [index, recipe] of createdRecipes.entries()) {
+        recipe.imageUrl = signedUrls[index];
+      }
+
+      return createdRecipes;
+    },
+
+    async getSavedRecipes(id, pagination) {
+      const savedRecipes = await recipesRepository.findCreated(id, pagination);
+
+      const urls = savedRecipes.map(recipe => recipe.imageUrl);
+
+      const signedUrls = await signImages(urls);
+
+      for (const [index, recipe] of savedRecipes.entries()) {
+        recipe.imageUrl = signedUrls[index];
+      }
+
+      return savedRecipes;
     },
 
     async findById(id) {
