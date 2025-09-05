@@ -7,7 +7,6 @@ import type {
   UserWithPagination,
 } from '@server/shared/types';
 import { onMounted, reactive, ref, watch } from 'vue';
-import RecipeCard from '@/components/RecipeCard.vue';
 import { trpc } from '@/trpc';
 import useErrorMessage from '@/composables/useErrorMessage';
 import Spinner from '@/components/Spinner.vue';
@@ -15,23 +14,35 @@ import axios from 'axios';
 import { apiOrigin } from '@/config';
 import { DEFAULT_SERVER_ERROR } from '../consts';
 import useToast from '@/composables/useToast';
+import RecipesList from '@/components/RecipesList/RecipesList.vue';
+import {
+  RECIPE_TYPE,
+  type recipeTypeKeys,
+} from '@/components/RecipesList/types';
 
 const { showLoading, updateToast } = useToast();
+
+const router = useRouter();
 
 const props = defineProps<{
   id?: string;
 }>();
 
+const limit = 4;
+
 const userWithPagination = reactive<UserWithPagination>({
   offset: 0,
-  limit: 5,
+  limit,
   userId: undefined,
+});
+
+const pagination = reactive({
+  saved: { offset: 0, limit },
+  created: { offset: 0, limit },
 });
 
 const profileImageFile = ref<File | undefined>(undefined);
 const fullEndpoint = `${apiOrigin}/api/upload/profile`;
-
-const router = useRouter();
 
 const user = ref<UsersPublic>();
 const recipesSaved = ref<RecipesPublic[]>([]);
@@ -39,12 +50,13 @@ const recipesCreated = ref<RecipesPublic[]>([]);
 
 const isLoadingImage = ref(true);
 
+const totalCreated = ref(0);
+const totalSaved = ref(0);
+
 const [getUser] = useErrorMessage(async () => {
   userWithPagination.userId = props.id;
 
-  user.value = await (userWithPagination.userId
-    ? trpc.users.findById.query(userWithPagination.userId)
-    : trpc.users.findById.query());
+  user.value = await trpc.users.findById.query(userWithPagination.userId);
 
   console.log(user.value);
 });
@@ -84,6 +96,38 @@ async function handleUpload() {
   }
 }
 
+const handleNextPage = async (type: recipeTypeKeys) => {
+  pagination[type].offset += pagination[type].limit;
+
+  if (type === 'created') {
+    recipesCreated.value = await trpc.users.getCreatedRecipes.query({
+      userId: userWithPagination.userId,
+      ...pagination[type],
+    });
+  } else {
+    recipesSaved.value = await trpc.users.getSavedRecipes.query({
+      userId: userWithPagination.userId,
+      ...pagination[type],
+    });
+  }
+};
+
+const handlePrevPage = async (type: recipeTypeKeys) => {
+  pagination[type].offset -= pagination[type].limit;
+
+  if (type === 'created') {
+    recipesCreated.value = await trpc.users.getCreatedRecipes.query({
+      userId: userWithPagination.userId,
+      ...pagination[type],
+    });
+  } else {
+    recipesSaved.value = await trpc.users.getSavedRecipes.query({
+      userId: userWithPagination.userId,
+      ...pagination[type],
+    });
+  }
+};
+
 watch(
   () => user.value?.image,
   (newImage, oldImage) => {
@@ -108,14 +152,17 @@ onMounted(async () => {
     return;
   }
 
-  const { created, saved } =
-    await trpc.users.getRecipes.query(userWithPagination);
+  const [recipes, totalSavedByUser, totalCreatedByUser] = await Promise.all([
+    trpc.users.getRecipes.query(userWithPagination),
+    trpc.users.totalSaved.query(userWithPagination.userId),
+    trpc.users.totalCreated.query(userWithPagination.userId),
+  ]);
 
-  recipesCreated.value = created;
-  recipesSaved.value = saved;
+  recipesCreated.value = recipes.created;
+  recipesSaved.value = recipes.saved;
 
-  console.log(recipesCreated.value);
-  console.log(recipesSaved.value);
+  totalSaved.value = totalSavedByUser;
+  totalCreated.value = totalCreatedByUser;
 });
 </script>
 
@@ -179,26 +226,31 @@ onMounted(async () => {
         </div>
       </div>
 
-      <div class="mt-15 ml-15 flex flex-col gap-10 lg:mt-20 lg:ml-25 xl:mt-25">
-        <span>{{ user.name }}</span>
+      <div class="m-15 flex flex-col gap-10 lg:my-20 lg:ml-25 xl:my-25">
+        <span class="text-xl lg:text-2xl">{{ user.name }}</span>
         <div>
           <div class="flex flex-col gap-10">
-            <span>Saved Recipes</span>
-            <div class="flex gap-5 overflow-x-auto">
-              <RecipeCard
-                v-for="saved in recipesSaved"
-                :key="saved.id"
-                :recipe="saved"
-              />
-            </div>
-            <span>Created Recipes</span>
-            <div class="flex gap-5 overflow-x-auto">
-              <RecipeCard
-                v-for="created in recipesCreated"
-                :key="created.id"
-                :recipe="created"
-              />
-            </div>
+            <RecipesList
+              @next-page="handleNextPage(RECIPE_TYPE.SAVED)"
+              @prev-page="handlePrevPage(RECIPE_TYPE.SAVED)"
+              title="Saved Recipes"
+              :recipeType="RECIPE_TYPE.SAVED"
+              :recipes="recipesSaved"
+              :offset="pagination[RECIPE_TYPE.SAVED].offset"
+              :limit="pagination[RECIPE_TYPE.SAVED].limit"
+              :total="totalSaved"
+            />
+
+            <RecipesList
+              @next-page="handleNextPage(RECIPE_TYPE.CREATED)"
+              @prev-page="handlePrevPage(RECIPE_TYPE.CREATED)"
+              title="Created Recipes"
+              :recipeType="RECIPE_TYPE.CREATED"
+              :recipes="recipesCreated"
+              :offset="pagination[RECIPE_TYPE.CREATED].offset"
+              :limit="pagination[RECIPE_TYPE.CREATED].limit"
+              :total="totalCreated"
+            />
           </div>
         </div>
       </div>
