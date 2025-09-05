@@ -38,7 +38,7 @@ const isLoading = ref(true);
     <div
       class="flex w-full flex-1 flex-col rounded-md bg-black/10 p-2 lg:px-5 lg:py-3"
     >
-      <div class="justify-center leading-loose">
+      <div class="justify-center text-xs leading-loose sm:text-base">
         <span>{{ recipe.author.name }}</span>
         <span> • {{ format(recipe.createdAt, 'd MMM yyyy') }}</span>
       </div>
