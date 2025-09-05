@@ -72,6 +72,7 @@
     "nodemailer": "^7.0.5",
     "pg": "^8.16.3",
     "pg-error-enum": "^1.0.2",
+    "sharp": "^0.34.3",
     "superjson": "^2.2.2",
     "supertest": "^7.1.4",
     "zod": "^4.0.14",
