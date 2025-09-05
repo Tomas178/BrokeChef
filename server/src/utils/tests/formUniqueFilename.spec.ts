@@ -8,11 +8,8 @@ vi.mock('node:crypto', () => ({
 
 describe('formUniqueFilename', () => {
   it('Should return unique filename', () => {
-    const filename = 'file';
+    const uniqueFilename = formUniqueFilename();
 
-    const uniqueFilename = formUniqueFilename(filename);
-
-    expect(uniqueFilename).toContain(fakeRandomUUID);
-    expect(uniqueFilename).toContain(filename);
+    expect(uniqueFilename).toBe(fakeRandomUUID);
   });
 });

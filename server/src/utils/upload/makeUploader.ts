@@ -1,26 +1,10 @@
 /* eslint-disable unicorn/no-null */
 import multer from 'multer';
-import multerS3 from 'multer-s3';
-import config from '@server/config';
-import type { S3Client } from '@aws-sdk/client-s3';
 import { allowedMimetypesArray } from '@server/enums/AllowedMimetype';
-import { formUniqueFilename } from '../formUniqueFilename';
 
-export type Folders = 'Recipes' | 'Profiles';
-
-export function makeUploader(folder: Folders, awsS3Client: S3Client) {
+export function makeUploader() {
   return multer({
-    storage: multerS3({
-      s3: awsS3Client,
-      bucket: config.auth.aws.s3.buckets.images,
-      metadata: (_request, file, callback) => {
-        callback(null, { fieldName: file.fieldname });
-      },
-      key: (_request, file, callback) => {
-        const uniqueName = formUniqueFilename(file.originalname);
-        callback(null, `${folder}/${uniqueName}`);
-      },
-    }),
+    storage: multer.memoryStorage(),
     fileFilter: (request, file, callback) => {
       if (allowedMimetypesArray.includes(file.mimetype)) {
         callback(null, true);
