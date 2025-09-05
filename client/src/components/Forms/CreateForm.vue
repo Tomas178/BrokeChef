@@ -34,7 +34,7 @@ function removeInput(index: number) {
         <div
           v-for="(_input, index) in inputs"
           :key="index"
-          class="flex items-center gap-2"
+          class="animate-zoomin animate-duration-300 flex items-center gap-2"
         >
           <FwbInput
             type="text"

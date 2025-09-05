@@ -3,6 +3,7 @@
 @import 'tailwindcss/preflight.css' layer(base);
 @import 'tailwindcss/utilities.css' layer(utilities);
 @import './theme.css' layer(theme);
+@import 'tailwindcss-primeui';
 
 /* import Flowbite Vue styles */
 @import 'flowbite-vue/index.css';
