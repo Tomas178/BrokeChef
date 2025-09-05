@@ -208,19 +208,21 @@ onMounted(async () => {
           </template>
 
           <template v-else>
-            <div class="relative h-full w-full overflow-hidden rounded-full">
+            <div
+              class="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-gray-300"
+            >
               <FwbFileInput
                 v-model="profileImageFile"
                 dropzone
                 accept="image/*"
-                class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                class="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+              />
+
+              <span
+                class="text-header pointer-events-none z-20 text-center text-sm"
               >
-              </FwbFileInput>
-              <div
-                class="text-header absolute inset-0 flex items-center justify-center rounded-full bg-gray-300 text-sm font-medium"
-              >
-                <span>Upload Image</span>
-              </div>
+                Upload Image
+              </span>
             </div>
           </template>
         </div>
