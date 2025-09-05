@@ -36,8 +36,8 @@ export function usersService(database: Database): UsersService {
   return {
     async getRecipes(id, pagination) {
       const [created, saved] = await Promise.all([
-        recipesRepository.findCreated(id, pagination),
-        recipesRepository.findSaved(id, pagination),
+        recipesRepository.findCreatedByUser(id, pagination),
+        recipesRepository.findSavedByUser(id, pagination),
       ]);
 
       const createdUrls = created.map(recipe => recipe.imageUrl);
@@ -60,7 +60,7 @@ export function usersService(database: Database): UsersService {
     },
 
     async getCreatedRecipes(id, pagination) {
-      const createdRecipes = await recipesRepository.findCreated(
+      const createdRecipes = await recipesRepository.findCreatedByUser(
         id,
         pagination
       );
@@ -77,7 +77,10 @@ export function usersService(database: Database): UsersService {
     },
 
     async getSavedRecipes(id, pagination) {
-      const savedRecipes = await recipesRepository.findSaved(id, pagination);
+      const savedRecipes = await recipesRepository.findSavedByUser(
+        id,
+        pagination
+      );
 
       const urls = savedRecipes.map(recipe => recipe.imageUrl);
 
