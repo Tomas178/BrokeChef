@@ -28,7 +28,7 @@ import { ai } from '@server/utils/GoogleGenAiClient/client';
 import { uploadImage } from '@server/utils/AWSS3Client/uploadImage';
 import { s3Client } from '@server/utils/AWSS3Client/client';
 import { ImageFolder } from '@server/enums/ImageFolder';
-import { ALLOWED_MIMETYPE } from '@server/enums/AllowedMimetype';
+import { AllowedMimeType } from '@server/enums/AllowedMimetype';
 import { deleteFile } from '@server/utils/AWSS3Client/deleteFile';
 import config from '@server/config';
 import { joinStepsToSingleString } from './utils/joinStepsToSingleString';
@@ -67,7 +67,7 @@ export function recipesService(database: Database): RecipesService {
             s3Client,
             ImageFolder.RECIPES,
             generatedImage,
-            ALLOWED_MIMETYPE.JPEG
+            AllowedMimeType.JPEG
           );
         }
 

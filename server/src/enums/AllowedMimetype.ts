@@ -1,11 +1,9 @@
-export enum ALLOWED_MIMETYPE {
+export enum AllowedMimeType {
   PNG = 'image/png',
   JPEG = 'image/jpeg',
 }
 
-export const allowedMimetypesArray = Object.values(
-  ALLOWED_MIMETYPE
-) as string[];
+export const allowedMimetypesArray = Object.values(AllowedMimeType) as string[];
 
 export type AllowedMimetypeKeys =
-  (typeof ALLOWED_MIMETYPE)[keyof typeof ALLOWED_MIMETYPE];
+  (typeof AllowedMimeType)[keyof typeof AllowedMimeType];

@@ -19,7 +19,7 @@ import { resizeImage } from './utils/resizeImage';
 import { ImageFolder } from './enums/ImageFolder';
 import { uploadImage } from './utils/AWSS3Client/uploadImage';
 import { s3Client } from './utils/AWSS3Client/client';
-import { ALLOWED_MIMETYPE } from './enums/AllowedMimetype';
+import { AllowedMimeType } from './enums/AllowedMimetype';
 
 export default function createApp(db: Database) {
   const app = express();
@@ -56,7 +56,7 @@ export default function createApp(db: Database) {
       s3Client,
       ImageFolder.RECIPES,
       resizedFileBuffer,
-      ALLOWED_MIMETYPE.JPEG
+      AllowedMimeType.JPEG
     );
 
     res.status(StatusCodes.OK).json({ imageUrl: key });
@@ -79,7 +79,7 @@ export default function createApp(db: Database) {
       s3Client,
       ImageFolder.PROFILES,
       resizedFileBuffer,
-      ALLOWED_MIMETYPE.JPEG
+      AllowedMimeType.JPEG
     );
 
     res.status(StatusCodes.OK).json({ image: key });

@@ -1,6 +1,6 @@
 import type { GoogleGenAI } from '@google/genai';
 import type { RecipesPublicAllInfo } from '@server/entities/recipes';
-import { ALLOWED_MIMETYPE } from '@server/enums/AllowedMimetype';
+import { AllowedMimeType } from '@server/enums/AllowedMimetype';
 
 type RecipeData = Pick<RecipesPublicAllInfo, 'title' | 'ingredients'>;
 
@@ -13,7 +13,7 @@ export async function generateRecipeImage(
     prompt: `A realistic high-quality food photo of "${data.title}", made with ${data.ingredients.join(',')}. Food in the image should be as much as possible in the center`,
     config: {
       numberOfImages: 1,
-      outputMimeType: ALLOWED_MIMETYPE.JPEG,
+      outputMimeType: AllowedMimeType.JPEG,
       aspectRatio: '1:1',
     },
   });
