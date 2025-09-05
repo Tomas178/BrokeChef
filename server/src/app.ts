@@ -54,7 +54,7 @@ export default function createApp(db: Database) {
 
     const key = await uploadImage(
       s3Client,
-      ImageFolder.PROFILES,
+      ImageFolder.RECIPES,
       resizedFileBuffer,
       ALLOWED_MIMETYPE.JPEG
     );
