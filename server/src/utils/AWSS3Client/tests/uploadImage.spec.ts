@@ -22,7 +22,7 @@ describe('uploadImage', () => {
   it('Should upload image and not return anything', async () => {
     mockSend.mockResolvedValueOnce({});
 
-    await uploadImage(mockS3Client, folder, fileName, buffer, contentType);
+    await uploadImage(mockS3Client, folder, buffer, contentType);
 
     expect(mockSend).toHaveBeenCalledOnce();
 

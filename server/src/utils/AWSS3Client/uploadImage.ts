@@ -7,11 +7,10 @@ import { formUniqueFilename } from '../formUniqueFilename';
 export async function uploadImage(
   s3Client: S3Client,
   folder: ImageFolderKeys,
-  filename: string,
   buffer: Buffer,
   contentType: AllowedMimetypeKeys
 ): Promise<string> {
-  const uniqueFilename = formUniqueFilename(filename);
+  const uniqueFilename = formUniqueFilename();
 
   const key = `${folder}/${uniqueFilename}`;
 
