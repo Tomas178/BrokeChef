@@ -33,7 +33,6 @@ describe('resizeImage', () => {
     expect(mockResize).toHaveBeenCalledWith({
       height: 1920,
       width: 1080,
-      fit: 'contain',
     });
     expect(mockToFormat).toHaveBeenCalledWith('jpeg');
     expect(mockToBuffer).toHaveBeenCalled();

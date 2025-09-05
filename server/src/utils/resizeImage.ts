@@ -5,7 +5,6 @@ export async function resizeImage(file: Express.Multer.File) {
     .resize({
       height: 1920,
       width: 1080,
-      fit: 'contain',
     })
     .toFormat('jpeg')
     .toBuffer();
