@@ -14,9 +14,9 @@ import { auth } from './auth';
 import type { Context } from './trpc/index';
 import { appRouter } from './controllers';
 import config from './config';
-import { recipeUpload } from './utils/upload/recipeUpload';
-import { profileUpload } from './utils/upload/profileUpload';
-import { imageUrlToBucketKey } from './utils/imageUrlToBucketKey';
+import { upload } from './utils/upload';
+import { resizeAndUpload } from './utils/AWSS3Client/resizeAndUpload';
+import { ImageFolder } from './enums/ImageFolder';
 
 export default function createApp(db: Database) {
   const app = express();
@@ -36,7 +36,7 @@ export default function createApp(db: Database) {
     res.status(StatusCodes.OK).send('OK');
   });
 
-  app.post('/api/upload/recipe', recipeUpload.single('file'), (req, res) => {
+  app.post('/api/upload/recipe', upload.single('file'), async (req, res) => {
     if (req.fileValidationError) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         error: {
@@ -45,13 +45,14 @@ export default function createApp(db: Database) {
       });
     }
 
-    const file = req.file as Express.MulterS3.File;
-    res
-      .status(StatusCodes.OK)
-      .json({ imageUrl: imageUrlToBucketKey(file.location) });
+    const file = req.file as Express.Multer.File;
+
+    const key = await resizeAndUpload(file, ImageFolder.RECIPES);
+
+    res.status(StatusCodes.OK).json({ imageUrl: key });
   });
 
-  app.post('/api/upload/profile', profileUpload.single('file'), (req, res) => {
+  app.post('/api/upload/profile', upload.single('file'), async (req, res) => {
     if (req.fileValidationError) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         error: {
@@ -60,10 +61,11 @@ export default function createApp(db: Database) {
       });
     }
 
-    const file = req.file as Express.MulterS3.File;
-    res
-      .status(StatusCodes.OK)
-      .json({ image: imageUrlToBucketKey(file.location) });
+    const file = req.file as Express.Multer.File;
+
+    const key = await resizeAndUpload(file, ImageFolder.PROFILES);
+
+    res.status(StatusCodes.OK).json({ image: key });
   });
 
   app.use(
