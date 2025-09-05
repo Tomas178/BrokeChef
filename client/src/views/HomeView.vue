@@ -90,6 +90,7 @@ onMounted(async () => {
           v-for="recipe in recipes"
           :key="recipe.id"
           :recipe="recipe"
+          :hover-scale="true"
         />
       </div>
       <FwbPagination
