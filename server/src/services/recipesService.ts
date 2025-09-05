@@ -62,12 +62,10 @@ export function recipesService(database: Database): RecipesService {
             title: recipeData.title,
             ingredients,
           });
-          const filename = `${recipeData.title}-by-AI`;
 
           imageUrl = await uploadImage(
             s3Client,
             ImageFolder.RECIPES,
-            filename,
             generatedImage,
             ALLOWED_MIMETYPE.JPEG
           );
