@@ -77,7 +77,7 @@ export function usersService(database: Database): UsersService {
     },
 
     async getSavedRecipes(id, pagination) {
-      const savedRecipes = await recipesRepository.findCreated(id, pagination);
+      const savedRecipes = await recipesRepository.findSaved(id, pagination);
 
       const urls = savedRecipes.map(recipe => recipe.imageUrl);
 
