@@ -81,9 +81,12 @@ describe('findById', () => {
   });
 });
 
-describe('findCreated', () => {
+describe('findCreatedByUser', () => {
   it('Should return an empty array when there is no recipe created by user', async () => {
-    const recipes = await repository.findCreated(userThree.id, initialPage);
+    const recipes = await repository.findCreatedByUser(
+      userThree.id,
+      initialPage
+    );
 
     expect(recipes).toEqual([]);
   });
@@ -95,7 +98,7 @@ describe('findCreated', () => {
       fakeRecipe({ userId: userThree.id })
     );
 
-    const [createdRecipesByUser] = await repository.findCreated(
+    const [createdRecipesByUser] = await repository.findCreatedByUser(
       userThree.id,
       initialPage
     );
@@ -107,9 +110,29 @@ describe('findCreated', () => {
   });
 });
 
-describe('findSaved', () => {
+describe('totalCreatedByUser', () => {
+  it('Should return 0', async () => {
+    await expect(repository.totalCreatedByUser(userThree.id)).resolves.toBe(0);
+  });
+
+  it('Should return the amount that was created', async () => {
+    const created = await insertAll(database, 'recipes', [
+      fakeRecipe({ userId: userThree.id }),
+      fakeRecipe({ userId: userThree.id }),
+    ]);
+
+    await expect(repository.totalCreatedByUser(userThree.id)).resolves.toBe(
+      created.length
+    );
+  });
+});
+
+describe('findSavedByUser', () => {
   it('Should return an empty array when there is no recipe saved by user', async () => {
-    const savedRecipes = await repository.findSaved(userThree.id, initialPage);
+    const savedRecipes = await repository.findSavedByUser(
+      userThree.id,
+      initialPage
+    );
 
     expect(savedRecipes).toEqual([]);
   });
@@ -121,7 +144,7 @@ describe('findSaved', () => {
       fakeSavedRecipe({ userId: userOne.id, recipeId: recipeOne.id })
     );
 
-    const [savedRecipesByUser] = await repository.findSaved(
+    const [savedRecipesByUser] = await repository.findSavedByUser(
       savedRecipes.userId,
       initialPage
     );
@@ -130,6 +153,23 @@ describe('findSaved', () => {
       ...pick(recipeOne, recipesKeysPublic),
       author: pick(userOne, usersKeysPublicWithoutId),
     });
+  });
+});
+
+describe('totalSavedByUser', () => {
+  it('Should return 0', async () => {
+    await expect(repository.totalSavedByUser(userThree.id)).resolves.toBe(0);
+  });
+
+  it('Should return the amount that was saved', async () => {
+    const saved = await insertAll(database, 'savedRecipes', [
+      fakeSavedRecipe({ recipeId: recipeOne.id, userId: userThree.id }),
+      fakeSavedRecipe({ recipeId: recipeTwo.id, userId: userThree.id }),
+    ]);
+
+    await expect(repository.totalSavedByUser(userThree.id)).resolves.toBe(
+      saved.length
+    );
   });
 });
 

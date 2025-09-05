@@ -20,14 +20,16 @@ const TABLE = 'recipes';
 export interface RecipesRepository {
   create: (recipe: Insertable<Recipes>) => Promise<RecipesPublic>;
   findById: (id: number) => Promise<RecipesPublicAllInfo | undefined>;
-  findCreated: (
+  findCreatedByUser: (
     userId: string,
     { offset, limit }: Pagination
   ) => Promise<RecipesPublic[]>;
-  findSaved: (
+  totalCreatedByUser: (userId: string) => Promise<number>;
+  findSavedByUser: (
     userId: string,
     { offset, limit }: Pagination
   ) => Promise<RecipesPublic[]>;
+  totalSavedByUser: (userId: string) => Promise<number>;
   findAll: ({ offset, limit }: Pagination) => Promise<RecipesPublic[]>;
   totalCount: () => Promise<number>;
   isAuthor: (recipeId: number, userId: string) => Promise<boolean>;
@@ -65,7 +67,7 @@ export function recipesRepository(database: Database): RecipesRepository {
       };
     },
 
-    async findCreated(userId, { offset, limit }) {
+    async findCreatedByUser(userId, { offset, limit }) {
       return database
         .selectFrom(TABLE)
         .select(recipesKeysPublic)
@@ -77,7 +79,17 @@ export function recipesRepository(database: Database): RecipesRepository {
         .execute();
     },
 
-    async findSaved(userId, { offset, limit }) {
+    async totalCreatedByUser(userId) {
+      const { count } = await database
+        .selectFrom(TABLE)
+        .select(({ fn }) => fn.countAll().as('count'))
+        .where('userId', '=', userId)
+        .executeTakeFirstOrThrow();
+
+      return Number(count);
+    },
+
+    async findSavedByUser(userId, { offset, limit }) {
       return database
         .selectFrom(TABLE)
         .innerJoin('savedRecipes', 'savedRecipes.recipeId', 'recipes.id')
@@ -88,6 +100,17 @@ export function recipesRepository(database: Database): RecipesRepository {
         .offset(offset)
         .limit(limit)
         .execute();
+    },
+
+    async totalSavedByUser(userId) {
+      const { count } = await database
+        .selectFrom(TABLE)
+        .innerJoin('savedRecipes', 'savedRecipes.recipeId', 'recipes.id')
+        .select(({ fn }) => fn.countAll().as('count'))
+        .where('savedRecipes.userId', '=', userId)
+        .executeTakeFirstOrThrow();
+
+      return Number(count);
     },
 
     async findAll({ offset, limit }) {
@@ -102,12 +125,12 @@ export function recipesRepository(database: Database): RecipesRepository {
     },
 
     async totalCount() {
-      const result = await database
+      const { count } = await database
         .selectFrom(TABLE)
-        .select(eb => eb.fn.count<number>('id').as('count'))
+        .select(eb => eb.fn.count('id').as('count'))
         .executeTakeFirstOrThrow();
 
-      return Number(result.count);
+      return Number(count);
     },
 
     async isAuthor(recipeId, userId) {
