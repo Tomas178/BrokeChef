@@ -3,7 +3,7 @@ export enum ALLOWED_MIMETYPE {
   JPEG = 'image/jpeg',
 }
 
-export const AllowedMimetypesArray = Object.values(
+export const allowedMimetypesArray = Object.values(
   ALLOWED_MIMETYPE
 ) as string[];
 

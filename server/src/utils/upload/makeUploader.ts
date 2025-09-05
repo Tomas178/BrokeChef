@@ -3,7 +3,7 @@ import multer from 'multer';
 import multerS3 from 'multer-s3';
 import config from '@server/config';
 import type { S3Client } from '@aws-sdk/client-s3';
-import { AllowedMimetypesArray } from '@server/enums/AllowedMimetype';
+import { allowedMimetypesArray } from '@server/enums/AllowedMimetype';
 import { formUniqueFilename } from '../formUniqueFilename';
 
 export type Folders = 'Recipes' | 'Profiles';
@@ -22,7 +22,7 @@ export function makeUploader(folder: Folders, awsS3Client: S3Client) {
       },
     }),
     fileFilter: (request, file, callback) => {
-      if (AllowedMimetypesArray.includes(file.mimetype)) {
+      if (allowedMimetypesArray.includes(file.mimetype)) {
         callback(null, true);
       } else {
         request.fileValidationError =
