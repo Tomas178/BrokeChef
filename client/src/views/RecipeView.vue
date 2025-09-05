@@ -145,9 +145,9 @@ async function handleUnsave() {
                 </button>
               </div>
             </div>
-            <div class="flex flex-col">
+            <div class="flex flex-col md:text-xl lg:text-2xl">
               <div class="justify-center leading-loose text-gray-500">
-                <span class="text-primary-green">
+                <span class="text-primary-green hover:text-secondary-green">
                   <RouterLink
                     :to="{ name: 'UserProfile', params: { id: recipe.userId } }"
                   >
