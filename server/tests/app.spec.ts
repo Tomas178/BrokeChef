@@ -15,10 +15,15 @@ vi.mock('@server/utils/upload', () => ({
   },
 }));
 
-const fakeImage = 'mock-s3/image.png';
+const fakeBuffer = Buffer.from('fake');
+const fakeKey = 'fakeKey';
 
-vi.mock('@server/utils/AWSS3Client/resizeAndUpload', () => ({
-  resizeAndUpload: vi.fn(async (_file: any, _folder: any) => fakeImage),
+vi.mock('@server/utils/resizeImage', () => ({
+  resizeImage: vi.fn(async (_file: any, _folder: any) => fakeBuffer),
+}));
+
+vi.mock('@server/utils/AWSS3Client/uploadImage', () => ({
+  uploadImage: vi.fn(() => fakeKey),
 }));
 
 const database = await wrapInRollbacks(createTestDatabase());
@@ -70,7 +75,7 @@ describe('Image uploading', () => {
         .attach('file', Buffer.from('test'), 'file.png')
         .expect(StatusCodes.OK);
 
-      expect(body).toEqual({ [responseKey]: fakeImage });
+      expect(body).toEqual({ [responseKey]: fakeKey });
     };
 
   describe('Recipes', () => {
