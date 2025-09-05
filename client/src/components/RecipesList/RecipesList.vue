@@ -15,13 +15,13 @@ const props = defineProps<{
   total: number;
 }>();
 
-const hasPrev = computed(() => props.offset > 0);
-const hasNext = computed(() => props.offset + props.limit < props.total);
-
 defineEmits<{
   prevPage: [];
   nextPage: [];
 }>();
+
+const hasPrev = computed(() => props.offset > 0);
+const hasNext = computed(() => props.offset + props.limit < props.total);
 </script>
 
 <template>
@@ -31,10 +31,10 @@ defineEmits<{
     >
       {{ title }}
     </span>
-    <div v-if="recipes.length > 0" class="relative w-full">
+    <div v-if="recipes.length > 0" class="relative">
       <NavButton v-if="hasPrev" @click="$emit('prevPage')" direction="left" />
 
-      <div class="flex gap-4 lg:gap-5">
+      <div class="flex gap-4 overflow-x-auto lg:gap-5">
         <RecipeCard
           v-for="recipe in recipes"
           :key="recipe.id"

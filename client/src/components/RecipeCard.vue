@@ -23,7 +23,7 @@ const isLoading = ref(true);
     ]"
   >
     <div
-      class="flex h-48 w-full items-center justify-center overflow-hidden rounded-md bg-gray-200 lg:h-64"
+      class="flex h-48 w-full items-center justify-center overflow-hidden rounded-md bg-gray-200 lg:h-84"
     >
       <Spinner v-show="isLoading" />
       <img
