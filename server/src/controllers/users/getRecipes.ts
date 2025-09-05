@@ -11,15 +11,12 @@ export default authenticatedProcedure
       input: { userId, offset, limit },
       ctx: { authUser, services },
     }) => {
-      const result = await (userId
-        ? services.usersService.getRecipes(userId, {
-            offset,
-            limit,
-          })
-        : services.usersService.getRecipes(authUser.id, {
-            offset,
-            limit,
-          }));
+      userId = userId ?? authUser.id;
+
+      const result = await services.usersService.getRecipes(userId, {
+        offset,
+        limit,
+      });
 
       return result;
     }
