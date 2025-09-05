@@ -209,7 +209,7 @@ onMounted(async () => {
 
           <template v-else>
             <div
-              class="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-gray-300"
+              class="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-gray-300 hover:scale-105"
             >
               <FwbFileInput
                 v-model="profileImageFile"
