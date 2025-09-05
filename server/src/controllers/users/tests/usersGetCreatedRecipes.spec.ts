@@ -45,7 +45,7 @@ it('Should return created recipes', async () => {
 
   const retrievedCreatedRecipes = await getCreatedRecipes({});
 
-  expect(retrievedCreatedRecipes).toHaveLength(2);
+  expect(retrievedCreatedRecipes).toHaveLength(createdRecipes.length);
 
   const [createdNew, createdOld] = retrievedCreatedRecipes;
 
