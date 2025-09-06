@@ -2,23 +2,24 @@
   <picture>
     <source
       srcset="@/assets/background-pictures/salad-bowl-large.webp"
-      type="image/webp"
+      media="(min-width: 768px)"
     />
     <source
       srcset="@/assets/background-pictures/salad-bowl-small.webp"
-      type="image/webp"
+      media="(max-width: 767px)"
     />
     <source
       srcset="@/assets/background-pictures/salad-bowl-large.png"
-      type="image/png"
+      media="(min-width: 768px)"
     />
     <source
       srcset="@/assets/background-pictures/salad-bowl-small.png"
-      type="image/png"
+      media="(max-width: 767px)"
     />
+
     <img
-      class="absolute top-36 right-6 left-1/8 -z-1 size-48 h-72 w-72 bg-cover"
-      src="@/assets/background-pictures/salad-bowl-large.png"
+      class="absolute top-36 left-1/4 -z-1 size-48 bg-cover lg:right-6 lg:left-1/8 lg:h-72 lg:w-72 xl:left-1/12"
+      src="@/assets/background-pictures/salad-bowl-small.png"
       alt="Salad bowl"
     />
   </picture>
