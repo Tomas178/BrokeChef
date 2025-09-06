@@ -95,74 +95,77 @@ async function handleUnsave() {
 
 <template>
   <div v-if="recipe">
-    <div class="relative w-full">
-      <div class="flex h-64 w-full items-center justify-center lg:h-104">
-        <Spinner v-show="isLoading" />
-        <img
-          v-show="!isLoading"
-          :src="recipe.imageUrl"
-          :alt="recipe.title"
-          class="h-full w-full object-cover"
-          @load="isLoading = false"
-        />
+    <div class="mx-4 grid grid-cols-9 gap-2">
+      <div class="relative col-span-5 w-full">
+        <div class="flex h-64 w-full lg:h-104">
+          <Spinner v-show="isLoading" />
+          <img
+            v-show="!isLoading"
+            :src="recipe.imageUrl"
+            :alt="recipe.title"
+            class="h-full w-full rounded-2xl object-cover"
+            @load="isLoading = false"
+          />
+        </div>
+      </div>
+
+      <div class="col-span-4 mt-4 mb-4 ml-4 flex flex-col gap-2">
+        <div class="justify-center">
+          <span
+            class="text-submit-text text-3xl font-bold text-wrap break-words lg:text-6xl"
+            >{{ titleCase(recipe.title.toLowerCase()) }}
+          </span>
+        </div>
+        <div class="flex flex-col md:text-xl lg:text-2xl">
+          <div class="justify-center leading-loose text-gray-500">
+            <span class="text-primary-green hover:text-secondary-green">
+              <RouterLink
+                :to="{ name: 'UserProfile', params: { id: recipe.userId } }"
+              >
+                {{ recipe.author.name }}
+              </RouterLink>
+            </span>
+            <span class="">
+              • {{ format(recipe.createdAt, 'd MMM yyyy') }}
+            </span>
+          </div>
+          <div class="justify-center leading-loose text-gray-500">
+            <span>Cook duration {{ recipe.duration }} minutes</span>
+          </div>
+        </div>
+
+        <div class="mt-auto mr-0 flex justify-end self-end md:mr-12 lg:mr-28">
+          <button
+            v-if="isAuthor"
+            @click="handleDelete"
+            type="button"
+            class="cursor-pointer rounded-3xl bg-red-400/90 px-6 py-2 text-xl leading-tight font-medium text-white hover:scale-105"
+          >
+            Delete
+          </button>
+          <button
+            v-else-if="!isSaved"
+            @click="handleSave"
+            type="button"
+            class="gradient-action-button cursor-pointer rounded-3xl px-6 py-2 text-xl leading-tight font-medium text-white hover:scale-105"
+          >
+            Save
+          </button>
+          <button
+            v-else
+            @click="handleUnsave"
+            type="button"
+            class="gradient-action-button cursor-pointer rounded-3xl px-6 py-2 text-xl leading-tight font-medium text-white hover:scale-105"
+          >
+            Unsave
+          </button>
+        </div>
       </div>
     </div>
 
     <div class="mx-4 mt-8 mb-12 md:mx-16 md:mt-10 md:mb-14 lg:mx-32">
       <div class="flex flex-col gap-20">
         <div class="flex flex-col gap-10">
-          <div class="flex w-full flex-col gap-2">
-            <div class="flex items-start justify-between">
-              <div class="justify-center">
-                <span class="text-submit-text text-3xl font-bold lg:text-6xl"
-                  >{{ titleCase(recipe.title.toLowerCase()) }}
-                </span>
-              </div>
-              <div class="flex justify-start">
-                <button
-                  v-if="isAuthor"
-                  @click="handleDelete"
-                  type="button"
-                  class="cursor-pointer rounded-3xl bg-red-400/90 px-6 py-2 text-xl leading-tight font-medium text-white hover:scale-105"
-                >
-                  Delete
-                </button>
-                <button
-                  v-else-if="!isSaved"
-                  @click="handleSave"
-                  type="button"
-                  class="gradient-action-button cursor-pointer rounded-3xl px-6 py-2 text-xl leading-tight font-medium text-white hover:scale-105"
-                >
-                  Save
-                </button>
-                <button
-                  v-else
-                  @click="handleUnsave"
-                  type="button"
-                  class="gradient-action-button cursor-pointer rounded-3xl px-6 py-2 text-xl leading-tight font-medium text-white hover:scale-105"
-                >
-                  Unsave
-                </button>
-              </div>
-            </div>
-            <div class="flex flex-col md:text-xl lg:text-2xl">
-              <div class="justify-center leading-loose text-gray-500">
-                <span class="text-primary-green hover:text-secondary-green">
-                  <RouterLink
-                    :to="{ name: 'UserProfile', params: { id: recipe.userId } }"
-                  >
-                    {{ recipe.author.name }}
-                  </RouterLink>
-                </span>
-                <span class="">
-                  • {{ format(recipe.createdAt, 'd MMM yyyy') }}
-                </span>
-              </div>
-              <div class="justify-center leading-loose text-gray-500">
-                <span>Cook duration {{ recipe.duration }} minutes</span>
-              </div>
-            </div>
-          </div>
           <div
             class="flex flex-col gap-4 self-stretch lg:flex-row lg:justify-between"
           >
