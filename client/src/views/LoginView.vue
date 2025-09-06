@@ -79,7 +79,9 @@ const formFooter = {
         class="bg-white"
       />
 
-      <div class="text-primary-green justify-center text-end leading-loose">
+      <div
+        class="text-primary-green hover:text-secondary-green justify-center text-end leading-loose"
+      >
         <RouterLink :to="requestResetPasswordPath"
           >Forgot your password?</RouterLink
         >

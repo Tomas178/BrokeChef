@@ -84,7 +84,10 @@ async function handleResetPassword() {
       <SubmitButton action-name="Reset Password" />
 
       <div class="justify-end self-stretch text-center">
-        <RouterLink :to="loginPath" class="text-primary-green">
+        <RouterLink
+          :to="loginPath"
+          class="hover:text-secondary-green text-primary-green"
+        >
           Sign in
         </RouterLink>
       </div>

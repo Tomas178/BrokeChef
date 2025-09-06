@@ -53,7 +53,7 @@ const { actionName, footer } = defineProps<{
         <span class="text-black">{{ footer.text }} </span
         ><RouterLink
           :to="footer.redirectPageFullLink"
-          class="text-primary-green"
+          class="text-primary-green hover:text-secondary-green"
         >
           {{ footer.redirectPageName }}
         </RouterLink>

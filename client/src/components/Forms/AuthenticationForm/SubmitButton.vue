@@ -8,7 +8,7 @@ const { actionName } = defineProps<{
 <template>
   <div class="flex items-center justify-center">
     <FwbButton
-      class="text-submit-tex gradient-action-button mr-3 w-full cursor-pointer rounded-4xl font-bold hover:scale-105"
+      class="text-submit-text gradient-action-button w-full cursor-pointer rounded-4xl font-bold hover:scale-y-110 hover:outline-2"
       type="submit"
       size="xl"
       pill
