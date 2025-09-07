@@ -1,12 +1,8 @@
 <script setup lang="ts">
 import { FwbButton, FwbFileInput } from 'flowbite-vue';
 import { useRouter } from 'vue-router';
-import type {
-  RecipesPublic,
-  UsersPublic,
-  UserWithPagination,
-} from '@server/shared/types';
-import { onMounted, reactive, ref, watch } from 'vue';
+import type { UsersPublic } from '@server/shared/types';
+import { onMounted, ref, watch } from 'vue';
 import { trpc } from '@/trpc';
 import useErrorMessage from '@/composables/useErrorMessage';
 import Spinner from '@/components/Spinner.vue';
@@ -15,10 +11,7 @@ import { apiOrigin } from '@/config';
 import { DEFAULT_SERVER_ERROR } from '../consts';
 import useToast from '@/composables/useToast';
 import RecipesList from '@/components/RecipesList/RecipesList.vue';
-import {
-  RECIPE_TYPE,
-  type recipeTypeKeys,
-} from '@/components/RecipesList/types';
+import { RECIPE_TYPE } from '@/components/RecipesList/types';
 
 const { showLoading, updateToast } = useToast();
 
@@ -28,35 +21,15 @@ const props = defineProps<{
   id?: string;
 }>();
 
-const limit = 4;
-
-const userWithPagination = reactive<UserWithPagination>({
-  offset: 0,
-  limit,
-  userId: undefined,
-});
-
-const pagination = reactive({
-  saved: { offset: 0, limit },
-  created: { offset: 0, limit },
-});
-
 const profileImageFile = ref<File | undefined>(undefined);
 const fullEndpoint = `${apiOrigin}/api/upload/profile`;
 
 const user = ref<UsersPublic>();
-const recipesSaved = ref<RecipesPublic[]>([]);
-const recipesCreated = ref<RecipesPublic[]>([]);
 
 const isLoadingImage = ref(true);
 
-const totalCreated = ref(0);
-const totalSaved = ref(0);
-
 const [getUser] = useErrorMessage(async () => {
-  userWithPagination.userId = props.id;
-
-  user.value = await trpc.users.findById.query(userWithPagination.userId);
+  user.value = await trpc.users.findById.query(props.id);
 
   console.log(user.value);
 });
@@ -96,38 +69,6 @@ async function handleUpload() {
   }
 }
 
-const handleNextPage = async (type: recipeTypeKeys) => {
-  pagination[type].offset += pagination[type].limit;
-
-  if (type === 'created') {
-    recipesCreated.value = await trpc.users.getCreatedRecipes.query({
-      userId: userWithPagination.userId,
-      ...pagination[type],
-    });
-  } else {
-    recipesSaved.value = await trpc.users.getSavedRecipes.query({
-      userId: userWithPagination.userId,
-      ...pagination[type],
-    });
-  }
-};
-
-const handlePrevPage = async (type: recipeTypeKeys) => {
-  pagination[type].offset -= pagination[type].limit;
-
-  if (type === 'created') {
-    recipesCreated.value = await trpc.users.getCreatedRecipes.query({
-      userId: userWithPagination.userId,
-      ...pagination[type],
-    });
-  } else {
-    recipesSaved.value = await trpc.users.getSavedRecipes.query({
-      userId: userWithPagination.userId,
-      ...pagination[type],
-    });
-  }
-};
-
 watch(
   () => user.value?.image,
   (newImage, oldImage) => {
@@ -151,18 +92,6 @@ onMounted(async () => {
     console.log('User not found');
     return;
   }
-
-  const [recipes, totalSavedByUser, totalCreatedByUser] = await Promise.all([
-    trpc.users.getRecipes.query(userWithPagination),
-    trpc.users.totalSaved.query(userWithPagination.userId),
-    trpc.users.totalCreated.query(userWithPagination.userId),
-  ]);
-
-  recipesCreated.value = recipes.created;
-  recipesSaved.value = recipes.saved;
-
-  totalSaved.value = totalSavedByUser;
-  totalCreated.value = totalCreatedByUser;
 });
 </script>
 
@@ -233,25 +162,15 @@ onMounted(async () => {
         <div>
           <div class="flex flex-col gap-10">
             <RecipesList
-              @next-page="handleNextPage(RECIPE_TYPE.SAVED)"
-              @prev-page="handlePrevPage(RECIPE_TYPE.SAVED)"
               title="Saved Recipes"
               :recipeType="RECIPE_TYPE.SAVED"
-              :recipes="recipesSaved"
-              :offset="pagination[RECIPE_TYPE.SAVED].offset"
-              :limit="pagination[RECIPE_TYPE.SAVED].limit"
-              :total="totalSaved"
+              :user-id="user.id"
             />
 
             <RecipesList
-              @next-page="handleNextPage(RECIPE_TYPE.CREATED)"
-              @prev-page="handlePrevPage(RECIPE_TYPE.CREATED)"
               title="Created Recipes"
               :recipeType="RECIPE_TYPE.CREATED"
-              :recipes="recipesCreated"
-              :offset="pagination[RECIPE_TYPE.CREATED].offset"
-              :limit="pagination[RECIPE_TYPE.CREATED].limit"
-              :total="totalCreated"
+              :user-id="user.id"
             />
           </div>
         </div>
