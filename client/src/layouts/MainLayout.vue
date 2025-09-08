@@ -23,9 +23,9 @@ const links = computed(() => [
       ]),
 ]);
 
-function logoutUser() {
-  user.logout();
-  router.push({ name: 'Login' });
+async function logoutUser() {
+  await user.logout();
+  await router.push({ name: 'Login' });
 }
 </script>
 
