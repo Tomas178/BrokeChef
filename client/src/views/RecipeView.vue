@@ -95,7 +95,9 @@ async function handleUnsave() {
 
 <template>
   <div v-if="recipe">
-    <div class="flex flex-col gap-10 lg:mx-4 lg:grid lg:grid-cols-9 lg:gap-2">
+    <div
+      class="flex flex-col gap-8 md:gap-10 lg:mx-4 lg:grid lg:grid-cols-9 lg:gap-2"
+    >
       <div class="relative w-full lg:col-span-5">
         <div class="flex h-64 w-full lg:h-104">
           <Spinner v-show="isLoading" />
@@ -110,7 +112,7 @@ async function handleUnsave() {
       </div>
 
       <div
-        class="flex flex-row justify-between gap-2 md:mx-16 lg:col-span-4 lg:mt-4 lg:mr-28 lg:mb-4 lg:ml-4 lg:flex-col"
+        class="mx-4 flex flex-row justify-between gap-2 md:mx-16 lg:col-span-4 lg:mt-4 lg:mr-28 lg:mb-4 lg:ml-4 lg:flex-col"
       >
         <div class="flex flex-col">
           <div class="justify-center">
