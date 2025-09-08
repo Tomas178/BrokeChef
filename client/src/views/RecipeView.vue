@@ -95,8 +95,8 @@ async function handleUnsave() {
 
 <template>
   <div v-if="recipe">
-    <div class="mx-4 grid grid-cols-9 gap-2">
-      <div class="relative col-span-5 w-full">
+    <div class="flex flex-col gap-10 lg:mx-4 lg:grid lg:grid-cols-9 lg:gap-2">
+      <div class="relative w-full lg:col-span-5">
         <div class="flex h-64 w-full lg:h-104">
           <Spinner v-show="isLoading" />
           <img
@@ -109,32 +109,36 @@ async function handleUnsave() {
         </div>
       </div>
 
-      <div class="col-span-4 mt-4 mb-4 ml-4 flex flex-col gap-2">
-        <div class="justify-center">
-          <span
-            class="text-submit-text text-3xl font-bold text-wrap break-words lg:text-6xl"
-            >{{ titleCase(recipe.title.toLowerCase()) }}
-          </span>
-        </div>
-        <div class="flex flex-col md:text-xl lg:text-2xl">
-          <div class="justify-center leading-loose text-gray-500">
-            <span class="text-primary-green hover:text-secondary-green">
-              <RouterLink
-                :to="{ name: 'UserProfile', params: { id: recipe.userId } }"
-              >
-                {{ recipe.author.name }}
-              </RouterLink>
-            </span>
-            <span class="">
-              • {{ format(recipe.createdAt, 'd MMM yyyy') }}
+      <div
+        class="flex flex-row justify-between gap-2 md:mx-16 lg:col-span-4 lg:mt-4 lg:mr-28 lg:mb-4 lg:ml-4 lg:flex-col"
+      >
+        <div class="flex flex-col">
+          <div class="justify-center">
+            <span
+              class="text-submit-text text-3xl font-bold text-wrap break-words lg:text-6xl"
+              >{{ titleCase(recipe.title.toLowerCase()) }}
             </span>
           </div>
-          <div class="justify-center leading-loose text-gray-500">
-            <span>Cook duration {{ recipe.duration }} minutes</span>
+          <div class="flex flex-col md:text-xl lg:text-2xl">
+            <div class="justify-center leading-loose text-gray-500">
+              <span class="text-primary-green hover:text-secondary-green">
+                <RouterLink
+                  :to="{ name: 'UserProfile', params: { id: recipe.userId } }"
+                >
+                  {{ recipe.author.name }}
+                </RouterLink>
+              </span>
+              <span class="">
+                • {{ format(recipe.createdAt, 'd MMM yyyy') }}
+              </span>
+            </div>
+            <div class="justify-center leading-loose text-gray-500">
+              <span>Cook duration {{ recipe.duration }} minutes</span>
+            </div>
           </div>
         </div>
 
-        <div class="mt-auto mr-0 flex justify-end self-end md:mr-12 lg:mr-28">
+        <div class="mt-auto flex justify-end self-end">
           <button
             v-if="isAuthor"
             @click="handleDelete"
