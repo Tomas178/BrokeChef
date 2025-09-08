@@ -16,6 +16,7 @@ services:
     build:
       context: .
       dockerfile: ./server/Dockerfile
+    image: 'bedobe/brokechef-server:latest'
     env_file:
       - ./server/.env
     environment:
@@ -29,6 +30,7 @@ services:
     build:
       context: .
       dockerfile: ./client/Dockerfile
+    image: 'bedobe/brokechef-client:latest'
     environment:
       API_PROXY_PASS: http://server:3000
     ports:
