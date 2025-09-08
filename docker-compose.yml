@@ -19,7 +19,6 @@ services:
     env_file:
       - ./server/.env
     environment:
-      DATABASE_URL: postgres://brokechef:brokechef@postgres:5432/brokechef
       PORT: 3000
     ports:
       - '3000'
