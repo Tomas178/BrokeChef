@@ -65,6 +65,8 @@ export const useUserStore = defineStore('user', () => {
   }
 
   async function socialLogin(providerName: string) {
+    console.log(frontendBase);
+
     const { error } = await authClient.signIn.social({
       provider: providerName,
       callbackURL: frontendBase,
