@@ -57,9 +57,9 @@ const schema = z
       }),
 
       aws: z.object({
-        accessIdKey: z.string().trim(),
-        secretAccessKey: z.string().trim(),
         s3: z.object({
+          accessIdKey: z.string().trim(),
+          secretAccessKey: z.string().trim(),
           region: z.string().trim(),
           buckets: z.object({
             emailTemplates: z.string().trim(),
@@ -110,9 +110,9 @@ const config = schema.parse({
     },
 
     aws: {
-      accessIdKey: env.AWS_ACCESS_ID_KEY,
-      secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
       s3: {
+        accessIdKey: env.AWS_S3_ACCESS_ID_KEY,
+        secretAccessKey: env.AWS_S3_SECRET_ACCESS_KEY,
         region: env.AWS_S3_REGION,
         buckets: {
           emailTemplates: env.AWS_S3_EMAIL_TEMPLATES_BUCKET_NAME,

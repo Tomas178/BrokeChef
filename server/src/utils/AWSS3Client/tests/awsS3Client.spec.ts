@@ -6,9 +6,9 @@ vi.mock('@server/config', () => ({
   default: {
     auth: {
       aws: {
-        accessIdKey: 'awsAccessIdKey',
-        secretAccessKey: 'awsSecretAccessKey',
         s3: {
+          accessIdKey: 'awsAccessIdKey',
+          secretAccessKey: 'awsSecretAccessKey',
           region: 'closest-region',
         },
       },

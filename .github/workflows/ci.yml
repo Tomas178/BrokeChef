@@ -23,8 +23,8 @@ jobs:
       BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
       BETTER_AUTH_URL: ${{ vars.BETTER_AUTH_URL }}
 
-      AWS_ACCESS_ID_KEY: ${{ secrets.AWS_ACCESS_ID_KEY }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_S3_ACCESS_ID_KEY: ${{ secrets.AWS_S3_ACCESS_ID_KEY }}
+      AWS_S3_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}
 
       AWS_S3_REGION: ${{ vars.AWS_S3_REGION }}
       AWS_S3_EMAIL_TEMPLATES_BUCKET_NAME: ${{ secrets.AWS_S3_EMAIL_TEMPLATES_BUCKET_NAME }}
@@ -131,9 +131,9 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v5
         with:
-          aws-region: ${{ vars.AWS_REGION }}
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_LIGHTSAIL_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_LIGHTSAIL_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_LIGHTSAIL_SECRET_ACCESS_KEY }}
 
       - name: Build server image
         run: >-
