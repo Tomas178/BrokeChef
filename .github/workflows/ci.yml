@@ -144,6 +144,7 @@ jobs:
       - name: Build client image
         run: >-
           docker build
+          --build-arg VITE_BASE_ORIGIN=${{ vars.VITE_BASE_ORIGIN }}
           -t $CLIENT_IMAGE_TAG
           -f ./client/Dockerfile .
 

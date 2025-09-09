@@ -10,6 +10,10 @@ RUN npm ci
 COPY . .
 
 WORKDIR /app/client
+
+ARG VITE_BASE_ORIGIN
+ENV VITE_BASE_ORIGIN=$VITE_BASE_ORIGIN
+
 RUN npm run build
 
 FROM nginx:1.29.0-alpine3.22 as nginx
