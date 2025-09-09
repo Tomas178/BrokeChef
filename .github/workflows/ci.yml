@@ -181,7 +181,7 @@ jobs:
               "environment": {
                 "API_PROXY_PASS": "${{ vars.API_PROXY_PASS }}",
                 "VITE_API_ORIGIN": "$VITE_API_ORIGIN",
-                "VITE_API_PATH": $VITE_API_PATH,
+                "VITE_API_PATH": "$VITE_API_PATH"
               }
             },
             "server": {
@@ -192,7 +192,7 @@ jobs:
               "environment": {
                 "NODE_ENV": "production",
                 "PORT": "3000",
-                "EMAIL": $EMAIL,
+                "EMAIL": "$EMAIL",
                 "EMAIL_APP_PASS": "$EMAIL_APP_PASS",
                 "CLIENT_ID_GITHUB": "$CLIENT_ID_GITHUB",
                 "CLIENT_SECRET_GITHUB": "$CLIENT_SECRET_GITHUB",
