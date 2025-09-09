@@ -10,6 +10,7 @@ import { DEFAULT_SERVER_ERROR } from '@/consts';
 import RecipeDetailsCard from '@/components/RecipeDetailsCard.vue';
 import Spinner from '@/components/Spinner.vue';
 import useToast from '@/composables/useToast';
+import Dialog from '@/components/Dialog.vue';
 
 const { showLoading, updateToast } = useToast();
 
@@ -24,6 +25,8 @@ const isLoading = ref(true);
 
 const recipeId = Number(route.params.id);
 
+const dialogRef = ref<InstanceType<typeof Dialog> | null>(null);
+
 onBeforeMount(async () => {
   recipe.value = await trpc.recipes.findById.query(recipeId);
   isAuthor.value = await trpc.recipes.isAuthor.query(recipeId);
@@ -32,6 +35,10 @@ onBeforeMount(async () => {
   console.log(isAuthor.value);
   console.log(isSaved.value);
 });
+
+function showDialog() {
+  dialogRef.value?.open();
+}
 
 const [deleteRecipe, deleteErrorMessage] = useErrorMessage(
   async () => await trpc.recipes.remove.mutate(recipeId),
@@ -143,12 +150,13 @@ async function handleUnsave() {
         <div class="mt-auto flex justify-end self-end">
           <button
             v-if="isAuthor"
-            @click="handleDelete"
+            @click="showDialog"
             type="button"
             class="cursor-pointer rounded-3xl bg-red-400/90 px-6 py-2 text-xl leading-tight font-medium text-white hover:scale-105"
           >
             Delete
           </button>
+
           <button
             v-else-if="!isSaved"
             @click="handleSave"
@@ -157,6 +165,7 @@ async function handleUnsave() {
           >
             Save
           </button>
+
           <button
             v-else
             @click="handleUnsave"
@@ -166,6 +175,13 @@ async function handleUnsave() {
             Unsave
           </button>
         </div>
+
+        <Dialog
+          ref="dialogRef"
+          description="Are you sure you want to delete this recipe? This action cannot be undone."
+          action-name="Delete"
+          @confirm="handleDelete"
+        />
       </div>
     </div>
 
