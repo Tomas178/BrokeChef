@@ -180,8 +180,8 @@ jobs:
               },
               "environment": {
                 "API_PROXY_PASS": "${{ vars.API_PROXY_PASS }}",
-                "VITE_API_ORIGIN": "$VITE_API_ORIGIN",
-                "VITE_API_PATH": "$VITE_API_PATH"
+                "VITE_API_ORIGIN": "${{ vars.VITE_API_ORIGIN }}",
+                "VITE_API_PATH": "${{ vars.VITE_API_PATH }}"
               }
             },
             "server": {
@@ -192,23 +192,23 @@ jobs:
               "environment": {
                 "NODE_ENV": "production",
                 "PORT": "3000",
-                "EMAIL": "$EMAIL",
-                "EMAIL_APP_PASS": "$EMAIL_APP_PASS",
-                "CLIENT_ID_GITHUB": "$CLIENT_ID_GITHUB",
-                "CLIENT_SECRET_GITHUB": "$CLIENT_SECRET_GITHUB",
-                "CLIENT_ID_GOOGLE": "$CLIENT_ID_GOOGLE",
-                "CLIENT_SECRET_GOOGLE": "$CLIENT_SECRET_GOOGLE",
-                "GEMINI_API_KEY": "$GEMINI_API_KEY",
-                "BETTER_AUTH_SECRET": "$BETTER_AUTH_SECRET",
-                "BETTER_AUTH_URL": "$BETTER_AUTH_URL",
-                "AWS_S3_ACCESS_ID_KEY": "$AWS_S3_ACCESS_ID_KEY",
-                "AWS_S3_SECRET_ACCESS_KEY": "$AWS_S3_SECRET_ACCESS_KEY",
-                "AWS_S3_REGION": "$AWS_S3_REGION",
-                "AWS_S3_EMAIL_TEMPLATES_BUCKET_NAME": "$AWS_S3_EMAIL_TEMPLATES_BUCKET_NAME",
-                "AWS_S3_IMAGES_BUCKET_NAME": "$AWS_S3_IMAGES_BUCKET_NAME",
-                "FRONT_END_URL": "$FRONT_END_URL",
-                "FRONT_END_FULL_URL": "$FRONT_END_FULL_URL",
-                "DATABASE_URL": "$DATABASE_URL"
+                "EMAIL": "${{ vars.EMAIL }}",
+                "EMAIL_APP_PASS": "${{ secrets.EMAIL_APP_PASS }}",
+                "CLIENT_ID_GITHUB": "${{ secrets.CLIENT_ID_GITHUB }}",
+                "CLIENT_SECRET_GITHUB": "${{ secrets.CLIENT_SECRET_GITHUB }}",
+                "CLIENT_ID_GOOGLE": "${{ secrets.CLIENT_ID_GOOGLE }}",
+                "CLIENT_SECRET_GOOGLE": "${{ secrets.CLIENT_SECRET_GOOGLE }}",
+                "GEMINI_API_KEY": "${{ secrets.GEMINI_API_KEY }}",
+                "BETTER_AUTH_SECRET": "${{ secrets.BETTER_AUTH_SECRET }}",
+                "BETTER_AUTH_URL": "${{ vars.BETTER_AUTH_URL }}",
+                "AWS_S3_ACCESS_ID_KEY": "${{ secrets.AWS_S3_ACCESS_ID_KEY }}",
+                "AWS_S3_SECRET_ACCESS_KEY": "${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}",
+                "AWS_S3_REGION": "${{ vars.AWS_S3_REGION }}",
+                "AWS_S3_EMAIL_TEMPLATES_BUCKET_NAME": "${{ secrets.AWS_S3_EMAIL_TEMPLATES_BUCKET_NAME }}",
+                "AWS_S3_IMAGES_BUCKET_NAME": "${{ secrets.AWS_S3_IMAGES_BUCKET_NAME }}",
+                "FRONT_END_URL": "${{ vars.FRONT_END_URL }}",
+                "FRONT_END_FULL_URL": "${{ secrets.FRONT_END_FULL_URL }}",
+                "DATABASE_URL": "${{ secrets.DATABASE_URL }}"
               }
             }
           }' > containers.json
