@@ -4,7 +4,7 @@ on: push
 
 jobs:
   test:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     env:
       VITE_API_ORIGIN: ${{ vars.VITE_API_ORIGIN }}
       VITE_API_PATH: ${{ vars.VITE_API_PATH }}
@@ -109,7 +109,7 @@ jobs:
 
   build-deploy:
     needs: test
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     if: github.ref == 'refs/heads/main'
     env:
       CLIENT_IMAGE_TAG: client-${{ github.sha }}
