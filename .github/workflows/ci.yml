@@ -8,6 +8,7 @@ jobs:
     env:
       VITE_API_ORIGIN: ${{ vars.VITE_API_ORIGIN }}
       VITE_API_PATH: ${{ vars.VITE_API_PATH }}
+      VITE_BASE_ORIGIN: ${{ vars.VITE_BASE_ORIGIN }}
 
       EMAIL: ${{ vars.EMAIL }}
       EMAIL_APP_PASS: ${{ secrets.EMAIL_APP_PASS }}
@@ -208,7 +209,6 @@ jobs:
                 "AWS_S3_EMAIL_TEMPLATES_BUCKET_NAME": "${{ secrets.AWS_S3_EMAIL_TEMPLATES_BUCKET_NAME }}",
                 "AWS_S3_IMAGES_BUCKET_NAME": "${{ secrets.AWS_S3_IMAGES_BUCKET_NAME }}",
                 "FRONT_END_URL": "${{ vars.FRONT_END_URL }}",
-                "FRONT_END_FULL_URL": "${{ secrets.FRONT_END_FULL_URL }}",
                 "DATABASE_URL": "${{ secrets.DATABASE_URL }}"
               }
             }
