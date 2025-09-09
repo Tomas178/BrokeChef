@@ -181,7 +181,8 @@ jobs:
               "environment": {
                 "API_PROXY_PASS": "${{ vars.API_PROXY_PASS }}",
                 "VITE_API_ORIGIN": "${{ vars.VITE_API_ORIGIN }}",
-                "VITE_API_PATH": "${{ vars.VITE_API_PATH }}"
+                "VITE_API_PATH": "${{ vars.VITE_API_PATH }}",
+                "VITE_BASE_ORIGIN": "${{ vars.VITE_BASE_ORIGIN }}"
               }
             },
             "server": {
