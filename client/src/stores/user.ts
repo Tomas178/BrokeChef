@@ -65,7 +65,8 @@ export const useUserStore = defineStore('user', () => {
   }
 
   async function socialLogin(providerName: string) {
-    console.log(frontendBase);
+    console.log({ frontendBase });
+    console.log(import.meta.env.VITE_BASE_ORIGIN as string);
 
     const { error } = await authClient.signIn.social({
       provider: providerName,
