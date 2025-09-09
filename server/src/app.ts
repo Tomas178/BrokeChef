@@ -24,8 +24,6 @@ import { AllowedMimeType } from './enums/AllowedMimetype';
 export default function createApp(db: Database) {
   const app = express();
 
-  console.log(config);
-
   app.use(
     cors({
       origin: config.cors.origin,
