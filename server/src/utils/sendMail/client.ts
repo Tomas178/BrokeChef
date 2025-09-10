@@ -21,8 +21,6 @@ if (config.mail.host) {
   });
 }
 
-console.log(transportOptions);
-
 export const transporter = nodemailer.createTransport(transportOptions);
 
 console.log('E-mail system authenticated.');
