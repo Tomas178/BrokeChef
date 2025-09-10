@@ -23,9 +23,10 @@ const schema = z
     }),
 
     mail: z.object({
+      host: z.string().optional(),
       service: z.string().default('gmail'),
       port: z.coerce.number().default(465),
-      secure: z.coerce.boolean().default(true),
+      secure: z.stringbool(),
       email: z.email(),
       pass: z.string(),
     }),
@@ -84,6 +85,7 @@ const config = schema.parse({
   },
 
   mail: {
+    host: env.MAIL_HOST,
     service: env.MAIL_SERVICE,
     port: env.MAIL_PORT,
     secure: env.MAIL_SECURE,
