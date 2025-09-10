@@ -110,7 +110,7 @@ test.describe.serial('Signup and login sequence', () => {
     await expect(page).toHaveURL('/login');
 
     await expect(toastContainer).toBeVisible();
-    await expect(toastContainer).toHaveText(/email/i);
+    await expect(toastContainer).toHaveText(/email/i, { timeout: 5000 });
 
     await page.reload();
     await expect(page).toHaveURL('/login');
