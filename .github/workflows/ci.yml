@@ -54,9 +54,6 @@ jobs:
 
       mailhog:
         image: mailhog/mailhog
-        ports:
-          - '1025:1025'
-          - '8025:8025'
         options: >-
           --health-cmd "curl -f http://localhost:8025 || exit 1"
           --health-interval 5s
