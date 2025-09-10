@@ -9,6 +9,9 @@ jobs:
       VITE_API_ORIGIN: ${{ vars.VITE_API_ORIGIN }}
       VITE_API_PATH: ${{ vars.VITE_API_PATH }}
 
+      MAIL_HOST: ${{ vars.TEST_MAIL_HOST }}
+      MAIL_PORT: ${{ vars.TEST_MAIL_PORT }}
+      MAIL_SECURE: ${{ vars.TEST_MAIL_SECURE }}
       EMAIL: ${{ vars.EMAIL }}
       EMAIL_APP_PASS: ${{ secrets.EMAIL_APP_PASS }}
 
@@ -48,6 +51,14 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+
+      services:
+        mailhog:
+          image: mailhog/mailhog
+          ports:
+            - '1025:1025'
+            - '8025:8025'
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
@@ -194,6 +205,9 @@ jobs:
               "environment": {
                 "NODE_ENV": "production",
                 "PORT": "3000",
+                "MAIL_SERVICE": "${{ vars.PROD_MAIL_SERVICE }}",
+                "MAIL_PORT": "${{ vars.PROD_MAIL_PORT }}",
+                "MAIL_SECURE": ${{ vars.PROD_MAIL_SECURE }},
                 "EMAIL": "${{ vars.EMAIL }}",
                 "EMAIL_APP_PASS": "${{ secrets.EMAIL_APP_PASS }}",
                 "CLIENT_ID_GITHUB": "${{ secrets.CLIENT_ID_GITHUB }}",
