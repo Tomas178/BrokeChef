@@ -1,6 +1,5 @@
 import 'dotenv/config';
 
-// assumption that the default value for development server is http://localhost:3000
 export const apiOrigin =
   (process.env.VITE_API_ORIGIN as string) || 'http://localhost:3000';
 export const apiPath = (process.env.VITE_API_PATH as string) || '/api/v1/trpc';

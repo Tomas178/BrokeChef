@@ -1,10 +1,16 @@
 import { test, expect } from '@playwright/test';
-import { fakeUser } from './utils/fakeData';
+import { fakeSignupUser } from './utils/fakeData';
+import { clearEmails, getVerifyLink } from './utils/mailhog';
+import { asUser } from './utils/api';
 
-const user = fakeUser();
+const user = fakeSignupUser();
 
 test.describe.serial('Signup and login sequence', () => {
-  // const URL_LOGGED_IN = '/';
+  test.beforeAll(async () => {
+    await clearEmails();
+  });
+
+  const URL_LOGGED_IN = '/?page=1';
 
   test('Visitor is shown that passwords do not match', async ({ page }) => {
     await page.goto('/signup');
@@ -114,5 +120,49 @@ test.describe.serial('Signup and login sequence', () => {
 
     await page.reload();
     await expect(page).toHaveURL('/login');
+  });
+
+  test('Go to the verification link', async ({ page }) => {
+    const verificationLink = await getVerifyLink();
+
+    await page.goto(verificationLink);
+
+    await expect(page).toHaveURL('/', { timeout: 5000 });
+  });
+
+  test('Visitor should be able to login', async ({ page }) => {
+    await page.goto('/login');
+    const toastContainer = page.getByTestId('toast-body');
+
+    await expect(toastContainer).toBeHidden();
+
+    const form = page.getByRole('form', { name: 'Signin' });
+    await form.locator('input[data-testid="email"]').fill(user.email);
+    await form.locator('input[data-testid="password"]').fill(user.password);
+
+    await form.locator('button[type="submit"]').click();
+
+    await expect(toastContainer).toBeVisible();
+    await expect(toastContainer).toHaveText(/logging/i, { timeout: 5000 });
+
+    await expect(page).toHaveURL(URL_LOGGED_IN);
+
+    await page.reload();
+    await expect(page).toHaveURL(URL_LOGGED_IN);
+  });
+
+  test('Visitor should be able to logout', async ({ page }) => {
+    await asUser(page, user, async () => {
+      const logoutLink = page.getByRole('link', { name: 'Logout' });
+
+      await logoutLink.click();
+
+      await expect(logoutLink).toBeHidden();
+
+      await expect(page).toHaveURL('/login');
+
+      await page.reload();
+      await expect(logoutLink).toBeHidden();
+    });
   });
 });
