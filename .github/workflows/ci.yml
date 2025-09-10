@@ -54,11 +54,9 @@ jobs:
 
       mailhog:
         image: mailhog/mailhog
-        options: >-
-          --health-cmd "curl -f http://127.0.0.1:8025 || exit 1"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 10
+        ports:
+          - '1025:1025'
+          - '8025:8025'
 
     steps:
       - name: Check out repository
