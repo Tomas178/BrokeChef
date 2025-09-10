@@ -206,7 +206,7 @@ jobs:
                 "PORT": "3000",
                 "MAIL_SERVICE": "${{ vars.PROD_MAIL_SERVICE }}",
                 "MAIL_PORT": "${{ vars.PROD_MAIL_PORT }}",
-                "MAIL_SECURE": ${{ vars.PROD_MAIL_SECURE }},
+                "MAIL_SECURE": "${{ vars.PROD_MAIL_SECURE }}",
                 "EMAIL": "${{ vars.EMAIL }}",
                 "EMAIL_APP_PASS": "${{ secrets.EMAIL_APP_PASS }}",
                 "CLIENT_ID_GITHUB": "${{ secrets.CLIENT_ID_GITHUB }}",
