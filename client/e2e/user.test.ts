@@ -4,7 +4,7 @@ import { fakeUser } from './utils/fakeData';
 const user = fakeUser();
 
 test.describe.serial('Signup and login sequence', () => {
-  const URL_LOGGED_IN = '/';
+  // const URL_LOGGED_IN = '/';
 
   test('Visitor is shown that passwords do not match', async ({ page }) => {
     await page.goto('/signup');
