@@ -50,14 +50,19 @@ export const useUserStore = defineStore('user', () => {
   async function login(credentials: { email: string; password: string }) {
     const { email, password } = credentials;
 
-    const { data, error } = await authClient.signIn.email({
-      email,
-      password,
-      fetchOptions: {
-        onSuccess: () => console.log(`${email} logged in!`),
-        onError: (ctx) => console.log(ctx.error.message),
-      },
-    });
+    try {
+      const { data, error } = await authClient.signIn.email({
+        email,
+        password,
+        fetchOptions: {
+          onSuccess: () => console.log(`${email} logged in!`),
+          onError: (ctx) => console.log(ctx.error.message),
+        },
+      });
+    } catch (err) {
+      console.error('Signup failed:', err);
+      throw err;
+    }
 
     if (error) throw new Error(error.message);
 
