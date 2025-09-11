@@ -93,7 +93,7 @@ async function handleCreateRecipe() {
 <template>
   <form
     class="mx-4 mt-8 mb-12 md:mx-16 md:mt-12 md:mb-20 lg:mx-32 lg:mt-14 lg:mb-28"
-    aria-label="Recipe"
+    aria-label="Create recipe"
     @submit.prevent="handleCreateRecipe"
   >
     <div class="flex flex-col gap-4 md:gap-6">
