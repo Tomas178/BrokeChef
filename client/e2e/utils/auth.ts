@@ -1,24 +1,17 @@
 import { expect, Page } from '@playwright/test';
 import { UserLogin, userSignup } from './api';
 
-export const URL_LOGGED_IN = '/?page=1';
+const URL_LOGGED_IN = '/?page=1';
 
 export async function loginUser(page: Page, user: UserLogin) {
-  await page.goto('/login');
-
-  const toastContainer = page.getByTestId('toast-body');
-
-  await expect(toastContainer).toBeHidden();
-
   const form = page.getByRole('form', { name: 'Signin' });
   await form.getByTestId('email').fill(user.email);
   await form.getByTestId('password').fill(user.password);
 
   await form.getByTestId('submit-button').click();
+}
 
-  await expect(toastContainer).toBeVisible();
-  await expect(toastContainer).toHaveText(/logging/i, { timeout: 5000 });
-
+export async function checkAfterLogin(page: Page) {
   await expect(page).toHaveURL(URL_LOGGED_IN);
 
   await page.reload();
@@ -28,7 +21,7 @@ export async function loginUser(page: Page, user: UserLogin) {
 export async function signupUser(
   page: Page,
   user: userSignup,
-  misMatchingPasswords = false
+  matchingPasswords = true
 ) {
   const form = page.getByRole('form', { name: 'Signup' });
 
@@ -37,7 +30,7 @@ export async function signupUser(
   await form.getByTestId('password').fill(user.password);
   await form
     .getByTestId('repeat-password')
-    .fill(misMatchingPasswords ? user.password + 'a' : user.password);
+    .fill(matchingPasswords ? user.password : user.password + 'a');
 
   await form.getByTestId('submit-button').click();
 }
@@ -56,6 +49,21 @@ export async function requestResetPassword(page: Page, email: string) {
   });
 
   await form.getByTestId('email').fill(email);
+
+  await form.getByTestId('submit-button').click();
+}
+
+export async function resetPassword(
+  page: Page,
+  password: string,
+  matchingPasswords = true
+) {
+  const form = page.getByRole('form', { name: 'reset-password' });
+
+  await form.getByTestId('password').fill(password);
+  await form
+    .getByTestId('repeat-password')
+    .fill(matchingPasswords ? password : password + 'a');
 
   await form.getByTestId('submit-button').click();
 }
