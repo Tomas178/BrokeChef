@@ -1,8 +1,12 @@
 import { test, expect } from '@playwright/test';
 import { fakeSignupUser } from './utils/fakeData';
 import { clearEmails, getVerifyLink } from './utils/mailhog';
-import { asUser } from './utils/api';
-import { checkIfRedirects, loginUser, signupUser } from './utils/auth';
+import {
+  checkIfRedirects,
+  loginUser,
+  requestResetPassword,
+  signupUser,
+} from './utils/auth';
 
 const user = fakeSignupUser();
 
@@ -116,7 +120,7 @@ test.describe.serial('Signup and login sequence', () => {
     await form.getByTestId('email').fill(user.email);
     await form.getByTestId('password').fill(user.password);
 
-    await form.locator('button[type="submit"]').click();
+    await form.getByTestId('submit-button').click();
 
     await expect(page).toHaveURL('/login');
 
@@ -161,6 +165,48 @@ test.describe.serial('Signup and login sequence', () => {
 
       await page.reload();
       await expect(logoutLink).toBeHidden();
+    });
+  });
+});
+
+test.describe.serial('Request and reset password sequence', () => {
+  test('Visitor should be shown that link was sent when given non-exisiting email', async ({
+    page,
+  }) => {
+    await test.step('Step 1 - Go to request password page', async () => {
+      await page.goto('/request-reset-password');
+    });
+
+    const toastContainer = page.getByTestId('toast-body');
+    await expect(toastContainer).toBeHidden();
+
+    await test.step('Step 2 - Request reset password', async () => {
+      await requestResetPassword(page, user.email + 'a');
+    });
+
+    await test.step('Step 3 - Assert', async () => {
+      await expect(toastContainer).toBeVisible();
+      await expect(toastContainer).toHaveText(/sent|check/i);
+    });
+  });
+
+  test('Visitor should be able to request a password reset link', async ({
+    page,
+  }) => {
+    await test.step('Step 1 - Go to request password page', async () => {
+      await page.goto('/request-reset-password');
+    });
+
+    const toastContainer = page.getByTestId('toast-body');
+    await expect(toastContainer).toBeHidden();
+
+    await test.step('Step 2 - Request reset password', async () => {
+      await requestResetPassword(page, user.email);
+    });
+
+    await test.step('Step 3 - Assert', async () => {
+      await expect(toastContainer).toBeVisible();
+      await expect(toastContainer).toHaveText(/sent|check/i);
     });
   });
 });

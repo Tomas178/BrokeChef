@@ -14,7 +14,7 @@ export async function loginUser(page: Page, user: UserLogin) {
   await form.getByTestId('email').fill(user.email);
   await form.getByTestId('password').fill(user.password);
 
-  await form.locator('button[type="submit"]').click();
+  await form.getByTestId('submit-button').click();
 
   await expect(toastContainer).toBeVisible();
   await expect(toastContainer).toHaveText(/logging/i, { timeout: 5000 });
@@ -39,7 +39,7 @@ export async function signupUser(
     .getByTestId('repeat-password')
     .fill(misMatchingPasswords ? user.password + 'a' : user.password);
 
-  await form.locator('button[type="submit"]').click();
+  await form.getByTestId('submit-button').click();
 }
 
 export async function checkIfRedirects(page: Page, path: string) {
@@ -48,4 +48,14 @@ export async function checkIfRedirects(page: Page, path: string) {
   await page.waitForURL('/login');
 
   await expect(page).toHaveURL('/login');
+}
+
+export async function requestResetPassword(page: Page, email: string) {
+  const form = page.getByRole('form', {
+    name: 'request-reset-password-link',
+  });
+
+  await form.getByTestId('email').fill(email);
+
+  await form.getByTestId('submit-button').click();
 }
