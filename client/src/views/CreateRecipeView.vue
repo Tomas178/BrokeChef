@@ -148,6 +148,7 @@ async function handleCreateRecipe() {
           <div class="rounded-4xl bg-white">
             <div class="m-4 flex flex-col gap-4 md:m-16">
               <FwbInput
+                data-testid="recipe-title"
                 type="text"
                 label="Recipe title"
                 v-model="recipeForm.title"
@@ -159,6 +160,7 @@ async function handleCreateRecipe() {
                 :required="true"
               />
               <FwbInput
+                data-testid="cook-duration"
                 type="number"
                 label="Cook duration"
                 v-model="durationString"
@@ -176,7 +178,7 @@ async function handleCreateRecipe() {
         </div>
         <CreateForm
           heading="Ingredients"
-          form-label="Ingredients"
+          testId="ingredients"
           placeholder="Ingredient"
           v-model="recipeForm.ingredients"
         />
@@ -184,13 +186,13 @@ async function handleCreateRecipe() {
       <div class="flex flex-col gap-10 md:gap-8 lg:flex-row">
         <CreateForm
           heading="Kitchen Equipment"
-          form-label="kitchen-equipment"
+          testId="kitchen-equipment"
           placeholder="Equipment"
           v-model="recipeForm.tools"
         />
         <CreateForm
           heading="Steps"
-          form-label="steps"
+          testId="steps"
           placeholder="Step"
           v-model="recipeForm.steps"
         />

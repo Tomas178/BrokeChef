@@ -17,9 +17,15 @@ import {
 
 const user = fakeSignupUser();
 
+const LOADING_SIGNUP_MESSAGE = /creating/i;
+const LOADING_LOGIN_MESSAGE = /logging/i;
+const LOADING_REQUEST_PASSWORD = /sending/i;
+const LOADING_RESET_PASSWORD = /resetting|changing/i;
+
 const ERROR_MISMATCHING_PASSWORDS = /passwords/i;
 const ERROR_TOO_SHORT_PASSWORD = /short/i;
 const ERROR_EMAIL_TAKEN = /taken|exists/i;
+const ERROR_VERIFY_EMAIL = /email/i;
 
 const MESSAGE_EMAIL_SENT = /sent|check/i;
 const MESSAGE_PASSWORD_CHANGED = /reset|changed/i;
@@ -58,8 +64,11 @@ test.describe.serial('Signup and login sequence', () => {
 
     await signupUser(page, user);
 
-    await expect(toastContainer).toBeVisible();
-    await expect(toastContainer).toHaveText(/creating/i);
+    await checkLocator(
+      toastContainer,
+      /success|signed/i,
+      LOADING_SIGNUP_MESSAGE
+    );
   });
 
   test('Visitor is shown that email is taken', async ({ page }) => {
@@ -69,7 +78,11 @@ test.describe.serial('Signup and login sequence', () => {
 
     await signupUser(page, user);
 
-    await checkLocator(toastContainer, ERROR_EMAIL_TAKEN);
+    await checkLocator(
+      toastContainer,
+      ERROR_EMAIL_TAKEN,
+      LOADING_SIGNUP_MESSAGE
+    );
     await checkLocator(errorMessage, ERROR_EMAIL_TAKEN);
   });
 
@@ -80,7 +93,7 @@ test.describe.serial('Signup and login sequence', () => {
 
         await page.waitForURL('/');
 
-        await expect(page).toHaveURL('/');
+        await expect(page).toHaveURL('/?page=1');
       });
     });
 
@@ -116,40 +129,39 @@ test.describe.serial('Signup and login sequence', () => {
     }) => {
       await loginUser(page, user);
 
-      await checkLocator(toastContainer, /email/i);
+      await checkLocator(
+        toastContainer,
+        ERROR_VERIFY_EMAIL,
+        LOADING_LOGIN_MESSAGE
+      );
 
       await page.reload();
       await expect(page).toHaveURL('/login');
     });
 
     test('Go to the verification link', async ({ page }) => {
-      let verificationLink: string;
+      const verificationLink = await getLatestEmailLink();
+      await page.goto(verificationLink);
 
-      await test.step('Step 1 - Get the verification link', async () => {
-        verificationLink = await getLatestEmailLink();
-      });
-
-      await test.step('Step 2 - Go to the verification link', async () => {
-        await page.goto(verificationLink);
-
-        await expect(page).toHaveURL('/', { timeout: 5000 });
-      });
+      await expect(page).toHaveURL('/', { timeout: 5000 });
     });
 
     test('Visitor should be able to login', async ({ page }) => {
       await loginUser(page, user);
 
+      await checkLocator(toastContainer, /logging/i, LOADING_LOGIN_MESSAGE);
+
       await checkAfterLogin(page);
     });
 
     test('Visitor should be able to logout', async ({ page }) => {
-      await test.step('Step 1 - Login', async () => {
+      await test.step('1 - Login', async () => {
         await loginUser(page, user);
 
         await checkAfterLogin(page);
       });
 
-      await test.step('Step 2 - Logout', async () => {
+      await test.step('2 - Logout', async () => {
         const logoutLink = page.getByRole('link', { name: 'Logout' });
 
         await logoutLink.click();
@@ -170,38 +182,44 @@ test.describe.serial('Request and reset password sequence', () => {
     test('Visitor should be shown that link was sent when given non-exisiting email', async ({
       page,
     }) => {
-      await test.step('Step 1 - Go to request password page', async () => {
+      await test.step('1 - Go to request password page', async () => {
         await page.goto('/request-reset-password');
       });
 
       const toastContainer = await getToastContainer(page);
 
-      await test.step('Step 2 - Request reset password', async () => {
+      await test.step('2 - Request reset password', async () => {
         await requestResetPassword(page, user.email + 'a');
       });
 
-      await test.step('Step 3 - Assert', async () => {
-        await expect(toastContainer).toBeVisible();
-        await expect(toastContainer).toHaveText(MESSAGE_EMAIL_SENT);
+      await test.step('3 - Assert', async () => {
+        await checkLocator(
+          toastContainer,
+          MESSAGE_EMAIL_SENT,
+          LOADING_REQUEST_PASSWORD
+        );
       });
     });
 
     test('Visitor should be able to request a password reset link', async ({
       page,
     }) => {
-      await test.step('Step 1 - Go to request password page', async () => {
+      await test.step('1 - Go to request password page', async () => {
         await page.goto('/request-reset-password');
       });
 
       const toastContainer = await getToastContainer(page);
 
-      await test.step('Step 2 - Request reset password', async () => {
+      await test.step('2 - Request reset password', async () => {
         await requestResetPassword(page, user.email);
       });
 
-      await test.step('Step 3 - Assert', async () => {
-        await expect(toastContainer).toBeVisible();
-        await expect(toastContainer).toHaveText(MESSAGE_EMAIL_SENT);
+      await test.step('3 - Assert', async () => {
+        await checkLocator(
+          toastContainer,
+          MESSAGE_EMAIL_SENT,
+          LOADING_REQUEST_PASSWORD
+        );
       });
     });
   });
@@ -242,7 +260,11 @@ test.describe.serial('Request and reset password sequence', () => {
 
       await resetPassword(page, user.password);
 
-      await checkLocator(toastContainer, MESSAGE_PASSWORD_CHANGED);
+      await checkLocator(
+        toastContainer,
+        MESSAGE_PASSWORD_CHANGED,
+        LOADING_RESET_PASSWORD
+      );
     });
   });
 });

@@ -60,6 +60,8 @@ export default defineConfigWithVueTs(
     '**/dist/**',
     '**/dist-ssr/**',
     '**/coverage/**',
+    '**/test-results/**',
+    '**/playwright-report/**',
   ]),
 
   {
@@ -70,7 +72,11 @@ export default defineConfigWithVueTs(
       'playwright/expect-expect': [
         'error',
         {
-          assertFuntionNames: ['loginUser'],
+          assertFunctionNames: [
+            'loginUser',
+            'checkLocator',
+            'checkIfRedirects',
+          ],
         },
       ],
     },

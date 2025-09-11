@@ -12,10 +12,10 @@ export async function loginUser(page: Page, user: UserLogin) {
 }
 
 export async function checkAfterLogin(page: Page) {
-  await expect(page).toHaveURL(URL_LOGGED_IN);
+  await expect(page).toHaveURL(URL_LOGGED_IN, { timeout: 5000 });
 
   await page.reload();
-  await expect(page).toHaveURL(URL_LOGGED_IN);
+  await expect(page).toHaveURL(URL_LOGGED_IN, { timeout: 5000 });
 }
 
 export async function signupUser(

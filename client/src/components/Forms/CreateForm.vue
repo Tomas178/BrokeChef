@@ -3,9 +3,11 @@ import { FwbHeading, FwbInput, FwbButton } from 'flowbite-vue';
 
 const inputs = defineModel<string[]>({ required: true });
 
+export type TestId = 'ingredients' | 'kitchen-equipment' | 'steps';
+
 const props = defineProps<{
   heading: 'Ingredients' | 'Kitchen Equipment' | 'Steps';
-  formLabel: string;
+  testId: TestId;
   placeholder: string;
 }>();
 
@@ -27,7 +29,7 @@ function removeInput(index: number) {
 </script>
 
 <template>
-  <div class="flex flex-col gap-6 md:flex-1">
+  <div :data-testid="testId" class="flex flex-col gap-6 md:flex-1">
     <FwbHeading tag="h2">{{ heading }}</FwbHeading>
     <div class="rounded-4xl bg-white">
       <div class="m-4 flex flex-col gap-4 md:m-16">
@@ -37,6 +39,7 @@ function removeInput(index: number) {
           class="animate-zoomin animate-duration-300 flex items-center gap-2"
         >
           <FwbInput
+            :data-testid="`input-${index}`"
             type="text"
             v-model="inputs[index]"
             :placeholder="`${props.placeholder} #${index + 1}`"
@@ -47,6 +50,7 @@ function removeInput(index: number) {
             :required="true"
           />
           <FwbButton
+            data-testid="add-button"
             v-if="inputs.length > 1"
             type="button"
             @click="removeInput(index)"
