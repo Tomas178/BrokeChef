@@ -65,6 +65,15 @@ export default defineConfigWithVueTs(
   {
     ...playwright.configs['flat/recommended'],
     files: ['e2e/**/*.{test,spec}.{js,ts,jsx,tsx}'],
+    rules: {
+      ...playwright.configs['flat/recommended'].rules,
+      'playwright/expect-expect': [
+        'error',
+        {
+          assertFuntionNames: ['loginUser'],
+        },
+      ],
+    },
   },
 
   {
