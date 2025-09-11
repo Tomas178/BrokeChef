@@ -1,6 +1,6 @@
 import { test, expect, Locator } from '@playwright/test';
 import { fakeSignupUser } from './utils/fakeData';
-import { clearEmails, getLatestEmailLink } from './utils/mailhog';
+import { clearEmails, waitForEmailLink } from './utils/mailhog';
 import {
   checkAfterLogin,
   checkIfRedirects,
@@ -140,7 +140,7 @@ test.describe.serial('Signup and login sequence', () => {
     });
 
     test('Go to the verification link', async ({ page }) => {
-      const verificationLink = await getLatestEmailLink();
+      const verificationLink = await waitForEmailLink();
       await page.goto(verificationLink);
 
       await expect(page).toHaveURL('/', { timeout: 5000 });
@@ -228,7 +228,7 @@ test.describe.serial('Request and reset password sequence', () => {
     let resetPasswordLink: string;
 
     test.beforeAll(async () => {
-      resetPasswordLink = await getLatestEmailLink();
+      resetPasswordLink = await waitForEmailLink();
     });
 
     test.beforeEach(async ({ page }) => {

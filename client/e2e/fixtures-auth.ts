@@ -1,5 +1,5 @@
 import { test as base, expect, Page } from '@playwright/test';
-import { clearEmails, getLatestEmailLink } from './utils/mailhog';
+import { clearEmails, waitForEmailLink } from './utils/mailhog';
 import { fakeSignupUser } from './utils/fakeData';
 import { checkAfterLogin, loginUser, signupUser } from './utils/auth';
 
@@ -17,20 +17,7 @@ export const test = base.extend<AuthFixtures>({
     await page.goto('/signup');
     await signupUser(page, user);
 
-    let verificationLink: string | null = null;
-    const timeout = 10000;
-    const interval = 500;
-    const start = Date.now();
-
-    while (Date.now() - start < timeout) {
-      try {
-        verificationLink = await getLatestEmailLink();
-        if (verificationLink) break;
-      } catch {
-        // email not yet ready
-      }
-      await new Promise((res) => setTimeout(res, interval));
-    }
+    const verificationLink = await waitForEmailLink();
 
     if (!verificationLink)
       throw new Error('Verification email not received in time');

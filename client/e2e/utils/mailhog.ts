@@ -1,7 +1,7 @@
 const BASE_URL_V1 = 'http://localhost:8025/api/v1';
 const BASE_URL_V2 = 'http://localhost:8025/api/v2';
 
-export async function getLatestEmailLink(): Promise<string> {
+async function getLatestEmailLink(): Promise<string> {
   const response = await fetch(`${BASE_URL_V2}/messages`, { method: 'GET' });
 
   const data = await response.json();
@@ -18,6 +18,29 @@ export async function getLatestEmailLink(): Promise<string> {
   }
 
   return match[0];
+}
+
+export async function waitForEmailLink(): Promise<string> {
+  const timeout = 30000;
+  const interval = 1000;
+  let verificationLink: string | null = null;
+  const start = Date.now();
+
+  while (Date.now() - start < timeout) {
+    try {
+      verificationLink = await getLatestEmailLink();
+      if (verificationLink) break;
+    } catch {
+      // email not yet ready, ignore
+    }
+    await new Promise((res) => setTimeout(res, interval));
+  }
+
+  if (!verificationLink) {
+    throw new Error('Verification link not received within 30 seconds');
+  }
+
+  return verificationLink;
 }
 
 export async function clearEmails() {
