@@ -1,5 +1,5 @@
 import { expect, Page } from '@playwright/test';
-import { UserLogin, userSignup } from './api';
+import { UserLogin, UserSignup } from './api';
 
 const URL_LOGGED_IN = '/?page=1';
 
@@ -20,7 +20,7 @@ export async function checkAfterLogin(page: Page) {
 
 export async function signupUser(
   page: Page,
-  user: userSignup,
+  user: UserSignup,
   matchingPasswords = true
 ) {
   const form = page.getByRole('form', { name: 'Signup' });
