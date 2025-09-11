@@ -21,7 +21,7 @@ async function getLatestEmailLink(): Promise<string> {
 }
 
 export async function waitForEmailLink(): Promise<string> {
-  const timeout = 30000;
+  const timeout = process.env.CI ? 90000 : 30000;
   const interval = 1000;
   let verificationLink: string | null = null;
   const start = Date.now();

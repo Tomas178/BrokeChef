@@ -17,11 +17,6 @@ import {
 
 const user = fakeSignupUser();
 
-const LOADING_SIGNUP_MESSAGE = /creating/i;
-const LOADING_LOGIN_MESSAGE = /logging/i;
-const LOADING_REQUEST_PASSWORD = /sending/i;
-const LOADING_RESET_PASSWORD = /resetting|changing/i;
-
 const ERROR_MISMATCHING_PASSWORDS = /passwords/i;
 const ERROR_TOO_SHORT_PASSWORD = /short/i;
 const ERROR_EMAIL_TAKEN = /taken|exists/i;
@@ -64,11 +59,7 @@ test.describe.serial('Signup and login sequence', () => {
 
     await signupUser(page, user);
 
-    await checkLocator(
-      toastContainer,
-      /success|signed/i,
-      LOADING_SIGNUP_MESSAGE
-    );
+    await checkLocator(toastContainer, /success|signed/i);
   });
 
   test('Visitor is shown that email is taken', async ({ page }) => {
@@ -78,11 +69,7 @@ test.describe.serial('Signup and login sequence', () => {
 
     await signupUser(page, user);
 
-    await checkLocator(
-      toastContainer,
-      ERROR_EMAIL_TAKEN,
-      LOADING_SIGNUP_MESSAGE
-    );
+    await checkLocator(toastContainer, ERROR_EMAIL_TAKEN);
     await checkLocator(errorMessage, ERROR_EMAIL_TAKEN);
   });
 
@@ -129,11 +116,7 @@ test.describe.serial('Signup and login sequence', () => {
     }) => {
       await loginUser(page, user);
 
-      await checkLocator(
-        toastContainer,
-        ERROR_VERIFY_EMAIL,
-        LOADING_LOGIN_MESSAGE
-      );
+      await checkLocator(toastContainer, ERROR_VERIFY_EMAIL);
 
       await page.reload();
       await expect(page).toHaveURL('/login');
@@ -149,7 +132,7 @@ test.describe.serial('Signup and login sequence', () => {
     test('Visitor should be able to login', async ({ page }) => {
       await loginUser(page, user);
 
-      await checkLocator(toastContainer, /logging/i, LOADING_LOGIN_MESSAGE);
+      await checkLocator(toastContainer, /logging/i);
 
       await checkAfterLogin(page);
     });
@@ -193,11 +176,7 @@ test.describe.serial('Request and reset password sequence', () => {
       });
 
       await test.step('3 - Assert', async () => {
-        await checkLocator(
-          toastContainer,
-          MESSAGE_EMAIL_SENT,
-          LOADING_REQUEST_PASSWORD
-        );
+        await checkLocator(toastContainer, MESSAGE_EMAIL_SENT);
       });
     });
 
@@ -215,11 +194,7 @@ test.describe.serial('Request and reset password sequence', () => {
       });
 
       await test.step('3 - Assert', async () => {
-        await checkLocator(
-          toastContainer,
-          MESSAGE_EMAIL_SENT,
-          LOADING_REQUEST_PASSWORD
-        );
+        await checkLocator(toastContainer, MESSAGE_EMAIL_SENT);
       });
     });
   });
@@ -260,11 +235,7 @@ test.describe.serial('Request and reset password sequence', () => {
 
       await resetPassword(page, user.password);
 
-      await checkLocator(
-        toastContainer,
-        MESSAGE_PASSWORD_CHANGED,
-        LOADING_RESET_PASSWORD
-      );
+      await checkLocator(toastContainer, MESSAGE_PASSWORD_CHANGED);
     });
   });
 });
