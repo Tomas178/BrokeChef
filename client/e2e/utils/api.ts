@@ -30,6 +30,7 @@ export const authClient = createAuthClient({
   },
 });
 
+export type userSignup = Parameters<typeof authClient.signUp.email>[0];
 export type UserLogin = Parameters<typeof authClient.signIn.email>[0];
 type UserLoginAuthed = UserLogin & { id: string; accessToken: string };
 

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { fakeSignupUser } from './utils/fakeData';
 import { clearEmails, getVerifyLink } from './utils/mailhog';
 import { asUser } from './utils/api';
-import { loginUser } from './utils/auth';
+import { checkIfRedirects, loginUser, signupUser } from './utils/auth';
 
 const user = fakeSignupUser();
 
@@ -19,16 +19,7 @@ test.describe.serial('Signup and login sequence', () => {
     await expect(toastContainer).toBeHidden();
     await expect(errorMessage).toBeHidden();
 
-    const form = page.getByRole('form', { name: 'Signup' });
-
-    await form.locator('input[data-testid="username"]').fill(user.name);
-    await form.locator('input[data-testid="email"]').fill(user.email);
-    await form.locator('input[data-testid="password"]').fill(user.password);
-    await form
-      .locator('input[data-testid="repeat-password"]')
-      .fill(user.password + 'a');
-
-    await form.locator('button[type="submit"]').click();
+    await signupUser(page, user, true);
 
     await expect(toastContainer).toBeVisible();
     await expect(toastContainer).toHaveText(/passwords/i);
@@ -37,66 +28,81 @@ test.describe.serial('Signup and login sequence', () => {
     await expect(errorMessage).toHaveText(/passwords/i);
   });
 
+  test('Visitor is shown that password is too short', async ({ page }) => {
+    await page.goto('/signup');
+    const toastContainer = page.getByTestId('toast-body');
+    const errorMessage = page.getByTestId('errorMessage');
+
+    await expect(toastContainer).toBeHidden();
+    await expect(errorMessage).toBeHidden();
+
+    const userToShortPassword = { ...user, password: 'a' };
+
+    await signupUser(page, userToShortPassword);
+
+    await expect(toastContainer).toBeVisible();
+    await expect(toastContainer).toHaveText(/short/i);
+
+    await expect(errorMessage).toBeVisible();
+    await expect(errorMessage).toHaveText(/short/i);
+  });
+
   test('Visitor can signup', async ({ page }) => {
     await page.goto('/signup');
     const toastContainer = page.getByTestId('toast-body');
 
     await expect(toastContainer).toBeHidden();
 
-    const form = page.getByRole('form', { name: 'Signup' });
-
-    await form.locator('input[data-testid="username"]').fill(user.name);
-    await form.locator('input[data-testid="email"]').fill(user.email);
-    await form.locator('input[data-testid="password"]').fill(user.password);
-    await form
-      .locator('input[data-testid="repeat-password"]')
-      .fill(user.password);
-
-    await form.locator('button[type="submit"]').click();
+    await signupUser(page, user);
 
     await expect(toastContainer).toBeVisible();
     await expect(toastContainer).toHaveText(/creating/i);
   });
 
+  test('Visitor is shown that email is taken', async ({ page }) => {
+    await page.goto('/signup');
+    const toastContainer = page.getByTestId('toast-body');
+    const errorMessage = page.getByTestId('errorMessage');
+
+    await expect(toastContainer).toBeHidden();
+    await expect(errorMessage).toBeHidden();
+
+    await signupUser(page, user);
+
+    await expect(toastContainer).toBeVisible();
+    await expect(toastContainer).toHaveText(/taken|exists/i);
+
+    await expect(errorMessage).toBeVisible();
+    await expect(errorMessage).toHaveText(/taken|exists/i);
+  });
+
   test.describe('Redirections based on login status', () => {
-    test('Visitor can access homepage without being logged in', async ({
-      page,
-    }) => {
-      await page.goto('/');
+    test.describe('Allowed routes without being logged in', () => {
+      test('Visitor can access homepage', async ({ page }) => {
+        await page.goto('/');
 
-      await page.waitForURL('/');
+        await page.waitForURL('/');
 
-      await expect(page).toHaveURL('/');
+        await expect(page).toHaveURL('/');
+      });
     });
 
-    test('Visitor cannot access profile page without being logged in', async ({
-      page,
-    }) => {
-      await page.goto('/profile');
+    test.describe('Forbidden routes without being logged in', () => {
+      test('Visitor cannot access profile page without being logged in', async ({
+        page,
+      }) => await checkIfRedirects(page, '/profile'));
 
-      await page.waitForURL('/login');
+      test('Visitor cannot access other user profile page without being logged in', async ({
+        page,
+      }) => await checkIfRedirects(page, '/profile/user1'));
 
-      await expect(page).toHaveURL('/login');
-    });
+      test('Visitor cannot access recipe page without being logged in', async ({
+        page,
+      }) => await checkIfRedirects(page, '/recipe/1'));
 
-    test('Visitor cannot access recipe page without being logged in', async ({
-      page,
-    }) => {
-      await page.goto('/recipe/1');
-
-      await page.waitForURL('/login');
-
-      await expect(page).toHaveURL('/login');
-    });
-
-    test('Visitor cannot access create recipe page without being logged in', async ({
-      page,
-    }) => {
-      await page.goto('/create-recipe');
-
-      await page.waitForURL('/login');
-
-      await expect(page).toHaveURL('/login');
+      test('Visitor cannot access create recipe page without being logged in', async ({
+        page,
+      }) => await checkIfRedirects(page, '/create-recipe'));
     });
   });
 
@@ -107,8 +113,8 @@ test.describe.serial('Signup and login sequence', () => {
     await expect(toastContainer).toBeHidden();
 
     const form = page.getByRole('form', { name: 'Signin' });
-    await form.locator('input[data-testid="email"]').fill(user.email);
-    await form.locator('input[data-testid="password"]').fill(user.password);
+    await form.getByTestId('email').fill(user.email);
+    await form.getByTestId('password').fill(user.password);
 
     await form.locator('button[type="submit"]').click();
 
