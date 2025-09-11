@@ -30,7 +30,7 @@ export const authClient = createAuthClient({
   },
 });
 
-type UserLogin = Parameters<typeof authClient.signIn.email>[0];
+export type UserLogin = Parameters<typeof authClient.signIn.email>[0];
 type UserLoginAuthed = UserLogin & { id: string; accessToken: string };
 
 export async function loginNewUser(
