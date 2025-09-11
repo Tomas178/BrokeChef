@@ -16,9 +16,12 @@ export async function getErrorMessage(page: Page): Promise<Locator> {
 
 export async function checkLocator(
   locator: Locator,
-  responseMessage: string | RegExp
+  responseMessage: string | RegExp,
+  loadingMessage?: string | RegExp
 ) {
   await expect(locator).toBeVisible();
 
-  await expect(locator).toContainText(responseMessage, { timeout: 20000 });
+  if (loadingMessage) await expect(locator).toContainText(loadingMessage);
+
+  await expect(locator).toContainText(responseMessage, { timeout: 10000 });
 }
