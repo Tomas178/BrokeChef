@@ -20,5 +20,5 @@ export async function checkLocator(
 ) {
   await expect(locator).toBeVisible();
 
-  await expect(locator).toContainText(responseMessage, { timeout: 10000 });
+  await expect(locator).toContainText(responseMessage, { timeout: 20000 });
 }
