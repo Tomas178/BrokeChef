@@ -1,14 +1,28 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Locator } from '@playwright/test';
 import { fakeSignupUser } from './utils/fakeData';
-import { clearEmails, getVerifyLink } from './utils/mailhog';
+import { clearEmails, getLatestEmailLink } from './utils/mailhog';
 import {
+  checkAfterLogin,
   checkIfRedirects,
   loginUser,
   requestResetPassword,
+  resetPassword,
   signupUser,
 } from './utils/auth';
+import {
+  checkLocator,
+  getErrorMessage,
+  getToastContainer,
+} from './utils/toast';
 
 const user = fakeSignupUser();
+
+const ERROR_MISMATCHING_PASSWORDS = /passwords/i;
+const ERROR_TOO_SHORT_PASSWORD = /short/i;
+const ERROR_EMAIL_TAKEN = /taken|exists/i;
+
+const MESSAGE_EMAIL_SENT = /sent|check/i;
+const MESSAGE_PASSWORD_CHANGED = /reset|changed/i;
 
 test.describe.serial('Signup and login sequence', () => {
   test.beforeAll(async () => {
@@ -17,45 +31,30 @@ test.describe.serial('Signup and login sequence', () => {
 
   test('Visitor is shown that passwords do not match', async ({ page }) => {
     await page.goto('/signup');
-    const toastContainer = page.getByTestId('toast-body');
-    const errorMessage = page.getByTestId('errorMessage');
+    const toastContainer = await getToastContainer(page);
+    const errorMessage = await getErrorMessage(page);
 
-    await expect(toastContainer).toBeHidden();
-    await expect(errorMessage).toBeHidden();
+    await signupUser(page, user, false);
 
-    await signupUser(page, user, true);
-
-    await expect(toastContainer).toBeVisible();
-    await expect(toastContainer).toHaveText(/passwords/i);
-
-    await expect(errorMessage).toBeVisible();
-    await expect(errorMessage).toHaveText(/passwords/i);
+    await checkLocator(toastContainer, ERROR_MISMATCHING_PASSWORDS);
+    await checkLocator(errorMessage, ERROR_MISMATCHING_PASSWORDS);
   });
 
   test('Visitor is shown that password is too short', async ({ page }) => {
     await page.goto('/signup');
-    const toastContainer = page.getByTestId('toast-body');
-    const errorMessage = page.getByTestId('errorMessage');
-
-    await expect(toastContainer).toBeHidden();
-    await expect(errorMessage).toBeHidden();
+    const toastContainer = await getToastContainer(page);
+    const errorMessage = await getErrorMessage(page);
 
     const userToShortPassword = { ...user, password: 'a' };
-
     await signupUser(page, userToShortPassword);
 
-    await expect(toastContainer).toBeVisible();
-    await expect(toastContainer).toHaveText(/short/i);
-
-    await expect(errorMessage).toBeVisible();
-    await expect(errorMessage).toHaveText(/short/i);
+    await checkLocator(toastContainer, ERROR_TOO_SHORT_PASSWORD);
+    await checkLocator(errorMessage, ERROR_TOO_SHORT_PASSWORD);
   });
 
   test('Visitor can signup', async ({ page }) => {
     await page.goto('/signup');
-    const toastContainer = page.getByTestId('toast-body');
-
-    await expect(toastContainer).toBeHidden();
+    const toastContainer = await getToastContainer(page);
 
     await signupUser(page, user);
 
@@ -65,19 +64,13 @@ test.describe.serial('Signup and login sequence', () => {
 
   test('Visitor is shown that email is taken', async ({ page }) => {
     await page.goto('/signup');
-    const toastContainer = page.getByTestId('toast-body');
-    const errorMessage = page.getByTestId('errorMessage');
-
-    await expect(toastContainer).toBeHidden();
-    await expect(errorMessage).toBeHidden();
+    const toastContainer = await getToastContainer(page);
+    const errorMessage = await getErrorMessage(page);
 
     await signupUser(page, user);
 
-    await expect(toastContainer).toBeVisible();
-    await expect(toastContainer).toHaveText(/taken|exists/i);
-
-    await expect(errorMessage).toBeVisible();
-    await expect(errorMessage).toHaveText(/taken|exists/i);
+    await checkLocator(toastContainer, ERROR_EMAIL_TAKEN);
+    await checkLocator(errorMessage, ERROR_EMAIL_TAKEN);
   });
 
   test.describe('Redirections based on login status', () => {
@@ -110,103 +103,146 @@ test.describe.serial('Signup and login sequence', () => {
     });
   });
 
-  test('Visitor is shown that email needs to be verified', async ({ page }) => {
-    await page.goto('/login');
-    const toastContainer = page.getByTestId('toast-body');
+  test.describe('Login', () => {
+    let toastContainer: Locator;
 
-    await expect(toastContainer).toBeHidden();
-
-    const form = page.getByRole('form', { name: 'Signin' });
-    await form.getByTestId('email').fill(user.email);
-    await form.getByTestId('password').fill(user.password);
-
-    await form.getByTestId('submit-button').click();
-
-    await expect(page).toHaveURL('/login');
-
-    await expect(toastContainer).toBeVisible();
-    await expect(toastContainer).toHaveText(/email/i, { timeout: 5000 });
-
-    await page.reload();
-    await expect(page).toHaveURL('/login');
-  });
-
-  test('Go to the verification link', async ({ page }) => {
-    let verificationLink: string;
-
-    await test.step('Step 1 - Get the verification link', async () => {
-      verificationLink = await getVerifyLink();
+    test.beforeEach(async ({ page }) => {
+      await page.goto('/login');
+      toastContainer = await getToastContainer(page);
     });
 
-    await test.step('Step 2 - Go to the verification link', async () => {
-      await page.goto(verificationLink);
-
-      await expect(page).toHaveURL('/', { timeout: 5000 });
-    });
-  });
-
-  test('Visitor should be able to login', async ({ page }) => {
-    await loginUser(page, user);
-  });
-
-  test('Visitor should be able to logout', async ({ page }) => {
-    await test.step('Step 1 - Login', async () => {
+    test('Visitor is shown that email needs to be verified', async ({
+      page,
+    }) => {
       await loginUser(page, user);
-    });
 
-    await test.step('Step 2 - Logout', async () => {
-      const logoutLink = page.getByRole('link', { name: 'Logout' });
-
-      await logoutLink.click();
-
-      await expect(logoutLink).toBeHidden();
-
-      await expect(page).toHaveURL('/login');
+      await checkLocator(toastContainer, /email/i);
 
       await page.reload();
-      await expect(logoutLink).toBeHidden();
+      await expect(page).toHaveURL('/login');
+    });
+
+    test('Go to the verification link', async ({ page }) => {
+      let verificationLink: string;
+
+      await test.step('Step 1 - Get the verification link', async () => {
+        verificationLink = await getLatestEmailLink();
+      });
+
+      await test.step('Step 2 - Go to the verification link', async () => {
+        await page.goto(verificationLink);
+
+        await expect(page).toHaveURL('/', { timeout: 5000 });
+      });
+    });
+
+    test('Visitor should be able to login', async ({ page }) => {
+      await loginUser(page, user);
+
+      await checkAfterLogin(page);
+    });
+
+    test('Visitor should be able to logout', async ({ page }) => {
+      await test.step('Step 1 - Login', async () => {
+        await loginUser(page, user);
+
+        await checkAfterLogin(page);
+      });
+
+      await test.step('Step 2 - Logout', async () => {
+        const logoutLink = page.getByRole('link', { name: 'Logout' });
+
+        await logoutLink.click();
+
+        await expect(logoutLink).toBeHidden();
+
+        await expect(page).toHaveURL('/login');
+
+        await page.reload();
+        await expect(logoutLink).toBeHidden();
+      });
     });
   });
 });
 
 test.describe.serial('Request and reset password sequence', () => {
-  test('Visitor should be shown that link was sent when given non-exisiting email', async ({
-    page,
-  }) => {
-    await test.step('Step 1 - Go to request password page', async () => {
-      await page.goto('/request-reset-password');
+  test.describe('Request reset password link', () => {
+    test('Visitor should be shown that link was sent when given non-exisiting email', async ({
+      page,
+    }) => {
+      await test.step('Step 1 - Go to request password page', async () => {
+        await page.goto('/request-reset-password');
+      });
+
+      const toastContainer = await getToastContainer(page);
+
+      await test.step('Step 2 - Request reset password', async () => {
+        await requestResetPassword(page, user.email + 'a');
+      });
+
+      await test.step('Step 3 - Assert', async () => {
+        await expect(toastContainer).toBeVisible();
+        await expect(toastContainer).toHaveText(MESSAGE_EMAIL_SENT);
+      });
     });
 
-    const toastContainer = page.getByTestId('toast-body');
-    await expect(toastContainer).toBeHidden();
+    test('Visitor should be able to request a password reset link', async ({
+      page,
+    }) => {
+      await test.step('Step 1 - Go to request password page', async () => {
+        await page.goto('/request-reset-password');
+      });
 
-    await test.step('Step 2 - Request reset password', async () => {
-      await requestResetPassword(page, user.email + 'a');
-    });
+      const toastContainer = await getToastContainer(page);
 
-    await test.step('Step 3 - Assert', async () => {
-      await expect(toastContainer).toBeVisible();
-      await expect(toastContainer).toHaveText(/sent|check/i);
+      await test.step('Step 2 - Request reset password', async () => {
+        await requestResetPassword(page, user.email);
+      });
+
+      await test.step('Step 3 - Assert', async () => {
+        await expect(toastContainer).toBeVisible();
+        await expect(toastContainer).toHaveText(MESSAGE_EMAIL_SENT);
+      });
     });
   });
 
-  test('Visitor should be able to request a password reset link', async ({
-    page,
-  }) => {
-    await test.step('Step 1 - Go to request password page', async () => {
-      await page.goto('/request-reset-password');
+  test.describe('Reset password', () => {
+    let resetPasswordLink: string;
+
+    test.beforeAll(async () => {
+      resetPasswordLink = await getLatestEmailLink();
     });
 
-    const toastContainer = page.getByTestId('toast-body');
-    await expect(toastContainer).toBeHidden();
-
-    await test.step('Step 2 - Request reset password', async () => {
-      await requestResetPassword(page, user.email);
+    test.beforeEach(async ({ page }) => {
+      await page.goto(resetPasswordLink);
     });
 
-    await test.step('Step 3 - Assert', async () => {
-      await expect(toastContainer).toBeVisible();
-      await expect(toastContainer).toHaveText(/sent|check/i);
+    test('Visitor is shown that passwords do not match', async ({ page }) => {
+      const toastContainer = await getToastContainer(page);
+      const errorMessage = await getErrorMessage(page);
+
+      await resetPassword(page, 'password.123', false);
+
+      await checkLocator(toastContainer, ERROR_MISMATCHING_PASSWORDS);
+      await checkLocator(errorMessage, ERROR_MISMATCHING_PASSWORDS);
+    });
+
+    test('Visitor is shown that password is too short', async ({ page }) => {
+      const toastContainer = await getToastContainer(page);
+      const errorMessage = await getErrorMessage(page);
+
+      await resetPassword(page, 'a');
+
+      await checkLocator(toastContainer, ERROR_TOO_SHORT_PASSWORD);
+      await checkLocator(errorMessage, ERROR_TOO_SHORT_PASSWORD);
+    });
+
+    test('Visitor should be able to reset the password', async ({ page }) => {
+      const toastContainer = await getToastContainer(page);
+
+      await resetPassword(page, user.password);
+
+      await checkLocator(toastContainer, MESSAGE_PASSWORD_CHANGED);
     });
   });
 });
