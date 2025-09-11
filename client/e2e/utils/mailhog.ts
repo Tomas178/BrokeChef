@@ -17,8 +17,6 @@ export async function getLatestEmailLink(): Promise<string> {
     throw new Error('Link not found in email body');
   }
 
-  console.log(match[0]);
-
   return match[0];
 }
 
