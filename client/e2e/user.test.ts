@@ -1,4 +1,4 @@
-import { test, expect, Locator } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { fakeSignupUser } from './utils/fakeData';
 import { clearEmails, waitForEmailLink } from './utils/mailhog';
 import {
@@ -9,13 +9,12 @@ import {
   resetPassword,
   signupUser,
 } from './utils/auth';
-import {
-  checkLocator,
-  getErrorMessage,
-  getToastContainer,
-} from './utils/toast';
+import { checkLocator } from './utils/toast';
 
 const user = fakeSignupUser();
+
+const TOAST_TEST_ID = 'toast-content';
+const ERROR_MESSAGE_TEST_ID = 'error-message';
 
 const LOADING_SIGNUP_MESSAGE = /creating/i;
 const LOADING_LOGIN_MESSAGE = /logging/i;
@@ -37,35 +36,35 @@ test.describe.serial('Signup and login sequence', () => {
 
   test('Visitor is shown that passwords do not match', async ({ page }) => {
     await page.goto('/signup');
-    const toastContainer = await getToastContainer(page);
-    const errorMessage = await getErrorMessage(page);
 
     await signupUser(page, user, false);
 
-    await checkLocator(toastContainer, ERROR_MISMATCHING_PASSWORDS);
-    await checkLocator(errorMessage, ERROR_MISMATCHING_PASSWORDS);
+    await checkLocator(page, TOAST_TEST_ID, ERROR_MISMATCHING_PASSWORDS);
+    await checkLocator(
+      page,
+      ERROR_MESSAGE_TEST_ID,
+      ERROR_MISMATCHING_PASSWORDS
+    );
   });
 
   test('Visitor is shown that password is too short', async ({ page }) => {
     await page.goto('/signup');
-    const toastContainer = await getToastContainer(page);
-    const errorMessage = await getErrorMessage(page);
 
     const userToShortPassword = { ...user, password: 'a' };
     await signupUser(page, userToShortPassword);
 
-    await checkLocator(toastContainer, ERROR_TOO_SHORT_PASSWORD);
-    await checkLocator(errorMessage, ERROR_TOO_SHORT_PASSWORD);
+    await checkLocator(page, TOAST_TEST_ID, ERROR_TOO_SHORT_PASSWORD);
+    await checkLocator(page, ERROR_MESSAGE_TEST_ID, ERROR_TOO_SHORT_PASSWORD);
   });
 
   test('Visitor can signup', async ({ page }) => {
     await page.goto('/signup');
-    const toastContainer = await getToastContainer(page);
 
     await signupUser(page, user);
 
     await checkLocator(
-      toastContainer,
+      page,
+      TOAST_TEST_ID,
       /success|signed/i,
       LOADING_SIGNUP_MESSAGE
     );
@@ -73,17 +72,16 @@ test.describe.serial('Signup and login sequence', () => {
 
   test('Visitor is shown that email is taken', async ({ page }) => {
     await page.goto('/signup');
-    const toastContainer = await getToastContainer(page);
-    const errorMessage = await getErrorMessage(page);
 
     await signupUser(page, user);
 
     await checkLocator(
-      toastContainer,
+      page,
+      TOAST_TEST_ID,
       ERROR_EMAIL_TAKEN,
       LOADING_SIGNUP_MESSAGE
     );
-    await checkLocator(errorMessage, ERROR_EMAIL_TAKEN);
+    await checkLocator(page, ERROR_MESSAGE_TEST_ID, ERROR_EMAIL_TAKEN);
   });
 
   test.describe('Redirections based on login status', () => {
@@ -117,11 +115,8 @@ test.describe.serial('Signup and login sequence', () => {
   });
 
   test.describe('Login', () => {
-    let toastContainer: Locator;
-
     test.beforeEach(async ({ page }) => {
       await page.goto('/login');
-      toastContainer = await getToastContainer(page);
     });
 
     test('Visitor is shown that email needs to be verified', async ({
@@ -130,7 +125,8 @@ test.describe.serial('Signup and login sequence', () => {
       await loginUser(page, user);
 
       await checkLocator(
-        toastContainer,
+        page,
+        TOAST_TEST_ID,
         ERROR_VERIFY_EMAIL,
         LOADING_LOGIN_MESSAGE
       );
@@ -149,7 +145,12 @@ test.describe.serial('Signup and login sequence', () => {
     test('Visitor should be able to login', async ({ page }) => {
       await loginUser(page, user);
 
-      await checkLocator(toastContainer, /logging/i, LOADING_LOGIN_MESSAGE);
+      await checkLocator(
+        page,
+        TOAST_TEST_ID,
+        /logging/i,
+        LOADING_LOGIN_MESSAGE
+      );
 
       await checkAfterLogin(page);
     });
@@ -186,15 +187,14 @@ test.describe.serial('Request and reset password sequence', () => {
         await page.goto('/request-reset-password');
       });
 
-      const toastContainer = await getToastContainer(page);
-
       await test.step('2 - Request reset password', async () => {
         await requestResetPassword(page, user.email + 'a');
       });
 
       await test.step('3 - Assert', async () => {
         await checkLocator(
-          toastContainer,
+          page,
+          TOAST_TEST_ID,
           MESSAGE_EMAIL_SENT,
           LOADING_REQUEST_PASSWORD
         );
@@ -208,15 +208,14 @@ test.describe.serial('Request and reset password sequence', () => {
         await page.goto('/request-reset-password');
       });
 
-      const toastContainer = await getToastContainer(page);
-
       await test.step('2 - Request reset password', async () => {
         await requestResetPassword(page, user.email);
       });
 
       await test.step('3 - Assert', async () => {
         await checkLocator(
-          toastContainer,
+          page,
+          TOAST_TEST_ID,
           MESSAGE_EMAIL_SENT,
           LOADING_REQUEST_PASSWORD
         );
@@ -236,32 +235,29 @@ test.describe.serial('Request and reset password sequence', () => {
     });
 
     test('Visitor is shown that passwords do not match', async ({ page }) => {
-      const toastContainer = await getToastContainer(page);
-      const errorMessage = await getErrorMessage(page);
-
       await resetPassword(page, 'password.123', false);
 
-      await checkLocator(toastContainer, ERROR_MISMATCHING_PASSWORDS);
-      await checkLocator(errorMessage, ERROR_MISMATCHING_PASSWORDS);
+      await checkLocator(page, TOAST_TEST_ID, ERROR_MISMATCHING_PASSWORDS);
+      await checkLocator(
+        page,
+        ERROR_MESSAGE_TEST_ID,
+        ERROR_MISMATCHING_PASSWORDS
+      );
     });
 
     test('Visitor is shown that password is too short', async ({ page }) => {
-      const toastContainer = await getToastContainer(page);
-      const errorMessage = await getErrorMessage(page);
-
       await resetPassword(page, 'a');
 
-      await checkLocator(toastContainer, ERROR_TOO_SHORT_PASSWORD);
-      await checkLocator(errorMessage, ERROR_TOO_SHORT_PASSWORD);
+      await checkLocator(page, TOAST_TEST_ID, ERROR_TOO_SHORT_PASSWORD);
+      await checkLocator(page, ERROR_MESSAGE_TEST_ID, ERROR_TOO_SHORT_PASSWORD);
     });
 
     test('Visitor should be able to reset the password', async ({ page }) => {
-      const toastContainer = await getToastContainer(page);
-
       await resetPassword(page, user.password);
 
       await checkLocator(
-        toastContainer,
+        page,
+        TOAST_TEST_ID,
         MESSAGE_PASSWORD_CHANGED,
         LOADING_RESET_PASSWORD
       );
