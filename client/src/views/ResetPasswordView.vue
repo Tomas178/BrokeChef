@@ -40,9 +40,11 @@ async function handleResetPassword() {
     password.value = '';
     repeatPassword.value = '';
 
-    router.push({
-      name: 'Login',
-    });
+    setTimeout(async () => {
+      await router.push({
+        name: 'Login',
+      });
+    }, 1500);
   } catch {
     updateToast(id, 'error', errorMessage.value || DEFAULT_SERVER_ERROR);
   }

@@ -37,9 +37,11 @@ async function handleLogin() {
     userForm.value.email = '';
     userForm.value.password = '';
 
-    router.push({
-      name: 'Home',
-    });
+    setTimeout(async () => {
+      await router.push({
+        name: 'Home',
+      });
+    }, 1500);
   } catch {
     updateToast(id, 'error', errorMessage.value || DEFAULT_SERVER_ERROR);
   }

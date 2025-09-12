@@ -1,7 +1,6 @@
-import { test } from './fixtures-auth';
+import { expect, test } from './fixtures-auth';
 import { fakeRecipe } from './utils/fakeData';
 import { fillInRecipeInfo } from './utils/recipe';
-import { checkLocator } from './utils/toast';
 
 test.describe.serial('Create recipe, see the recipe and its owner', () => {
   const recipe = fakeRecipe();
@@ -19,8 +18,13 @@ test.describe.serial('Create recipe, see the recipe and its owner', () => {
 
     await form.getByRole('button', { name: /publish|create/i }).click();
 
-    await checkLocator(authPage, 'toast-content', /created/i, /creating/i);
+    const toastContainer = authPage.getByTestId('toast-body');
+
+    await expect(toastContainer).toBeVisible();
+    await expect(toastContainer).toContainText(/creating/i);
+    await expect(toastContainer).toContainText(/created/i, { timeout: 15000 });
 
     await authPage.waitForURL(/recipe\/\d+/i, { timeout: 15000 });
+    await expect(authPage).toHaveURL(/recipe\/\d+/i);
   });
 });

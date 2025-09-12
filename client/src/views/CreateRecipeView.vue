@@ -79,10 +79,12 @@ async function handleCreateRecipe() {
     recipeImageFile.value = undefined;
 
     if (recipe) {
-      router.push({
-        name: 'Recipe',
-        params: { id: recipe?.id },
-      });
+      setTimeout(async () => {
+        await router.push({
+          name: 'Recipe',
+          params: { id: recipe?.id },
+        });
+      }, 1500);
     }
   } catch {
     updateToast(id, 'error', errorMessage.value || DEFAULT_SERVER_ERROR);

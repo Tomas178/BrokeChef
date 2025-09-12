@@ -53,9 +53,11 @@ async function handleDelete() {
 
     updateToast(id, 'success', 'Recipe Removed!');
 
-    router.push({
-      name: 'Home',
-    });
+    setTimeout(async () => {
+      await router.push({
+        name: 'Home',
+      });
+    }, 1500);
   } catch {
     updateToast(id, 'error', deleteErrorMessage.value || DEFAULT_SERVER_ERROR);
   }
