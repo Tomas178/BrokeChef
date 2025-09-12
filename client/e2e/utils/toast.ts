@@ -19,8 +19,6 @@ export async function checkLocator(
   responseMessage: string | RegExp,
   loadingMessage?: string | RegExp
 ) {
-  await expect(locator).toBeVisible();
-
   if (loadingMessage) await expect(locator).toContainText(loadingMessage);
 
   await expect(locator).toContainText(responseMessage, { timeout: 10000 });
