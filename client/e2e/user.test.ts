@@ -8,7 +8,7 @@ import {
   requestResetPassword,
   resetPassword,
   signupUser,
-  URL_LOGGED_IN,
+  HOME_PAGE_URL,
 } from './utils/auth';
 import {
   checkLocator,
@@ -132,7 +132,7 @@ test.describe.serial('Signup and login sequence', () => {
       const verificationLink = await waitForEmailLink();
       await page.goto(verificationLink);
 
-      await expect(page).toHaveURL(URL_LOGGED_IN, { timeout: 5000 });
+      await expect(page).toHaveURL(HOME_PAGE_URL, { timeout: 5000 });
     });
 
     test('Visitor should be able to login', async ({ page }) => {

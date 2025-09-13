@@ -16,8 +16,14 @@ export async function getErrorMessage(page: Page): Promise<Locator> {
   return errorMessage;
 }
 
-export async function checkLocator(locator: Locator, message: string | RegExp) {
+export async function checkLocator(
+  locator: Locator,
+  message: string | RegExp,
+  loadingMessage?: string | RegExp
+) {
   await expect(locator).toBeVisible();
+
+  if (loadingMessage) await expect(locator).toContainText(loadingMessage);
 
   await expect(locator).toContainText(message);
 }

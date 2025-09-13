@@ -1,30 +1,132 @@
-import { expect, test } from './fixtures-auth';
-import { fakeRecipe } from './utils/fakeData';
-import { fillInRecipeInfo } from './utils/recipe';
+import { Locator } from '@playwright/test';
+import { expect, test, User } from './fixtures/fullAuth';
+import { fullLoginProcedure, HOME_PAGE_URL } from './utils/auth';
+import { fakeRecipe, fakeRecipeAllInfo } from './utils/fakeData';
+import {
+  checkActionButton,
+  checkRecipeMainInfo,
+  deleteInput,
+  fillAllRecipeInfo,
+} from './utils/recipe';
+import { checkLocator, getToastContainer } from './utils/toast';
 
-test.describe.serial('Create recipe, see the recipe and its owner', () => {
+test.describe.serial('Create recipe and delete it', () => {
   const recipe = fakeRecipe();
+  let recipeId: number;
+  let creator: User;
+  let visitor: User;
+  let recipeAllInfo: ReturnType<typeof fakeRecipeAllInfo>;
 
-  test('Create recipe', async ({ authPage }) => {
-    await authPage.goto('/create-recipe');
+  test.describe('Create recipe flow', () => {
+    test('Allows removing input', async ({ auth }) => {
+      const { page, user } = auth;
+      creator = user;
 
-    const form = authPage.getByRole('form', { name: 'Create recipe' });
+      const ingredientsTestId = 'ingredients';
 
-    await form.getByTestId('recipe-title').fill(recipe.title);
-    await form.getByTestId('cook-duration').fill(String(recipe.duration));
-    await fillInRecipeInfo(authPage, 'ingredients', recipe.ingredients);
-    await fillInRecipeInfo(authPage, 'kitchen-equipment', recipe.tools);
-    await fillInRecipeInfo(authPage, 'steps', recipe.steps);
+      await page.goto('/create-recipe');
 
-    await form.getByRole('button', { name: /publish|create/i }).click();
+      const form = page.getByRole('form', { name: 'Create recipe' });
+      await fillAllRecipeInfo(form, recipe);
+      await deleteInput(form, ingredientsTestId, 1);
 
-    const toastContainer = authPage.getByTestId('toast-body');
+      const card = form.getByTestId(ingredientsTestId);
 
-    await expect(toastContainer).toBeVisible();
-    await expect(toastContainer).toContainText(/creating/i);
-    await expect(toastContainer).toContainText(/created/i);
+      const inputs = await card.getByTestId(/^input-\d+$/).all();
 
-    await authPage.waitForURL(/recipe\/\d+/i);
-    await expect(authPage).toHaveURL(/recipe\/\d+/i);
+      expect(inputs.length).toBe(recipe.ingredients.length - 1);
+    });
+
+    test('Create the recipe', async ({ page }) => {
+      await fullLoginProcedure(page, creator);
+
+      await page.goto('/create-recipe');
+
+      const toastContainer = await getToastContainer(page);
+
+      const form = page.getByRole('form', { name: 'Create recipe' });
+
+      await fillAllRecipeInfo(form, recipe);
+
+      await form.getByRole('button', { name: /publish|create/i }).click();
+
+      await checkLocator(toastContainer, /created/i, /creating/i);
+
+      await page.waitForURL(/recipe\/\d+/i);
+      await expect(page).toHaveURL(/recipe\/\d+/i);
+
+      recipeId = Number(page.url().split('/').pop());
+
+      recipeAllInfo = fakeRecipeAllInfo({
+        id: recipeId,
+        author: {
+          email: creator.email,
+          name: creator.name,
+          image: 'image',
+        },
+        ingredients: recipe.ingredients,
+        steps: recipe.steps,
+        tools: recipe.tools,
+        duration: recipe.duration,
+        title: recipe.title,
+      });
+    });
+  });
+
+  test('Check recipe information', async ({ auth }) => {
+    const { page, user } = auth;
+    visitor = user;
+
+    await page.goto(`/recipe/${recipeId}`);
+
+    await checkRecipeMainInfo(page, recipeAllInfo);
+  });
+
+  test.describe('Visitor actions', () => {
+    let toastContainer: Locator;
+
+    test.beforeEach(async ({ page }) => {
+      await fullLoginProcedure(page, visitor);
+      await page.goto(`/recipe/${recipeId}`);
+      toastContainer = await getToastContainer(page);
+    });
+
+    test('Save the recipe', async ({ page }) => {
+      const saveButton = await checkActionButton(page, 'save');
+      await saveButton.click();
+
+      await checkLocator(toastContainer, /saved|success/i);
+
+      await checkActionButton(page, 'unsave');
+    });
+
+    test('Unsave the recipe', async ({ page }) => {
+      const unsaveButton = await checkActionButton(page, 'unsave');
+      await unsaveButton.click();
+
+      await checkLocator(toastContainer, /unsaved|success/i);
+
+      await checkActionButton(page, 'save');
+    });
+  });
+
+  test('Delete the recipe', async ({ page }) => {
+    await fullLoginProcedure(page, creator);
+
+    await page.goto(`/recipe/${recipeId}`);
+
+    const toastContainer = await getToastContainer(page);
+
+    const deleteButton = await checkActionButton(page, 'delete');
+    await deleteButton.click();
+
+    const dialog = page.getByRole('dialog');
+    const confirmButton = dialog.getByTestId('dialog-confirm');
+    await confirmButton.click();
+
+    await expect(dialog).toBeHidden();
+    await checkLocator(toastContainer, /deleted|removed/i);
+
+    await expect(page).toHaveURL(HOME_PAGE_URL);
   });
 });

@@ -1,7 +1,7 @@
 import { expect, Page } from '@playwright/test';
 import { UserLogin, UserSignup } from './api';
 
-export const URL_LOGGED_IN = '/?page=1';
+export const HOME_PAGE_URL = '/?page=1';
 
 export async function loginUser(page: Page, user: UserLogin) {
   const form = page.getByRole('form', { name: 'Signin' });
@@ -12,10 +12,13 @@ export async function loginUser(page: Page, user: UserLogin) {
 }
 
 export async function checkAfterLogin(page: Page) {
-  await expect(page).toHaveURL(URL_LOGGED_IN, { timeout: 5000 });
+  await expect(page).toHaveURL(HOME_PAGE_URL);
+}
 
-  await page.reload();
-  await expect(page).toHaveURL(URL_LOGGED_IN, { timeout: 5000 });
+export async function fullLoginProcedure(page: Page, user: UserLogin) {
+  await page.goto('/login');
+  await loginUser(page, user);
+  await checkAfterLogin(page);
 }
 
 export async function signupUser(
