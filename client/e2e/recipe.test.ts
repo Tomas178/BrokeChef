@@ -22,9 +22,9 @@ test.describe.serial('Create recipe, see the recipe and its owner', () => {
 
     await expect(toastContainer).toBeVisible();
     await expect(toastContainer).toContainText(/creating/i);
-    await expect(toastContainer).toContainText(/created/i, { timeout: 15000 });
+    await expect(toastContainer).toContainText(/created/i);
 
-    await authPage.waitForURL(/recipe\/\d+/i, { timeout: 15000 });
+    await authPage.waitForURL(/recipe\/\d+/i);
     await expect(authPage).toHaveURL(/recipe\/\d+/i);
   });
 });

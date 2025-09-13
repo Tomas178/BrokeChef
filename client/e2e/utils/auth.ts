@@ -1,7 +1,7 @@
 import { expect, Page } from '@playwright/test';
 import { UserLogin, UserSignup } from './api';
 
-const URL_LOGGED_IN = '/?page=1';
+export const URL_LOGGED_IN = '/?page=1';
 
 export async function loginUser(page: Page, user: UserLogin) {
   const form = page.getByRole('form', { name: 'Signin' });

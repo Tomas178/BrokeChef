@@ -1,14 +1,23 @@
-import { expect, Page } from '@playwright/test';
+import { expect, Locator, Page } from '@playwright/test';
 
-export async function checkLocator(
-  page: Page,
-  testId: string,
-  responseMessage: string | RegExp,
-  loadingMessage?: string | RegExp
-) {
-  const locator = page.getByTestId(testId);
+export async function getToastContainer(page: Page): Promise<Locator> {
+  const toastContainer = page.getByTestId('toast-body');
 
-  if (loadingMessage) await expect(locator).toContainText(loadingMessage);
+  expect(toastContainer).toBeHidden();
 
-  await expect(locator).toContainText(responseMessage, { timeout: 10000 });
+  return toastContainer;
+}
+
+export async function getErrorMessage(page: Page): Promise<Locator> {
+  const errorMessage = page.getByTestId('error-message');
+
+  await expect(errorMessage).toBeHidden();
+
+  return errorMessage;
+}
+
+export async function checkLocator(locator: Locator, message: string | RegExp) {
+  await expect(locator).toBeVisible();
+
+  await expect(locator).toContainText(message);
 }

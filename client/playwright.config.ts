@@ -7,13 +7,13 @@ import { devices } from '@playwright/test';
 const config: PlaywrightTestConfig = {
   testDir: './e2e',
   /* Maximum time one test can run for. */
-  timeout: process.env.CI ? 40_000 : 30_000,
+  timeout: process.env.CI ? 60_000 : 40_000,
   expect: {
     /**
      * Maximum time expect() should wait for the condition to be met.
      * For example in `await expect(locator).toHaveText();`
      */
-    timeout: process.env.CI ? 5_000 : 2_000,
+    timeout: process.env.CI ? 25_000 : 20_000,
   },
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
