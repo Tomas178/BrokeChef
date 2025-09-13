@@ -43,6 +43,7 @@ defineExpose({ open, close });
 
     <div class="flex justify-center gap-4 font-bold">
       <button
+        data-testid="dialog-cancel"
         type="button"
         @click="cancel"
         class="font-primary cursor-pointer rounded-4xl bg-red-400 px-6 py-2 text-white hover:bg-red-500 hover:outline-2"
@@ -51,6 +52,7 @@ defineExpose({ open, close });
       </button>
 
       <button
+        data-testid="dialog-confirm"
         type="button"
         @click="confirm"
         class="font-primary cursor-pointer rounded-4xl bg-green-400 px-6 py-2 text-white hover:bg-green-500 hover:outline-2"
