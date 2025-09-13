@@ -76,6 +76,8 @@ export default defineConfigWithVueTs(
             'loginUser',
             'checkLocator',
             'checkIfRedirects',
+            'checkRecipeMainInfo',
+            'checkActionButton',
           ],
         },
       ],
