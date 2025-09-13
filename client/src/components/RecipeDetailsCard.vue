@@ -1,6 +1,8 @@
 <script lang="ts" setup>
+export type RecipeCardTitle = 'Ingredients' | 'Tools';
+
 defineProps<{
-  title: 'Ingredients' | 'Tools';
+  title: RecipeCardTitle;
   items: string[];
 }>();
 </script>
@@ -11,7 +13,7 @@ defineProps<{
       <span class="text-3xl leading-12 font-bold break-words text-gray-500">{{
         title
       }}</span>
-      <ul class="flex list-inside list-disc flex-col">
+      <ul :data-testid="title" class="flex list-inside list-disc flex-col">
         <li
           v-for="item in items"
           :key="item"

@@ -50,7 +50,7 @@ function removeInput(index: number) {
             :required="true"
           />
           <FwbButton
-            data-testid="add-button"
+            :data-testid="`remove-input-${index}`"
             v-if="inputs.length > 1"
             type="button"
             @click="removeInput(index)"

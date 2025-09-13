@@ -57,7 +57,7 @@ async function handleDelete() {
       await router.push({
         name: 'Home',
       });
-    }, 1500);
+    }, 1000);
   } catch {
     updateToast(id, 'error', deleteErrorMessage.value || DEFAULT_SERVER_ERROR);
   }
@@ -111,6 +111,7 @@ async function handleUnsave() {
         <div class="flex h-64 w-full lg:h-104">
           <Spinner v-show="isLoading" />
           <img
+            data-testid="image"
             v-show="!isLoading"
             :src="recipe.imageUrl"
             :alt="recipe.title"
@@ -132,18 +133,24 @@ async function handleUnsave() {
           </div>
           <div class="flex flex-col md:text-xl lg:text-2xl">
             <div class="justify-center leading-loose text-gray-500">
-              <span class="text-primary-green hover:text-secondary-green">
+              <span
+                data-testid="author"
+                class="text-primary-green hover:text-secondary-green"
+              >
                 <RouterLink
                   :to="{ name: 'UserProfile', params: { id: recipe.userId } }"
                 >
                   {{ recipe.author.name }}
                 </RouterLink>
               </span>
-              <span class="">
+              <span data-testid="created-at" class="">
                 • {{ format(recipe.createdAt, 'd MMM yyyy') }}
               </span>
             </div>
-            <div class="justify-center leading-loose text-gray-500">
+            <div
+              data-testid="duration"
+              class="justify-center leading-loose text-gray-500"
+            >
               <span>Cook duration {{ recipe.duration }} minutes</span>
             </div>
           </div>
@@ -203,6 +210,7 @@ async function handleUnsave() {
         <div class="flex flex-col gap-6">
           <span class="text-3xl font-bold text-gray-500">Steps</span>
           <ol
+            data-testid="Steps"
             class="ol-marker flex list-inside flex-col gap-4 md:list-outside md:pl-15"
           >
             <li
