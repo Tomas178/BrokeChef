@@ -1,7 +1,10 @@
 import { expect, Locator, Page } from '@playwright/test';
 import { TestId } from '@/components/Forms/CreateForm.vue';
 import { fakeRecipe, fakeRecipeAllInfo } from './fakeData';
-import { RecipeCardTitle } from '../../src/components/RecipeDetailsCard.vue';
+import { RecipeCardTitle } from '@/components/RecipeDetailsCard.vue';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 export async function fillInRecipeInfo(
   form: Locator,
@@ -21,13 +24,28 @@ export async function fillInRecipeInfo(
 
 export async function fillAllRecipeInfo(
   form: Locator,
-  recipe: ReturnType<typeof fakeRecipe>
+  recipe: ReturnType<typeof fakeRecipe>,
+  image = false
 ) {
   await form.getByTestId('recipe-title').fill(recipe.title);
   await form.getByTestId('cook-duration').fill(String(recipe.duration));
   await fillInRecipeInfo(form, 'ingredients', recipe.ingredients);
   await fillInRecipeInfo(form, 'kitchen-equipment', recipe.tools);
   await fillInRecipeInfo(form, 'steps', recipe.steps);
+
+  if (image) {
+    const fileInput = form.locator('input[type="file"]');
+
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const imagePath = path.resolve(__dirname, '../assets/test-image.png');
+    const pngImage = await readFile(imagePath);
+
+    await fileInput.setInputFiles({
+      name: 'test-image.png',
+      mimeType: 'image/png',
+      buffer: pngImage,
+    });
+  }
 }
 
 export async function checkRecipeMainInfo(

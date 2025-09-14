@@ -1,9 +1,10 @@
 {
+  "extends": "../tsconfig.node.json",
   "compilerOptions": {
-    "strict": true,
     "paths": {
       "@/*": ["../src/*"],
       "@server/*": ["../../server/src/*"]
     }
-  }
+  },
+  "include": ["./**/*.ts", "../src/**/*.vue"]
 }
