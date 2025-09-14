@@ -1,11 +1,11 @@
 import { integerIdSchema } from '@server/entities/shared';
 import { recipesRepository } from '@server/repositories/recipesRepository';
-import { publicProcedure } from '@server/trpc';
 import provideRepos from '@server/trpc/provideRepos';
 import { TRPCError } from '@trpc/server';
 import { signImages } from '@server/utils/signImages';
+import { authenticatedProcedure } from '@server/trpc/authenticatedProcedure';
 
-export default publicProcedure
+export default authenticatedProcedure
   .use(provideRepos({ recipesRepository }))
   .input(integerIdSchema)
   .query(async ({ input: recipeId, ctx: { repos } }) => {
