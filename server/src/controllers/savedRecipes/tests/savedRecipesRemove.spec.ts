@@ -13,32 +13,44 @@ import savedRecipesRouter from '..';
 const createCaller = createCallerFactory(savedRecipesRouter);
 const database = await wrapInRollbacks(createTestDatabase());
 
+const [userCreator, userOneSaver, userTwoSaver] = await insertAll(
+  database,
+  'users',
+  [fakeUser(), fakeUser(), fakeUser()]
+);
+
+const [recipe] = await insertAll(
+  database,
+  'recipes',
+  fakeRecipe({ userId: userCreator.id })
+);
+
+const [savedRecipe] = await insertAll(
+  database,
+  'savedRecipes',
+  fakeSavedRecipe({ userId: userOneSaver.id, recipeId: recipe.id })
+);
+
+const { unsave } = createCaller(authContext({ db: database }, userOneSaver));
+
 it('Should throw an error if user is not authenticated', async () => {
   const { unsave } = createCaller(requestContext({ db: database }));
 
   await expect(unsave(1)).rejects.toThrow(/unauthenticated/i);
 });
 
+it('Should throw an error if recipe is not found', async () => {
+  const nonExistantId = recipe.id + 1;
+  await expect(unsave(nonExistantId)).rejects.toThrow(/not found/i);
+});
+
+it('Should throw an error if author is saved recipe record is not found', async () => {
+  const { unsave } = createCaller(authContext({ db: database }, userTwoSaver));
+
+  await expect(unsave(recipe.id)).rejects.toThrow(/not found/i);
+});
+
 it('Should unsave a recipe', async () => {
-  const [userCreator, userSaver] = await insertAll(database, 'users', [
-    fakeUser(),
-    fakeUser(),
-  ]);
-
-  const { unsave } = createCaller(authContext({ db: database }, userSaver));
-
-  const [recipe] = await insertAll(
-    database,
-    'recipes',
-    fakeRecipe({ userId: userCreator.id })
-  );
-
-  const [savedRecipe] = await insertAll(
-    database,
-    'savedRecipes',
-    fakeSavedRecipe({ userId: userSaver.id, recipeId: recipe.id })
-  );
-
   const unsavedRecipe = await unsave(savedRecipe.recipeId);
 
   expect(unsavedRecipe).toEqual(savedRecipe);
