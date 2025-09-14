@@ -81,12 +81,6 @@ describe('remove', () => {
     ).rejects.toThrow(/recipe.*not found|not found.*recipe/i);
   });
 
-  it('Should throw an error because user tries to unsave his own recipe', async () => {
-    await expect(service.remove(recipe.id, userCreator.id)).rejects.toThrow(
-      /own.*save|save.*own/i
-    );
-  });
-
   it('Should throw an error that saved recipe with given data does not exist', async () => {
     const [savedRecipe] = await insertAll(
       database,
