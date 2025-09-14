@@ -1,10 +1,13 @@
 {
-  "extends": "../tsconfig.node.json",
   "compilerOptions": {
+    "strict": true,
+    "esModuleInterop": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "types": ["node"],
     "paths": {
       "@/*": ["../src/*"],
       "@server/*": ["../../server/src/*"]
     }
-  },
-  "include": ["./**/*.ts", "../src/**/*.vue"]
+  }
 }

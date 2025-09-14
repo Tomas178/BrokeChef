@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { DEFAULT_SERVER_ERROR } from '@/consts';
 import { TRPCClientError } from '@trpc/client';
+import { isAxiosError } from 'axios';
 import type { Ref } from 'vue';
 
 /**
@@ -48,6 +49,14 @@ export function withError<
 function getErrorMessage(error: unknown) {
   if (!(error instanceof Error)) {
     return DEFAULT_SERVER_ERROR;
+  }
+
+  if (isAxiosError(error)) {
+    return (
+      error.response?.data?.error?.message ||
+      error.message ||
+      DEFAULT_SERVER_ERROR
+    );
   }
 
   if (!(error instanceof TRPCClientError)) {

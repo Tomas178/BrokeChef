@@ -49,7 +49,6 @@ const [createRecipe, errorMessage] = useErrorMessage(async () => {
       { headers: { 'Content-Type': 'multipart/form-data' } }
     );
 
-    console.log(data.imageUrl);
     recipeForm.imageUrl = data.imageUrl;
 
     return trpc.recipes.create.mutate(recipeForm);
@@ -63,31 +62,31 @@ const [createRecipe, errorMessage] = useErrorMessage(async () => {
 async function handleCreateRecipe() {
   const id = showLoading('Creating recipe...');
 
-  try {
-    const recipe = await createRecipe();
+  const recipe = await createRecipe();
 
-    updateToast(id, 'success', 'Recipe has been created!');
-
-    console.log(recipe);
-
-    recipeForm.title = '';
-    recipeForm.duration = 0;
-    recipeForm.steps = [''];
-    recipeForm.ingredients = [''];
-    recipeForm.tools = [''];
-    recipeForm.imageUrl = '';
-    recipeImageFile.value = undefined;
-
-    if (recipe) {
-      setTimeout(async () => {
-        await router.push({
-          name: 'Recipe',
-          params: { id: recipe?.id },
-        });
-      }, 1500);
-    }
-  } catch {
+  if (!recipe) {
     updateToast(id, 'error', errorMessage.value || DEFAULT_SERVER_ERROR);
+    return;
+  }
+
+  updateToast(id, 'success', 'Recipe has been created!');
+  console.log(recipe);
+
+  recipeForm.title = '';
+  recipeForm.duration = 0;
+  recipeForm.steps = [''];
+  recipeForm.ingredients = [''];
+  recipeForm.tools = [''];
+  recipeForm.imageUrl = '';
+  recipeImageFile.value = undefined;
+
+  if (recipe) {
+    setTimeout(async () => {
+      await router.push({
+        name: 'Recipe',
+        params: { id: recipe?.id },
+      });
+    }, 1500);
   }
 }
 </script>

@@ -22,10 +22,15 @@ export async function fillInRecipeInfo(
   }
 }
 
+export type ImageData = {
+  filePath: string;
+  mimeType: string;
+};
+
 export async function fillAllRecipeInfo(
   form: Locator,
   recipe: ReturnType<typeof fakeRecipe>,
-  image = false
+  image?: ImageData
 ) {
   await form.getByTestId('recipe-title').fill(recipe.title);
   await form.getByTestId('cook-duration').fill(String(recipe.duration));
@@ -37,13 +42,13 @@ export async function fillAllRecipeInfo(
     const fileInput = form.locator('input[type="file"]');
 
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
-    const imagePath = path.resolve(__dirname, '../assets/test-image.png');
-    const pngImage = await readFile(imagePath);
+    const imagePath = path.resolve(__dirname, image.filePath);
+    const buffer = await readFile(imagePath);
 
     await fileInput.setInputFiles({
-      name: 'test-image.png',
-      mimeType: 'image/png',
-      buffer: pngImage,
+      name: 'test-image',
+      mimeType: image.mimeType,
+      buffer,
     });
   }
 }

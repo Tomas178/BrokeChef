@@ -7,8 +7,12 @@ import {
   checkRecipeMainInfo,
   deleteInput,
   fillAllRecipeInfo,
+  ImageData,
 } from './utils/recipe';
 import { checkLocator, getToastContainer } from './utils/toast';
+
+const CREATE_RECIPE_PATH = '/create-recipe';
+const LOADING_MESSAGE = /creating/i;
 
 test.describe.serial('Create recipe without image and delete it', () => {
   const recipe = fakeRecipe();
@@ -24,7 +28,7 @@ test.describe.serial('Create recipe without image and delete it', () => {
 
       const ingredientsTestId = 'ingredients';
 
-      await page.goto('/create-recipe');
+      await page.goto(CREATE_RECIPE_PATH);
 
       const form = page.getByRole('form', { name: 'Create recipe' });
       await fillAllRecipeInfo(form, recipe);
@@ -40,7 +44,7 @@ test.describe.serial('Create recipe without image and delete it', () => {
     test('Create the recipe', async ({ page }) => {
       await fullLoginProcedure(page, creator);
 
-      await page.goto('/create-recipe');
+      await page.goto(CREATE_RECIPE_PATH);
 
       const toastContainer = await getToastContainer(page);
 
@@ -162,19 +166,47 @@ test.describe.serial('Create recipe with image', () => {
   let recipeId: number;
   let recipeAllInfo: ReturnType<typeof fakeRecipeAllInfo>;
 
-  test('Create the recipe', async ({ auth }) => {
+  test('Should not allow image mimetype other than .png or .jpeg', async ({
+    auth,
+  }) => {
     const { page, user } = auth;
     creator = user;
 
-    await page.goto('/create-recipe');
+    await page.goto(CREATE_RECIPE_PATH);
     const toastContainer = await getToastContainer(page);
     const form = page.getByRole('form', { name: 'Create recipe' });
 
-    await fillAllRecipeInfo(form, recipe, true);
+    const imageData: ImageData = {
+      filePath: '../assets/pdf.pdf',
+      mimeType: 'application/pdf',
+    };
+
+    await fillAllRecipeInfo(form, recipe, imageData);
 
     await form.getByRole('button', { name: /publish|create/i }).click();
 
-    await checkLocator(toastContainer, /created/i, /creating/i);
+    await checkLocator(toastContainer, /supported|types|format/i);
+
+    await expect(page).toHaveURL(CREATE_RECIPE_PATH);
+  });
+
+  test('Create the recipe', async ({ page }) => {
+    await fullLoginProcedure(page, creator);
+
+    await page.goto(CREATE_RECIPE_PATH);
+    const toastContainer = await getToastContainer(page);
+    const form = page.getByRole('form', { name: 'Create recipe' });
+
+    const imageData: ImageData = {
+      filePath: '../assets/test-image.png',
+      mimeType: 'image/png',
+    };
+
+    await fillAllRecipeInfo(form, recipe, imageData);
+
+    await form.getByRole('button', { name: /publish|create/i }).click();
+
+    await checkLocator(toastContainer, /created/i, LOADING_MESSAGE);
 
     await page.waitForURL(/recipe\/\d+/i);
     await expect(page).toHaveURL(/recipe\/\d+/i);
