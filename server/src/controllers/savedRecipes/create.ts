@@ -4,6 +4,7 @@ import { savedRecipesService } from '@server/services/savedRecipesService';
 import provideServices from '@server/trpc/provideServices';
 import RecipeAlreadySaved from '@server/utils/errors/recipes/RecipeAlreadySaved';
 import { TRPCError } from '@trpc/server';
+import CannotSaveOwnRecipe from '@server/utils/errors/recipes/CannotSaveOwnRecipe';
 
 export default authenticatedProcedure
   .use(provideServices({ savedRecipesService }))
@@ -17,6 +18,13 @@ export default authenticatedProcedure
 
       return savedRecipe;
     } catch (error) {
+      if (error instanceof CannotSaveOwnRecipe) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: error.message,
+        });
+      }
+
       if (error instanceof RecipeAlreadySaved) {
         throw new TRPCError({
           code: 'CONFLICT',

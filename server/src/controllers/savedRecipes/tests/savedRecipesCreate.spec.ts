@@ -26,7 +26,7 @@ it('Should thrown an error if user is not authenticated', async () => {
   await expect(save(recipe.id)).rejects.toThrow(/unauthenticated/i);
 });
 
-it('Should throw an error if recipe is alerady saved', async () => {
+it('Should throw an error if recipe is already saved', async () => {
   await insertAll(database, 'savedRecipes', {
     recipeId: recipe.id,
     userId: userSaver.id,
@@ -35,6 +35,12 @@ it('Should throw an error if recipe is alerady saved', async () => {
   const { save } = createCaller(authContext({ db: database }, userSaver));
 
   await expect(save(recipe.id)).rejects.toThrow(/saved/i);
+});
+
+it('Should throw an error if creator is trying to save his own recipe', async () => {
+  const { save } = createCaller(authContext({ db: database }, userCreator));
+
+  await expect(save(recipe.id)).rejects.toThrow(/own|author/i);
 });
 
 it('Should create a saved recipe record', async () => {
