@@ -27,7 +27,7 @@ export default recipeAuthorProcedure.mutation(
       if (error instanceof S3ServiceException) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to delete recipe image from storate',
+          message: 'Failed to delete recipe image from storage',
         });
       }
     }
