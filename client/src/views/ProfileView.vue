@@ -109,7 +109,7 @@ onMounted(async () => {
           square
         >
           <svg
-            class="h-5 w-5 md:h-7 md:w-7 lg:h-8 lg:w-8"
+            class="h-4 w-4 md:h-7 md:w-7"
             viewBox="0 0 30 30"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
