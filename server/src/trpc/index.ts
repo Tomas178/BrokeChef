@@ -21,9 +21,7 @@ export type ContextMinimal = Pick<Context, 'db'>;
 
 const t = initTRPC.context<Context>().create({
   transformer: superjson,
-  errorFormatter(options) {
-    const { shape, error } = options;
-
+  errorFormatter({ shape, error }) {
     if (error.cause instanceof ZodError) {
       const validationError = fromError(error.cause);
 
