@@ -1,4 +1,5 @@
 import config from '@server/config';
+import logger from '@server/logger';
 import * as nodemailer from 'nodemailer';
 
 const transportOptions: nodemailer.TransportOptions = {};
@@ -23,4 +24,4 @@ if (config.mail.host) {
 
 export const transporter = nodemailer.createTransport(transportOptions);
 
-console.log('E-mail system authenticated.');
+logger.info('E-mail system authenticated.');

@@ -8,6 +8,7 @@ import { s3Client } from '@server/utils/AWSS3Client/client';
 import { deleteFile } from '@server/utils/AWSS3Client/deleteFile';
 import { signImages } from '@server/utils/signImages';
 import config from '@server/config';
+import logger from '@server/logger';
 
 interface UsersService {
   getRecipes: (
@@ -120,7 +121,7 @@ export function usersService(database: Database): UsersService {
         try {
           await deleteFile(s3Client, config.auth.aws.s3.buckets.images, image);
         } catch (S3Error) {
-          console.error('Failed to rollback S3 Object:', S3Error);
+          logger.error('Failed to rollback S3 Object:', S3Error);
         }
 
         throw error;

@@ -9,6 +9,7 @@ import {
   Migrator,
 } from 'kysely';
 import config from '@server/config';
+import logger from '@server/logger';
 import { createDatabase } from '..';
 
 const MIGRATIONS_PATH = '../migrations';
@@ -25,23 +26,23 @@ async function migrateLatest(database: Kysely<any>) {
   const { results, error } = await migrateToLatest(nodeProvider, database);
 
   if (!results?.length && !error) {
-    console.log('No migrations to run.');
+    logger.info('No migrations to run.');
   }
 
   if (results)
     for (const it of results) {
       if (it.status === 'Success') {
-        console.info(
+        logger.info(
           `Migration "${it.migrationName}" was executed successfully.`
         );
       } else if (it.status === 'Error') {
-        console.error(`Failed to execute migration "${it.migrationName}".`);
+        logger.error(`Failed to execute migration "${it.migrationName}".`);
       }
     }
 
   if (error) {
-    console.error('Failed to migrate.');
-    console.error(error);
+    logger.error('Failed to migrate.');
+    logger.error(error);
     // eslint-disable-next-line unicorn/no-process-exit
     process.exit(1);
   }

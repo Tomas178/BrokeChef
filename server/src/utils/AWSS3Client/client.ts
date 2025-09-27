@@ -1,5 +1,6 @@
 import { S3Client } from '@aws-sdk/client-s3';
 import config from '@server/config';
+import logger from '@server/logger';
 
 export const s3Client = new S3Client({
   region: config.auth.aws.s3.region,
@@ -9,4 +10,4 @@ export const s3Client = new S3Client({
   },
 });
 
-console.log('S3Client authenticated!');
+logger.info('S3Client authenticated!');

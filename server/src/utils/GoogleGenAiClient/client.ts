@@ -1,6 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import config from '@server/config';
+import logger from '@server/logger';
 
 export const ai = new GoogleGenAI({ apiKey: config.auth.google.geminiApiKey });
 
-console.log('Google Gen Ai Client authenticated!');
+logger.info('Google Gen Ai Client authenticated!');

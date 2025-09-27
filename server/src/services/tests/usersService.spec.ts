@@ -1,10 +1,18 @@
-const { mockDeleteFile, mockUpdateImage } = vi.hoisted(() => ({
+const { mockDeleteFile, mockUpdateImage, mockLoggerError } = vi.hoisted(() => ({
   mockDeleteFile: vi.fn(),
   mockUpdateImage: vi.fn(),
+  mockLoggerError: vi.fn(),
 }));
 
 vi.mock('@server/utils/AWSS3Client/deleteFile', () => ({
   deleteFile: mockDeleteFile,
+}));
+
+vi.mock('@server/logger', () => ({
+  default: {
+    info: vi.fn(),
+    error: mockLoggerError,
+  },
 }));
 
 import { createTestDatabase } from '@tests/utils/database';
@@ -198,8 +206,6 @@ describe('updateImage', () => {
   });
 
   it('Should fail to delete the image on failure to insert to db and do console.error', async () => {
-    const consoleSpy = vi.spyOn(console, 'error');
-
     mockUpdateImage.mockRejectedValueOnce(new Error('DB Failed'));
     mockDeleteFile.mockRejectedValueOnce(new Error('Failed to delete from S3'));
 
@@ -213,7 +219,7 @@ describe('updateImage', () => {
       fakeImage
     );
 
-    expect(consoleSpy).toHaveBeenCalledWith(
+    expect(mockLoggerError).toHaveBeenCalledWith(
       'Failed to rollback S3 Object:',
       expect.any(Error)
     );

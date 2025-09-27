@@ -31,6 +31,7 @@ import { ImageFolder } from '@server/enums/ImageFolder';
 import { AllowedMimeType } from '@server/enums/AllowedMimetype';
 import { deleteFile } from '@server/utils/AWSS3Client/deleteFile';
 import config from '@server/config';
+import logger from '@server/logger';
 import { joinStepsToSingleString } from './utils/joinStepsToSingleString';
 
 interface RecipesService {
@@ -109,7 +110,7 @@ export function recipesService(database: Database): RecipesService {
               recipeToInsert.imageUrl
             );
           } catch (S3Error) {
-            console.error('Failed to rollback S3 Object:', S3Error);
+            logger.error('Failed to rollback S3 Object:', S3Error);
           }
 
           assertPostgresError(error);

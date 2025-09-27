@@ -1,6 +1,7 @@
 // Usage: npm run migrate:new $migrationName
 
 import fs from 'node:fs/promises';
+import logger from '@server/logger';
 
 const migrationContent = `
 import type { Kysely } from 'kysely'
@@ -26,10 +27,10 @@ const migrationName = process.argv[2];
 if (migrationName) {
   try {
     const filePath = await createMigrationFile(migrationName);
-    console.log(`Created new migration file: ${filePath}`);
+    logger.info(`Created new migration file: ${filePath}`);
   } catch (error) {
-    console.error('Failed to create migration file:', error);
+    logger.error('Failed to create migration file:', error);
   }
 } else {
-  console.error('Please provide a migration name.');
+  logger.error('Please provide a migration name.');
 }

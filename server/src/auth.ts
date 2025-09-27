@@ -7,6 +7,7 @@ import { s3Client } from './utils/AWSS3Client/client';
 import { formEmailTemplate } from './utils/sendMail/formEmailTemplate';
 import { getTemplate } from './utils/AWSS3Client/getTemplate';
 import { EmailTemplate } from './enums/EmailTemplate';
+import logger from './logger';
 
 const createdAndUpdated = {
   createdAt: 'created_at',
@@ -80,8 +81,9 @@ export const auth = betterAuth({
         html: htmlContent,
       });
     },
-    onPasswordReset: async ({ user }) =>
-      console.log(`Password for the user: ${user.email} has been reset`),
+    onPasswordReset: async ({ user }) => {
+      logger.info(`Password for the user: ${user.email} has been reset`);
+    },
   },
 
   emailVerification: {

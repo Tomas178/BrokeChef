@@ -24,8 +24,16 @@ import {
 
 const fakeImageKey = 'fakeKey';
 
-const { mockDeleteFile } = vi.hoisted(() => ({
+const { mockDeleteFile, mockLoggerError } = vi.hoisted(() => ({
   mockDeleteFile: vi.fn(),
+  mockLoggerError: vi.fn(),
+}));
+
+vi.mock('@server/logger', () => ({
+  default: {
+    info: vi.fn(),
+    error: mockLoggerError,
+  },
 }));
 
 vi.mock('@server/utils/GoogleGenAiClient/generateRecipeImage', () => ({
@@ -109,8 +117,6 @@ describe('createRecipe', () => {
   });
 
   it('Should delete an image from the S3 storage on insertion failure', async () => {
-    const consoleSpy = vi.spyOn(console, 'error');
-
     const recipeData = fakeCreateRecipeData();
     const nonExistantUserId = user.id + 'a';
 
@@ -128,7 +134,7 @@ describe('createRecipe', () => {
       recipeData.imageUrl
     );
 
-    expect(consoleSpy).toHaveBeenCalledWith(
+    expect(mockLoggerError).toHaveBeenCalledWith(
       'Failed to rollback S3 Object:',
       expect.any(Error)
     );
