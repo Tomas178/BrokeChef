@@ -104,7 +104,7 @@ onMounted(async () => {
         <FwbButton
           @click="goBack"
           color="green"
-          class="bg-tertiary-green m-4 cursor-pointer"
+          class="bg-tertiary-green hover:bg-secondary-green m-4 cursor-pointer"
           pill
           square
         >
