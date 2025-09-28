@@ -2,14 +2,16 @@ import type { Database } from '@server/database';
 import { savedRecipesRepository as buildSavedRecipesRepository } from '@server/repositories/savedRecipesRepository';
 import { recipesRepository as buildRecipesRepository } from '@server/repositories/recipesRepository';
 import { assertError, assertPostgresError } from '@server/utils/errors';
-import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import RecipeAlreadySaved from '@server/utils/errors/recipes/RecipeAlreadySaved';
 import { PostgresError } from 'pg-error-enum';
 import CannotSaveOwnRecipe from '@server/utils/errors/recipes/CannotSaveOwnRecipe';
 import { NoResultError } from 'kysely';
 import SavedRecipeNotFound from '@server/utils/errors/recipes/SavedRecipeNotFound';
 import type { savedRecipesPublic } from '@server/entities/savedRecipes';
-import { checkIfRecipeExists } from './utils/checkIfRecipeExists';
+import {
+  validateRecipeAndUserIsNotAuthor,
+  validateRecipeExists,
+} from './utils/recipeValidations';
 
 interface SavedRecipesService {
   create: (
@@ -28,11 +30,12 @@ export function savedRecipesService(database: Database): SavedRecipesService {
 
   return {
     async create(userId, recipeId) {
-      const recipeById = await recipesRepository.findById(recipeId);
-
-      if (!recipeById) throw new RecipeNotFound();
-
-      if (recipeById.userId === userId) throw new CannotSaveOwnRecipe();
+      await validateRecipeAndUserIsNotAuthor(
+        recipesRepository,
+        recipeId,
+        userId,
+        CannotSaveOwnRecipe
+      );
 
       try {
         const createdRecipe = await savedRecipesRepository.create({
@@ -51,8 +54,7 @@ export function savedRecipesService(database: Database): SavedRecipesService {
     },
 
     async remove(recipeId, userId) {
-      if (!checkIfRecipeExists(recipesRepository, recipeId))
-        throw new RecipeNotFound();
+      await validateRecipeExists(recipesRepository, recipeId);
 
       try {
         const unsavedRecipe = await savedRecipesRepository.remove(
