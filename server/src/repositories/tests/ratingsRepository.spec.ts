@@ -18,10 +18,16 @@ const [recipe] = await insertAll(
 const nonExistantUserId = user.id + 'a';
 const nonExistantRecipeId = recipe.id + 1;
 
-const fakeRecipeToRate = fakeRating({
-  recipeId: recipe.id,
-  userId: user.id,
-});
+const [fakeRecipeToRate, fakeRecipeForUpdate] = [
+  fakeRating({
+    recipeId: recipe.id,
+    userId: user.id,
+  }),
+  fakeRating({
+    recipeId: recipe.id,
+    userId: user.id,
+  }),
+];
 
 describe('create', () => {
   it('Should create a new rating', async () => {
@@ -43,6 +49,26 @@ describe('create', () => {
   it('Should throw if user does not exist', async () => {
     await expect(
       repository.create({ ...fakeRecipeToRate, userId: nonExistantUserId })
+    ).rejects.toThrow();
+  });
+});
+
+describe('update', () => {
+  it('Should update the rating', async () => {
+    await insertAll(database, 'ratings', fakeRecipeToRate);
+
+    const updatedRating = await repository.update(fakeRecipeForUpdate);
+
+    expect(updatedRating).toMatchObject({
+      recipeId: fakeRecipeForUpdate.recipeId,
+      userId: fakeRecipeForUpdate.userId,
+      rating: fakeRecipeForUpdate.rating,
+    });
+  });
+
+  it('Should throw an error if rating does not exist', async () => {
+    await expect(
+      repository.remove(nonExistantRecipeId, fakeRecipeForUpdate.userId)
     ).rejects.toThrow();
   });
 });

@@ -8,16 +8,27 @@ import type { Insertable } from 'kysely';
 const TABLE = 'ratings';
 
 export interface RatingsRepository {
-  create: (ratedRecipe: Insertable<Ratings>) => Promise<ratingsPublic>;
+  create: (recipeToRate: Insertable<Ratings>) => Promise<ratingsPublic>;
+  update: (recipeToUpdate: Insertable<Ratings>) => Promise<ratingsPublic>;
   remove: (recipeId: number, userId: string) => Promise<ratingsPublic>;
 }
 
 export function ratingsRepository(database: Database): RatingsRepository {
   return {
-    async create(ratedRecipe) {
+    async create(recipeToRate) {
       return database
         .insertInto(TABLE)
-        .values(ratedRecipe)
+        .values(recipeToRate)
+        .returning(ratingsKeysPublic)
+        .executeTakeFirstOrThrow();
+    },
+
+    async update({ userId, recipeId, rating }) {
+      return database
+        .updateTable(TABLE)
+        .set({ rating })
+        .where('userId', '=', userId)
+        .where('recipeId', '=', recipeId)
         .returning(ratingsKeysPublic)
         .executeTakeFirstOrThrow();
     },
