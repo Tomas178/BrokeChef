@@ -1,5 +1,6 @@
 import type {
   Ingredients,
+  Ratings,
   Recipes,
   SavedRecipes,
   Tools,
@@ -124,7 +125,16 @@ export const fakeCreateRecipeData = <
 export const fakeSavedRecipe = <T extends Partial<Insertable<SavedRecipes>>>(
   overrides: T = {} as T
 ) => ({
-  recipeId: random.integer({ min: 1, max: 10_000_000 }),
+  recipeId: randomRecipeId(),
+  userId: randomOAuthId(),
+  ...overrides,
+  createdAt: new Date(),
+});
+
+export const fakeRating = <T extends Partial<Insertable<Ratings>>>(
+  overrides: T = {} as T
+) => ({
+  recipeId: randomRecipeId(),
   userId: randomOAuthId(),
   ...overrides,
   createdAt: new Date(),
