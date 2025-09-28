@@ -6,7 +6,6 @@ const TABLES_WITH_UPDATED_AT = [
   'verifications',
   'sessions',
   'recipes',
-  'ratings',
 ];
 
 export async function up(database: Kysely<any>) {
