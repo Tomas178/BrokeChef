@@ -9,6 +9,7 @@ import CannotSaveOwnRecipe from '@server/utils/errors/recipes/CannotSaveOwnRecip
 import { NoResultError } from 'kysely';
 import SavedRecipeNotFound from '@server/utils/errors/recipes/SavedRecipeNotFound';
 import type { savedRecipesPublic } from '@server/entities/savedRecipes';
+import { checkIfRecipeExists } from './utils/checkIfRecipeExists';
 
 interface SavedRecipesService {
   create: (
@@ -50,9 +51,8 @@ export function savedRecipesService(database: Database): SavedRecipesService {
     },
 
     async remove(recipeId, userId) {
-      const recipeById = await recipesRepository.findById(recipeId);
-
-      if (!recipeById) throw new RecipeNotFound();
+      if (!checkIfRecipeExists(recipesRepository, recipeId))
+        throw new RecipeNotFound();
 
       try {
         const unsavedRecipe = await savedRecipesRepository.remove(
