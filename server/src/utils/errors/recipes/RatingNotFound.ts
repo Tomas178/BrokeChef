@@ -1,4 +1,4 @@
-export default class RatedRecipeNotFound extends Error {
+export default class RatingNotFound extends Error {
   constructor() {
     super('Rated recipe not found!');
   }
