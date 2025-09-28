@@ -3,7 +3,7 @@ import { fakeRecipe, fakeUser } from '@server/entities/tests/fakes';
 import type { RecipesPublic } from '@server/entities/recipes';
 import { usersKeysPublicWithoutId } from '@server/entities/users';
 import { pick } from 'lodash-es';
-import { checkIfRecipeExists } from './checkIfRecipeExists';
+import { checkIfRecipeExists } from '../checkIfRecipeExists';
 
 const authUser = {
   id: 'a'.repeat(32),
