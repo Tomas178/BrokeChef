@@ -34,6 +34,14 @@ export interface Ingredients {
   name: string;
 }
 
+export interface Ratings {
+  createdAt: Generated<Timestamp>;
+  rating: number;
+  recipeId: number;
+  updatedAt: Generated<Timestamp>;
+  userId: string;
+}
+
 export interface Recipes {
   createdAt: Generated<Timestamp>;
   duration: number;
@@ -100,6 +108,7 @@ export interface Verifications {
 export interface DB {
   accounts: Accounts;
   ingredients: Ingredients;
+  ratings: Ratings;
   recipes: Recipes;
   recipesIngredients: RecipesIngredients;
   recipesTools: RecipesTools;
