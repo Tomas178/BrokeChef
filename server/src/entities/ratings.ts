@@ -6,6 +6,7 @@ import { createdAtSchema, integerIdSchema, oauthUserIdSchema } from './shared';
 export const ratingsSchema = z.object({
   recipeId: integerIdSchema,
   userId: oauthUserIdSchema,
+  rating: z.number().int().min(1).max(5),
   createdAt: createdAtSchema,
 });
 

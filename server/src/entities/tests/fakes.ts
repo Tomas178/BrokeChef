@@ -136,6 +136,7 @@ export const fakeRating = <T extends Partial<Insertable<Ratings>>>(
 ) => ({
   recipeId: randomRecipeId(),
   userId: randomOAuthId(),
+  rating: random.integer({ min: 1, max: 5 }),
   ...overrides,
   createdAt: new Date(),
 });
