@@ -1,16 +1,16 @@
 import type { Database, Ratings } from '@server/database';
 import {
   ratingsKeysPublic,
-  type ratingsPublic,
+  type RatingsPublic,
 } from '@server/entities/ratings';
 import type { Insertable } from 'kysely';
 
 const TABLE = 'ratings';
 
 export interface RatingsRepository {
-  create: (recipeToRate: Insertable<Ratings>) => Promise<ratingsPublic>;
-  update: (recipeToUpdate: Insertable<Ratings>) => Promise<ratingsPublic>;
-  remove: (recipeId: number, userId: string) => Promise<ratingsPublic>;
+  create: (recipeToRate: Insertable<Ratings>) => Promise<RatingsPublic>;
+  update: (recipeToUpdate: Insertable<Ratings>) => Promise<RatingsPublic>;
+  remove: (recipeId: number, userId: string) => Promise<RatingsPublic>;
 }
 
 export function ratingsRepository(database: Database): RatingsRepository {

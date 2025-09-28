@@ -16,7 +16,7 @@ export const ratingsKeysAll = Object.keys(
 
 export const ratingsKeysPublic = ratingsKeysAll;
 
-export type ratingsPublic = Pick<
+export type RatingsPublic = Pick<
   Selectable<Ratings>,
   (typeof ratingsKeysPublic)[number]
 >;
