@@ -19,6 +19,7 @@ const [recipe] = await insertAll(
   fakeRecipe({ userId: user.id })
 );
 
+const nonExistantUserId = user.id + 1;
 const nonExistantRecipeId = recipe.id + 1;
 
 describe('create', () => {
@@ -35,18 +36,14 @@ describe('create', () => {
   });
 
   it('Should throw if recipe does not exist', async () => {
-    const nonExistantId = recipe.id + 1;
-
     await expect(
-      repository.create({ userId: user.id, recipeId: nonExistantId })
+      repository.create({ userId: user.id, recipeId: nonExistantRecipeId })
     ).rejects.toThrow();
   });
 
   it('Should throw if user does not exist', async () => {
-    const nonExistantId = user.id + 1;
-
     await expect(
-      repository.create({ userId: nonExistantId, recipeId: recipe.id })
+      repository.create({ userId: nonExistantUserId, recipeId: recipe.id })
     ).rejects.toThrow();
   });
 });
