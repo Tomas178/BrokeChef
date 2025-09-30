@@ -10,6 +10,7 @@ import {
 import type { UsersPublicWithoutId } from './users';
 import type { IngredientsName } from './ingredients';
 import type { ToolsName } from './tools';
+import type { Rating } from './ratings';
 
 export const recipesSchema = z.object({
   id: integerIdSchema,
@@ -31,10 +32,11 @@ export const recipesKeysPublic = recipesKeysAll;
 export type RecipesPublic = Pick<
   Selectable<Recipes>,
   (typeof recipesKeysPublic)[number]
-> & { author: UsersPublicWithoutId };
+> & { author: UsersPublicWithoutId; rating: number };
 
 export type RecipesPublicAllInfo = Omit<RecipesPublic, 'steps'> & {
   ingredients: IngredientsName[];
   tools: ToolsName[];
   steps: string[];
+  rating: Rating;
 };

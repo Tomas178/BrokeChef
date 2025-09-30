@@ -20,3 +20,5 @@ export type RatingsPublic = Pick<
   Selectable<Ratings>,
   (typeof ratingsKeysPublic)[number]
 >;
+
+export type Rating = Pick<RatingsPublic, 'rating'>['rating'];
