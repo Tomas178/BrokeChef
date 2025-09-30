@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Kysely, Transaction } from 'kysely';
 import beginTransaction from './beginTransaction';
 import createSavePoint from './createSavePoint';
