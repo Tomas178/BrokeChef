@@ -8,6 +8,10 @@ import type { Insertable } from 'kysely';
 const TABLE = 'ratings';
 
 export interface RatingsRepository {
+  getRating: (
+    recipeId: number,
+    userId: string
+  ) => Promise<RatingsPublic | undefined>;
   create: (recipeToRate: Insertable<Ratings>) => Promise<RatingsPublic>;
   update: (recipeToUpdate: Insertable<Ratings>) => Promise<RatingsPublic>;
   remove: (recipeId: number, userId: string) => Promise<RatingsPublic>;
@@ -15,6 +19,15 @@ export interface RatingsRepository {
 
 export function ratingsRepository(database: Database): RatingsRepository {
   return {
+    async getRating(recipeId, userId) {
+      return database
+        .selectFrom(TABLE)
+        .select(ratingsKeysPublic)
+        .where('userId', '=', userId)
+        .where('recipeId', '=', recipeId)
+        .executeTakeFirst();
+    },
+
     async create(recipeToRate) {
       return database
         .insertInto(TABLE)

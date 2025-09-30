@@ -31,8 +31,6 @@ export default tseslint.config(
     },
 
     rules: {
-      // we can override some problematic import rules here
-      // that can cause issues when using import aliases.
       'import/extensions': 'off',
       'import/no-extraneous-dependencies': 'off',
       'import/order': [
@@ -53,8 +51,6 @@ export default tseslint.config(
       'import/no-dynamic-require': 'warn',
       'import/no-nodejs-modules': 'off',
 
-      // functions are always hoisted, so we can use them before they are defined
-      // which in various cases improves readability
       'no-use-before-define': ['error', { functions: false }],
       '@typescript-eslint/no-use-before-define': [
         'error',
@@ -82,6 +78,7 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       'unicorn/filename-case': 'off',
       'unicorn/no-useless-undefined': 'off',
+      'unicorn/no-null': 'off',
     },
   },
 

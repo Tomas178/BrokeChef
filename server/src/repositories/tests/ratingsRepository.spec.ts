@@ -29,6 +29,25 @@ const [fakeRecipeToRate, fakeRecipeForUpdate] = [
   }),
 ];
 
+describe('getRating', () => {
+  it('Should return the rating', async () => {
+    await insertAll(database, 'ratings', fakeRecipeToRate);
+
+    const retrievedRecipe = await repository.getRating(
+      fakeRecipeToRate.recipeId,
+      fakeRecipeToRate.userId
+    );
+
+    expect(retrievedRecipe).toEqual(fakeRecipeToRate);
+  });
+
+  it('Should return undefined if rating does not exist', async () => {
+    await expect(
+      repository.getRating(fakeRecipeToRate.recipeId, fakeRecipeToRate.userId)
+    ).resolves.toBeUndefined();
+  });
+});
+
 describe('create', () => {
   it('Should create a new rating', async () => {
     const ratedRecipe = await repository.create(fakeRecipeToRate);
