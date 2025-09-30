@@ -96,18 +96,18 @@ describe('getRecipeRating', () => {
 });
 
 describe('getRecipeRatingsBatch', () => {
-  let recipeForBatch: { id: number };
+  let recipeForBatchOne: { id: number };
   let fakeRecipeToRateTwo: ReturnType<typeof fakeRating>;
 
   beforeAll(async () => {
-    [recipeForBatch] = await insertAll(
+    [recipeForBatchOne] = await insertAll(
       database,
       'recipes',
       fakeRecipe({ userId: userOne.id })
     );
 
     fakeRecipeToRateTwo = fakeRating({
-      recipeId: recipeForBatch.id,
+      recipeId: recipeForBatchOne.id,
       userId: userOne.id,
     });
   });
@@ -127,6 +127,34 @@ describe('getRecipeRatingsBatch', () => {
     expect(ratingFromDatabaseTwo).toEqual(ratedTwo.rating);
   });
 
+  it('Should return an array of 2 ratings and 0 when only two recipes rating is found and in the same order as IDs were given', async () => {
+    const [recipeForBatchTwo] = await insertAll(
+      database,
+      'recipes',
+      fakeRecipe({ userId: userOne.id })
+    );
+
+    const [ratedOne, ratedTwo] = await insertAll(database, 'ratings', [
+      fakeRecipeToRateOne,
+      fakeRecipeToRateTwo,
+    ]);
+
+    const recipeIds = [
+      ratedOne.recipeId,
+      recipeForBatchTwo.id,
+      ratedTwo.recipeId,
+    ];
+
+    const [realRatingOne, ratingZero, realRatingTwo] =
+      await repository.getRecipeRatingsBatch(recipeIds);
+
+    console.log(await repository.getRecipeRatingsBatch(recipeIds));
+
+    expect(realRatingOne).toBe(ratedOne.rating);
+    expect(realRatingTwo).toBe(ratedTwo.rating);
+    expect(ratingZero).toBe(0);
+  });
+
   it('Should return an array of rating and 0 when only one recipe rating is found', async () => {
     const [ratedOne] = await insertAll(
       database,
@@ -138,6 +166,8 @@ describe('getRecipeRatingsBatch', () => {
 
     const [realRating, ratingZero] =
       await repository.getRecipeRatingsBatch(recipeIds);
+
+    console.log(await repository.getRecipeRatingsBatch(recipeIds));
 
     expect(realRating).toBe(ratedOne.rating);
     expect(ratingZero).toBe(0);
