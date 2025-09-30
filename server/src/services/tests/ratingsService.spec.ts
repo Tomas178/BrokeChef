@@ -1,15 +1,13 @@
 import { fakeRating } from '@server/entities/tests/fakes';
 import { ratingsService as buildRatingsService } from '@server/services/ratingsService';
-import type { Database, Ratings } from '@server/database';
+import type { Database } from '@server/database';
 import type { RatingsRepository } from '@server/repositories/ratingsRepository';
-import { NoResultError, type Insertable } from 'kysely';
+import { NoResultError } from 'kysely';
 import type { RecipesRepository } from '@server/repositories/recipesRepository';
 import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import CannotRateOwnRecipe from '@server/utils/errors/recipes/CannotRateOwnRecipe';
 import { PostgresError } from 'pg-error-enum';
-import type { RatingFromDB } from '@server/entities/shared';
 import type { Mock } from 'vitest';
-import type { RatingsPublic } from '../../entities/ratings';
 
 const mockValidateRecipeExists = vi.hoisted(() => vi.fn());
 const mockValidateRecipeAndUserIsNotAuthor = vi.hoisted(() => vi.fn());
@@ -20,53 +18,43 @@ vi.mock('@server/services/utils/recipeValidations', () => ({
   validateRecipeAndUserIsNotAuthor: mockValidateRecipeAndUserIsNotAuthor,
 }));
 
-const mockRatingsRepoGetUserRatingForRecipe = vi.fn(
-  async (_recipeId: number, _userId: string): Promise<RatingFromDB> =>
-    fakeSingleRating
-) as Mock<RatingsRepository['getUserRatingForRecipe']>;
+const mockRatingsRepoGetUserRatingForRecipe: Mock<
+  RatingsRepository['getUserRatingForRecipe']
+> = vi.fn(async () => fakeSingleRating);
 
-const mockRatingsRepoGetRecipeRating = vi.fn(
-  async (_recipeId: number): Promise<RatingFromDB> => fakeAverageRating
-) as Mock<RatingsRepository['getRecipeRating']>;
+const mockRatingsRepoGetRecipeRating: Mock<
+  RatingsRepository['getRecipeRating']
+> = vi.fn(async () => fakeAverageRating);
 
-const mockRatingsRepoGetRecipeRatingsBatch = vi.fn(
-  async (recipeIds: number[]): Promise<RatingFromDB[]> =>
-    recipeIds.map(() => fakeAverageRating)
-) as Mock<RatingsRepository['getRecipeRatingsBatch']>;
+const mockRatingsRepoGetRecipeRatingsBatch: Mock<
+  RatingsRepository['getRecipeRatingsBatch']
+> = vi.fn(async recipeIds => recipeIds.map(() => fakeAverageRating));
 
-const mockRatingsRepoCreate = vi.fn(
-  async ({
-    userId,
-    recipeId,
-    rating,
-  }: Insertable<Ratings>): Promise<RatingsPublic> =>
+const mockRatingsRepoCreate: Mock<RatingsRepository['create']> = vi.fn(
+  async ({ userId, recipeId, rating }) =>
     fakeRating({
       userId,
       recipeId,
       rating,
     })
-) as Mock<RatingsRepository['create']>;
+);
 
-const mockRatingsRepoUpdate = vi.fn(
-  async ({
-    userId,
-    recipeId,
-    rating,
-  }: Insertable<Ratings>): Promise<RatingsPublic> =>
+const mockRatingsRepoUpdate: Mock<RatingsRepository['update']> = vi.fn(
+  async ({ userId, recipeId, rating }) =>
     fakeRating({
       userId,
       recipeId,
       rating,
     })
-) as Mock<RatingsRepository['update']>;
+);
 
-const mockRatingsRepoRemove = vi.fn(
-  async (recipeId: number, userId: string): Promise<RatingsPublic> =>
+const mockRatingsRepoRemove: Mock<RatingsRepository['remove']> = vi.fn(
+  async (recipeId, userId) =>
     fakeRating({
       userId,
       recipeId,
     })
-) as Mock<RatingsRepository['remove']>;
+);
 
 const mockRatingsRepository = {
   getUserRatingForRecipe: mockRatingsRepoGetUserRatingForRecipe,
