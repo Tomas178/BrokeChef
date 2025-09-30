@@ -7,15 +7,32 @@ import type { RecipesRepository } from '@server/repositories/recipesRepository';
 import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import CannotRateOwnRecipe from '@server/utils/errors/recipes/CannotRateOwnRecipe';
 import { PostgresError } from 'pg-error-enum';
+import type { RatingFromDB } from '@server/entities/shared';
+import type { Mock } from 'vitest';
 import type { RatingsPublic } from '../../entities/ratings';
 
 const mockValidateRecipeExists = vi.hoisted(() => vi.fn());
 const mockValidateRecipeAndUserIsNotAuthor = vi.hoisted(() => vi.fn());
+const [fakeSingleRating, fakeAverageRating] = vi.hoisted(() => [5, 4.5]);
 
 vi.mock('@server/services/utils/recipeValidations', () => ({
   validateRecipeExists: mockValidateRecipeExists,
   validateRecipeAndUserIsNotAuthor: mockValidateRecipeAndUserIsNotAuthor,
 }));
+
+const mockRatingsRepoGetUserRatingForRecipe = vi.fn(
+  async (_recipeId: number, _userId: string): Promise<RatingFromDB> =>
+    fakeSingleRating
+) as Mock<RatingsRepository['getUserRatingForRecipe']>;
+
+const mockRatingsRepoGetRecipeRating = vi.fn(
+  async (_recipeId: number): Promise<RatingFromDB> => fakeAverageRating
+) as Mock<RatingsRepository['getRecipeRating']>;
+
+const mockRatingsRepoGetRecipeRatingsBatch = vi.fn(
+  async (recipeIds: number[]): Promise<RatingFromDB[]> =>
+    recipeIds.map(() => fakeAverageRating)
+) as Mock<RatingsRepository['getRecipeRatingsBatch']>;
 
 const mockRatingsRepoCreate = vi.fn(
   async ({
@@ -28,7 +45,7 @@ const mockRatingsRepoCreate = vi.fn(
       recipeId,
       rating,
     })
-);
+) as Mock<RatingsRepository['create']>;
 
 const mockRatingsRepoUpdate = vi.fn(
   async ({
@@ -41,7 +58,7 @@ const mockRatingsRepoUpdate = vi.fn(
       recipeId,
       rating,
     })
-);
+) as Mock<RatingsRepository['update']>;
 
 const mockRatingsRepoRemove = vi.fn(
   async (recipeId: number, userId: string): Promise<RatingsPublic> =>
@@ -49,9 +66,12 @@ const mockRatingsRepoRemove = vi.fn(
       userId,
       recipeId,
     })
-);
+) as Mock<RatingsRepository['remove']>;
 
 const mockRatingsRepository = {
+  getUserRatingForRecipe: mockRatingsRepoGetUserRatingForRecipe,
+  getRecipeRating: mockRatingsRepoGetRecipeRating,
+  getRecipeRatingsBatch: mockRatingsRepoGetRecipeRatingsBatch,
   create: mockRatingsRepoCreate,
   update: mockRatingsRepoUpdate,
   remove: mockRatingsRepoRemove,
@@ -84,6 +104,126 @@ const fakeRecipeToRate = fakeRating({
 const fakeRecipeToUpdate = fakeRating({
   ...fakeRecipeToRate,
   rating: 3,
+});
+
+describe('getUserRatingForRecipe', () => {
+  it('Should throw an error when recipe does not exist', async () => {
+    mockValidateRecipeExists.mockRejectedValueOnce(new RecipeNotFound());
+
+    await expect(
+      ratingsService.getUserRatingForRecipe(recipeId, authorId)
+    ).rejects.toThrow(/not found/i);
+  });
+
+  it('Should return undefined if no rating was found', async () => {
+    mockRatingsRepoGetUserRatingForRecipe.mockResolvedValueOnce(undefined);
+
+    await expect(
+      ratingsService.getUserRatingForRecipe(recipeId, authorId)
+    ).resolves.toBeUndefined();
+  });
+
+  it('Should return rating when the rating exists', async () => {
+    await expect(
+      ratingsService.getUserRatingForRecipe(recipeId, authorId)
+    ).resolves.toBe(fakeSingleRating);
+  });
+});
+
+describe('getRecipeRating', async () => {
+  it('Should throw an error when recipe does not exist', async () => {
+    mockValidateRecipeExists.mockRejectedValueOnce(new RecipeNotFound());
+
+    await expect(ratingsService.getRecipeRating(recipeId)).rejects.toThrow(
+      /not found/i
+    );
+  });
+
+  it('Should return undefined if no ratings were found for the given recipe', async () => {
+    mockRatingsRepoGetRecipeRating.mockResolvedValueOnce(undefined);
+
+    await expect(
+      ratingsService.getRecipeRating(recipeId)
+    ).resolves.toBeUndefined();
+  });
+
+  it('Should return an average rating for the given recipe when ratings are present', async () => {
+    await expect(ratingsService.getRecipeRating(recipeId)).resolves.toBe(
+      fakeAverageRating
+    );
+  });
+});
+
+describe('getRecipeRatingsBatch', () => {
+  const arrayLength = 4;
+  const recipeIds = Array.from(
+    { length: arrayLength },
+    (_, index) => index + 1
+  );
+
+  it('Should throw an error when recipe does not exist', async () => {
+    mockValidateRecipeExists.mockRejectedValueOnce(new RecipeNotFound());
+
+    await expect(
+      ratingsService.getRecipeRatingsBatch(recipeIds)
+    ).rejects.toThrow(/not found/i);
+  });
+
+  it('Should return an array full of undefined values because all recipes havo no ratings', async () => {
+    const mockBatchResponse = Array.from<number | undefined>({
+      length: arrayLength,
+    }).fill(undefined);
+
+    mockRatingsRepoGetRecipeRatingsBatch.mockResolvedValueOnce(
+      mockBatchResponse
+    );
+
+    const ratings = await ratingsService.getRecipeRatingsBatch(recipeIds);
+
+    expect(ratings).toBe(mockBatchResponse);
+  });
+
+  it('Should return an array of average ratings with one undefined value because recipe has no ratings', async () => {
+    const mockBatchResponse = [
+      fakeAverageRating,
+      fakeAverageRating,
+      undefined,
+      fakeAverageRating,
+    ];
+
+    mockRatingsRepoGetRecipeRatingsBatch.mockResolvedValueOnce(
+      mockBatchResponse
+    );
+
+    const ratings = await ratingsService.getRecipeRatingsBatch(recipeIds);
+
+    expect(ratings).toBe(mockBatchResponse);
+  });
+
+  it('Should return an array of average ratings with multiple undefined values because recipes have ratings', async () => {
+    const mockBatchResponse = [
+      undefined,
+      fakeAverageRating,
+      undefined,
+      fakeAverageRating,
+    ];
+
+    mockRatingsRepoGetRecipeRatingsBatch.mockResolvedValueOnce(
+      mockBatchResponse
+    );
+
+    const ratings = await ratingsService.getRecipeRatingsBatch(recipeIds);
+
+    expect(ratings).toBe(mockBatchResponse);
+  });
+
+  it('Should return an array of average ratings with no undefined values', async () => {
+    const ratings = await ratingsService.getRecipeRatingsBatch(recipeIds);
+
+    expect(ratings).toEqual(
+      Array.from<number>({ length: arrayLength }).fill(fakeAverageRating)
+    );
+  });
 });
 
 describe('create', () => {
