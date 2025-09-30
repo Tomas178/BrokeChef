@@ -27,15 +27,17 @@ const repos = {
   recipesRepository: {
     isAuthor: vi.fn(async (): Promise<boolean> => true),
     remove: vi.fn(
-      async (id: number): Promise<RecipesPublic> =>
-        fakeRecipe({
+      async (id: number): Promise<RecipesPublic> => ({
+        ...fakeRecipe({
           id,
           userId: authUser.id,
           author: pick(
             fakeUser({ id: authUser.id + 1 }),
             usersKeysPublicWithoutId
           ),
-        })
+        }),
+        rating: 1,
+      })
     ),
   } satisfies Partial<RecipesRepository>,
 };

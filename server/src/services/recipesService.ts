@@ -8,7 +8,10 @@ import { recipesToolsRepository as buildRecipesToolsRepository } from '@server/r
 import { assertPostgresError } from '@server/utils/errors';
 import { PostgresError } from 'pg-error-enum';
 import UserNotFound from '@server/utils/errors/users/UserNotFound';
-import type { RecipesPublic } from '@server/entities/recipes';
+import type {
+  RecipesPublic,
+  RecipesPublicAllInfo,
+} from '@server/entities/recipes';
 import { generateRecipeImage } from '@server/utils/GoogleGenAiClient/generateRecipeImage';
 import { ai } from '@server/utils/GoogleGenAiClient/client';
 import { uploadImage } from '@server/utils/AWSS3Client/uploadImage';
@@ -18,6 +21,7 @@ import { AllowedMimeType } from '@server/enums/AllowedMimetype';
 import { deleteFile } from '@server/utils/AWSS3Client/deleteFile';
 import config from '@server/config';
 import logger from '@server/logger';
+import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import { joinStepsToSingleString } from './utils/joinStepsToSingleString';
 import { insertIngredients, insertTools } from './utils/inserts';
 
@@ -26,9 +30,12 @@ interface RecipesService {
     recipe: CreateRecipeInput,
     userId: string
   ) => Promise<RecipesPublic | undefined>;
+  findById: (recipeId: number) => Promise<RecipesPublicAllInfo | undefined>;
 }
 
 export function recipesService(database: Database): RecipesService {
+  const recipesRepository = buildRecipesRepository(database);
+
   return {
     async createRecipe(recipe, userId) {
       return await database.transaction().execute(async tx => {
@@ -108,6 +115,16 @@ export function recipesService(database: Database): RecipesService {
           }
         }
       });
+    },
+
+    async findById(recipeId) {
+      const recipe = await recipesRepository.findById(recipeId);
+
+      if (!recipe) {
+        throw new RecipeNotFound();
+      }
+
+      return recipe;
     },
   };
 }

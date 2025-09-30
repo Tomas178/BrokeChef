@@ -1,7 +1,11 @@
 import { createTestDatabase } from '@tests/utils/database';
 import { wrapInRollbacks } from '@tests/utils/transactions';
 import { clearTables, insertAll, selectAll } from '@tests/utils/record';
-import { fakeUser, fakeCreateRecipeData } from '@server/entities/tests/fakes';
+import {
+  fakeUser,
+  fakeCreateRecipeData,
+  fakeRecipe,
+} from '@server/entities/tests/fakes';
 import { pick } from 'lodash-es';
 import { recipesKeysPublic } from '@server/entities/recipes';
 import { usersKeysPublicWithoutId } from '@server/entities/users';
@@ -9,6 +13,7 @@ import { joinStepsToSingleString } from '../utils/joinStepsToSingleString';
 import { recipesService } from '../recipesService';
 
 const fakeImageKey = 'fakeKey';
+const fakeSteps = ['Step 1', 'Step 2'];
 
 const { mockDeleteFile, mockLoggerError } = vi.hoisted(() => ({
   mockDeleteFile: vi.fn(),
@@ -32,6 +37,10 @@ vi.mock('@server/utils/AWSS3Client/uploadImage', () => ({
 
 vi.mock('@server/utils/AWSS3Client/deleteFile', () => ({
   deleteFile: mockDeleteFile,
+}));
+
+vi.mock('@server/repositories/utils/joinStepsToArray', () => ({
+  joinStepsToArray: vi.fn(() => fakeSteps),
 }));
 
 const database = await wrapInRollbacks(createTestDatabase());
@@ -118,5 +127,30 @@ describe('createRecipe', () => {
       'Failed to rollback S3 Object:',
       expect.any(Error)
     );
+  });
+});
+
+describe('findById', () => {
+  it('Should return the recipe', async () => {
+    const [insertedRecipe] = await insertAll(
+      database,
+      'recipes',
+      fakeRecipe({ userId: user.id })
+    );
+
+    const retrievedRecipe = await service.findById(insertedRecipe.id);
+
+    expect(retrievedRecipe).toEqual({
+      ...insertedRecipe,
+      author: pick(user, usersKeysPublicWithoutId),
+      ingredients: [],
+      tools: [],
+      steps: fakeSteps,
+      rating: null,
+    });
+  });
+
+  it('Should throw an error if recipe is not found', async () => {
+    await expect(service.findById(999)).rejects.toThrow(/not found/i);
   });
 });

@@ -1,15 +1,15 @@
 import { integerIdSchema } from '@server/entities/shared';
-import { recipesRepository } from '@server/repositories/recipesRepository';
-import provideRepos from '@server/trpc/provideRepos';
 import { TRPCError } from '@trpc/server';
 import { signImages } from '@server/utils/signImages';
 import { authenticatedProcedure } from '@server/trpc/authenticatedProcedure';
+import provideServices from '@server/trpc/provideServices';
+import { recipesService } from '@server/services/recipesService';
 
 export default authenticatedProcedure
-  .use(provideRepos({ recipesRepository }))
+  .use(provideServices({ recipesService }))
   .input(integerIdSchema)
-  .query(async ({ input: recipeId, ctx: { repos } }) => {
-    const recipe = await repos.recipesRepository.findById(recipeId);
+  .query(async ({ input: recipeId, ctx: { services } }) => {
+    const recipe = await services.recipesService.findById(recipeId);
 
     if (!recipe) {
       throw new TRPCError({
