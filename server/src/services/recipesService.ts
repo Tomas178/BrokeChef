@@ -1,27 +1,13 @@
 import type { CreateRecipeInput } from '@server/controllers/recipes/create';
 import type { Database } from '@server/database';
 import { recipesRepository as buildRecipesRepository } from '@server/repositories/recipesRepository';
-import {
-  ingredientsRepository as buildIngredientsRepository,
-  type IngredientsRepository,
-} from '@server/repositories/ingredientsRepository';
-import {
-  recipesIngredientsRepository as buildRecipesIngredientsRepository,
-  type RecipesIngredientsRepository,
-} from '@server/repositories/recipesIngredientsRepository';
-import {
-  toolsRepository as buildToolsRepository,
-  type ToolsRepository,
-} from '@server/repositories/toolsRepository';
-import {
-  recipesToolsRepository as buildRecipesToolsRepository,
-  type RecipesToolsRepository,
-} from '@server/repositories/recipesToolsRepository';
+import { ingredientsRepository as buildIngredientsRepository } from '@server/repositories/ingredientsRepository';
+import { recipesIngredientsRepository as buildRecipesIngredientsRepository } from '@server/repositories/recipesIngredientsRepository';
+import { toolsRepository as buildToolsRepository } from '@server/repositories/toolsRepository';
+import { recipesToolsRepository as buildRecipesToolsRepository } from '@server/repositories/recipesToolsRepository';
 import { assertPostgresError } from '@server/utils/errors';
 import { PostgresError } from 'pg-error-enum';
 import UserNotFound from '@server/utils/errors/users/UserNotFound';
-import type { ToolsPublic } from '@server/entities/tools';
-import type { IngredientsPublic } from '@server/entities/ingredients';
 import type { RecipesPublic } from '@server/entities/recipes';
 import { generateRecipeImage } from '@server/utils/GoogleGenAiClient/generateRecipeImage';
 import { ai } from '@server/utils/GoogleGenAiClient/client';
@@ -33,6 +19,7 @@ import { deleteFile } from '@server/utils/AWSS3Client/deleteFile';
 import config from '@server/config';
 import logger from '@server/logger';
 import { joinStepsToSingleString } from './utils/joinStepsToSingleString';
+import { insertIngredients, insertTools } from './utils/inserts';
 
 interface RecipesService {
   createRecipe: (
@@ -44,13 +31,13 @@ interface RecipesService {
 export function recipesService(database: Database): RecipesService {
   return {
     async createRecipe(recipe, userId) {
-      return await database.transaction().execute(async trx => {
-        const recipesRepository = buildRecipesRepository(trx);
-        const ingredientsRepository = buildIngredientsRepository(trx);
-        const recipesIngredientsRepository =
-          buildRecipesIngredientsRepository(trx);
-        const toolsRepository = buildToolsRepository(trx);
-        const recipesToolsRepository = buildRecipesToolsRepository(trx);
+      return await database.transaction().execute(async tx => {
+        const recipesRepositoryForTx = buildRecipesRepository(tx);
+        const ingredientsRepositoryForTx = buildIngredientsRepository(tx);
+        const recipesIngredientsRepositoryForTx =
+          buildRecipesIngredientsRepository(tx);
+        const toolsRepositoryForTx = buildToolsRepository(tx);
+        const recipesToolsRepositoryForTx = buildRecipesToolsRepository(tx);
 
         const { ingredients, tools, ...recipeData } = recipe;
 
@@ -82,22 +69,23 @@ export function recipesService(database: Database): RecipesService {
         };
 
         try {
-          const createdRecipe = await recipesRepository.create(recipeToInsert);
+          const createdRecipe =
+            await recipesRepositoryForTx.create(recipeToInsert);
           const recipeId = createdRecipe.id;
 
           await Promise.all([
             insertIngredients(
               recipeId,
               ingredients,
-              ingredientsRepository,
-              recipesIngredientsRepository
+              ingredientsRepositoryForTx,
+              recipesIngredientsRepositoryForTx
             ),
 
             insertTools(
               recipeId,
               tools,
-              toolsRepository,
-              recipesToolsRepository
+              toolsRepositoryForTx,
+              recipesToolsRepositoryForTx
             ),
           ]);
 
@@ -122,68 +110,4 @@ export function recipesService(database: Database): RecipesService {
       });
     },
   };
-}
-
-export async function insertIngredients(
-  recipeId: number,
-  ingredients: string[],
-  repo: IngredientsRepository,
-  linkRepo: RecipesIngredientsRepository
-): Promise<void> {
-  if (ingredients.length === 0) return;
-
-  const existingIngredients = await repo.findByNames(ingredients);
-  const existingIngredientsNames = new Set(
-    existingIngredients.map(ingredient => ingredient.name)
-  );
-
-  const newIngredients = [
-    ...new Set(ingredients.filter(name => !existingIngredientsNames.has(name))),
-  ];
-
-  let createdIngredients: IngredientsPublic[] = [];
-  if (newIngredients.length > 0) {
-    const newInsertableIngredientsArray = newIngredients.map(name => ({
-      name,
-    }));
-
-    createdIngredients = await repo.create(newInsertableIngredientsArray);
-  }
-  const allIngredients = [...existingIngredients, ...createdIngredients];
-
-  const links = allIngredients.map(ingredient => ({
-    recipeId,
-    ingredientId: ingredient.id,
-  }));
-
-  await linkRepo.create(links);
-}
-
-export async function insertTools(
-  recipeId: number,
-  tools: string[],
-  repo: ToolsRepository,
-  linkRepo: RecipesToolsRepository
-): Promise<void> {
-  if (tools.length === 0) return;
-
-  const existingTools = await repo.findByNames(tools);
-  const existingToolsNames = new Set(existingTools.map(tool => tool.name));
-
-  const newTools = [
-    ...new Set(tools.filter(name => !existingToolsNames.has(name))),
-  ];
-
-  let createdTools: ToolsPublic[] = [];
-  if (newTools.length > 0) {
-    const newInsertableToolsArray = newTools.map(name => ({ name }));
-
-    createdTools = await repo.create(newInsertableToolsArray);
-  }
-
-  const allTools = [...existingTools, ...createdTools];
-
-  const links = allTools.map(tool => ({ recipeId, toolId: tool.id }));
-
-  await linkRepo.create(links);
 }
