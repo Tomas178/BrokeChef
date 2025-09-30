@@ -12,26 +12,21 @@ const [userOne, userTwo] = await insertAll(database, 'users', [
   fakeUser(),
 ]);
 
-const [recipe] = await insertAll(
-  database,
-  'recipes',
-  fakeRecipe({ userId: userOne.id })
-);
+const [recipeOne, recipeTwo] = await insertAll(database, 'recipes', [
+  fakeRecipe({ userId: userOne.id }),
+  fakeRecipe({ userId: userOne.id }),
+]);
 
-const nonExistantUserId = userOne.id + 'a';
-const nonExistantRecipeId = recipe.id + 1;
+const nonExistantUserId = userOne.id + userTwo.id;
+const nonExistantRecipeId = recipeOne.id + recipeTwo.id;
 
-const [fakeRecipeToRateOne, fakeRecipeToRateTwo, fakeRecipeForUpdate] = [
+const [fakeRecipeToRateOne, fakeRecipeForUpdate] = [
   fakeRating({
-    recipeId: recipe.id,
+    recipeId: recipeOne.id,
     userId: userOne.id,
   }),
   fakeRating({
-    recipeId: recipe.id,
-    userId: userTwo.id,
-  }),
-  fakeRating({
-    recipeId: recipe.id,
+    recipeId: recipeOne.id,
     userId: userOne.id,
   }),
 ];
@@ -59,7 +54,7 @@ describe('getUserRating', () => {
 });
 
 describe('getRecipeRating', () => {
-  it('Should return the average rating when single rating exists', async () => {
+  it('Should return the average rating for recipe when single rating exists', async () => {
     const [insertedRating] = await insertAll(
       database,
       'ratings',
@@ -71,7 +66,12 @@ describe('getRecipeRating', () => {
     expect(rating).toEqual(insertedRating.rating);
   });
 
-  it('Should return the average rating when multiple ratings exist', async () => {
+  it('Should return the average rating for recipe when multiple ratings exist', async () => {
+    const fakeRecipeToRateTwo = fakeRating({
+      recipeId: recipeOne.id,
+      userId: userTwo.id,
+    });
+
     const [insertedRatingOne, insertedRatingTwo] = await insertAll(
       database,
       'ratings',
@@ -88,10 +88,59 @@ describe('getRecipeRating', () => {
     expect(databaseRating).toEqual(averageRating);
   });
 
-  it('Should return undefined if no ratings exist', async () => {
-    await expect(
-      repository.getRecipeRating(nonExistantRecipeId)
-    ).resolves.toBeUndefined();
+  it('Should return 0 if no ratings exist for recipe', async () => {
+    await expect(repository.getRecipeRating(nonExistantRecipeId)).resolves.toBe(
+      0
+    );
+  });
+});
+
+describe('getRecipeRatingsBatch', () => {
+  let recipeForBatch: { id: number };
+  let fakeRecipeToRateTwo: ReturnType<typeof fakeRating>;
+
+  beforeAll(async () => {
+    [recipeForBatch] = await insertAll(
+      database,
+      'recipes',
+      fakeRecipe({ userId: userOne.id })
+    );
+
+    fakeRecipeToRateTwo = fakeRating({
+      recipeId: recipeForBatch.id,
+      userId: userOne.id,
+    });
+  });
+
+  it('Should return an array of 2 ratings that are correct when two recipeIds are given', async () => {
+    const [ratedOne, ratedTwo] = await insertAll(database, 'ratings', [
+      fakeRecipeToRateOne,
+      fakeRecipeToRateTwo,
+    ]);
+
+    const recipeIds = [ratedOne.recipeId, ratedTwo.recipeId];
+
+    const [ratingFromDatabaseOne, ratingFromDatabaseTwo] =
+      await repository.getRecipeRatingsBatch(recipeIds);
+
+    expect(ratingFromDatabaseOne).toEqual(ratedOne.rating);
+    expect(ratingFromDatabaseTwo).toEqual(ratedTwo.rating);
+  });
+
+  it('Should return an array of rating and 0 when only one recipe rating is found', async () => {
+    const [ratedOne] = await insertAll(
+      database,
+      'ratings',
+      fakeRecipeToRateOne
+    );
+
+    const recipeIds = [ratedOne.recipeId, fakeRecipeToRateTwo.recipeId];
+
+    const [realRating, ratingZero] =
+      await repository.getRecipeRatingsBatch(recipeIds);
+
+    expect(realRating).toBe(ratedOne.rating);
+    expect(ratingZero).toBe(0);
   });
 });
 

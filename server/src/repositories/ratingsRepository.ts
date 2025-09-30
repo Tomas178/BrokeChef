@@ -12,7 +12,8 @@ export interface RatingsRepository {
     recipeId: number,
     userId: string
   ) => Promise<RatingsPublic | undefined>;
-  getRecipeRating: (recipeId: number) => Promise<number | undefined>;
+  getRecipeRating: (recipeId: number) => Promise<number>;
+  getRecipeRatingsBatch: (recipeIds: number[]) => Promise<number[]>;
   create: (recipeToRate: Insertable<Ratings>) => Promise<RatingsPublic>;
   update: (recipeToUpdate: Insertable<Ratings>) => Promise<RatingsPublic>;
   remove: (recipeId: number, userId: string) => Promise<RatingsPublic>;
@@ -30,14 +31,23 @@ export function ratingsRepository(database: Database): RatingsRepository {
     },
 
     async getRecipeRating(recipeId) {
+      const [rating] = await this.getRecipeRatingsBatch([recipeId]);
+      return rating;
+    },
+
+    async getRecipeRatingsBatch(recipeIds) {
       const result = await database
         .selectFrom(TABLE)
-        .select(({ fn }) => fn.avg('rating').as('rating'))
-        .where('recipeId', '=', recipeId)
+        .select(['recipeId', ({ fn }) => fn.avg('rating').as('rating')])
+        .where('recipeId', 'in', recipeIds)
         .groupBy('recipeId')
-        .executeTakeFirst();
+        .execute();
 
-      return result ? Number(result.rating) : undefined;
+      const ratingsMap = new Map(
+        result.map(r => [r.recipeId, r.rating ? Number(r.rating) : 0])
+      );
+
+      return recipeIds.map(id => ratingsMap.get(id) ?? 0);
     },
 
     async create(recipeToRate) {
