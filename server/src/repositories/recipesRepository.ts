@@ -44,6 +44,7 @@ export function recipesRepository(database: Database): RecipesRepository {
         .values(recipe)
         .returning(recipesKeysPublic)
         .returning(withAuthor)
+        .returning(withRatings)
         .executeTakeFirstOrThrow();
     },
 
@@ -54,6 +55,7 @@ export function recipesRepository(database: Database): RecipesRepository {
         .select(withAuthor)
         .select(withIngredients)
         .select(withTools)
+        .select(withRatings)
         .where('id', '=', id)
         .executeTakeFirst();
 
@@ -72,6 +74,7 @@ export function recipesRepository(database: Database): RecipesRepository {
         .selectFrom(TABLE)
         .select(recipesKeysPublic)
         .select(withAuthor)
+        .select(withRatings)
         .where('userId', '=', userId)
         .orderBy('id', 'desc')
         .offset(offset)
@@ -95,6 +98,7 @@ export function recipesRepository(database: Database): RecipesRepository {
         .innerJoin('savedRecipes', 'savedRecipes.recipeId', 'recipes.id')
         .select(prefixTable(TABLE, recipesKeysPublic))
         .select(withAuthor)
+        .select(withRatings)
         .where('savedRecipes.userId', '=', userId)
         .orderBy('id', 'desc')
         .offset(offset)
@@ -118,6 +122,7 @@ export function recipesRepository(database: Database): RecipesRepository {
         .selectFrom(TABLE)
         .select(recipesKeysPublic)
         .select(withAuthor)
+        .select(withRatings)
         .orderBy('id', 'desc')
         .offset(offset)
         .limit(limit)
@@ -150,6 +155,7 @@ export function recipesRepository(database: Database): RecipesRepository {
         .where('id', '=', id)
         .returning(recipesKeysPublic)
         .returning(withAuthor)
+        .returning(withRatings)
         .executeTakeFirstOrThrow(() => new RecipeNotFound());
     },
   };
@@ -184,4 +190,12 @@ function withTools(eb: ExpressionBuilder<DB, 'recipes'>) {
     .select(eb => eb.fn.jsonAgg('tools.name').as('tools'))
     .whereRef('recipesTools.recipeId', '=', 'recipes.id')
     .as('tools') as unknown as AliasedRawBuilder<string[], 'tools'>;
+}
+
+function withRatings(eb: ExpressionBuilder<DB, 'recipes'>) {
+  return eb
+    .selectFrom('ratings')
+    .select(({ fn }) => fn.avg('rating').as('averageRating'))
+    .whereRef('ratings.recipeId', '=', 'recipes.id')
+    .as('rating') as unknown as AliasedRawBuilder<number, 'rating'>;
 }

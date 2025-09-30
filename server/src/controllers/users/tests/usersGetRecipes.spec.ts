@@ -63,12 +63,14 @@ it('Should return saved and created recipes when given id', async () => {
     ...pick(createdRecipeOne, recipesKeysPublic),
     author: pick(user, usersKeysPublicWithoutId),
     imageUrl: fakeImageUrl,
+    rating: null,
   });
 
   expect(createdNew).toEqual({
     ...pick(createdRecipeTwo, recipesKeysPublic),
     author: pick(user, usersKeysPublicWithoutId),
     imageUrl: fakeImageUrl,
+    rating: null,
   });
 
   // Check saved recipes ordered descendingly by id
@@ -76,12 +78,14 @@ it('Should return saved and created recipes when given id', async () => {
     ...pick(createdRecipeOne, recipesKeysPublic),
     author: pick(user, usersKeysPublicWithoutId),
     imageUrl: fakeImageUrl,
+    rating: null,
   });
 
   expect(savedNew).toEqual({
     ...pick(createdRecipeTwo, recipesKeysPublic),
     author: pick(user, usersKeysPublicWithoutId),
     imageUrl: fakeImageUrl,
+    rating: null,
   });
 });
 
@@ -103,12 +107,14 @@ it('Should return saved and created recipes when authenticated but not given id'
     ...pick(createdRecipeOne, recipesKeysPublic),
     author: pick(user, usersKeysPublicWithoutId),
     imageUrl: fakeImageUrl,
+    rating: null,
   });
 
   expect(createdNew).toEqual({
     ...pick(createdRecipeTwo, recipesKeysPublic),
     author: pick(user, usersKeysPublicWithoutId),
     imageUrl: fakeImageUrl,
+    rating: null,
   });
 
   // Check saved recipes ordered descendingly by id
@@ -116,11 +122,13 @@ it('Should return saved and created recipes when authenticated but not given id'
     ...pick(createdRecipeOne, recipesKeysPublic),
     author: pick(user, usersKeysPublicWithoutId),
     imageUrl: fakeImageUrl,
+    rating: null,
   });
 
   expect(savedNew).toEqual({
     ...pick(createdRecipeTwo, recipesKeysPublic),
     author: pick(user, usersKeysPublicWithoutId),
     imageUrl: fakeImageUrl,
+    rating: null,
   });
 });

@@ -79,12 +79,14 @@ describe('getRecipes', () => {
       ...pick(createdRecipeOne, recipesKeysPublic),
       author: pick(user, usersKeysPublicWithoutId),
       imageUrl: fakeImageUrl,
+      rating: null,
     });
 
     expect(createdNew).toEqual({
       ...pick(createdRecipeTwo, recipesKeysPublic),
       author: pick(user, usersKeysPublicWithoutId),
       imageUrl: fakeImageUrl,
+      rating: null,
     });
 
     // Check saved recipes ordered descendingly by id
@@ -92,12 +94,14 @@ describe('getRecipes', () => {
       ...pick(createdRecipeOne, recipesKeysPublic),
       author: pick(user, usersKeysPublicWithoutId),
       imageUrl: fakeImageUrl,
+      rating: null,
     });
 
     expect(savedNew).toEqual({
       ...pick(createdRecipeTwo, recipesKeysPublic),
       author: pick(user, usersKeysPublicWithoutId),
       imageUrl: fakeImageUrl,
+      rating: null,
     });
   });
 });
@@ -115,12 +119,14 @@ describe('getCreatedRecipes', () => {
       ...pick(createdRecipeOne, recipesKeysPublic),
       author: pick(user, usersKeysPublicWithoutId),
       imageUrl: fakeImageUrl,
+      rating: null,
     });
 
     expect(createdNew).toEqual({
       ...pick(createdRecipeTwo, recipesKeysPublic),
       author: pick(user, usersKeysPublicWithoutId),
       imageUrl: fakeImageUrl,
+      rating: null,
     });
   });
 });
@@ -140,12 +146,14 @@ describe('getSavedRecipes', () => {
       ...pick(createdRecipeOne, recipesKeysPublic),
       author: pick(user, usersKeysPublicWithoutId),
       imageUrl: fakeImageUrl,
+      rating: null,
     });
 
     expect(savedNew).toEqual({
       ...pick(createdRecipeTwo, recipesKeysPublic),
       author: pick(user, usersKeysPublicWithoutId),
       imageUrl: fakeImageUrl,
+      rating: null,
     });
   });
 });

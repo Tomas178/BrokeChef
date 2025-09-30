@@ -69,11 +69,13 @@ it('Should return saved recipes', async () => {
     ...pick(recipeOne, recipesKeysPublic),
     author: pick(userCreator, usersKeysPublicWithoutId),
     imageUrl: fakeImageUrl,
+    rating: null,
   });
 
   expect(savedNew).toEqual({
     ...pick(recipeTwo, recipesKeysPublic),
     author: pick(userCreator, usersKeysPublicWithoutId),
     imageUrl: fakeImageUrl,
+    rating: null,
   });
 });

@@ -53,11 +53,13 @@ it('Should return created recipes', async () => {
     ...pick(createdRecipes[0], recipesKeysPublic),
     author: pick(user, usersKeysPublicWithoutId),
     imageUrl: fakeImageUrl,
+    rating: null,
   });
 
   expect(createdNew).toEqual({
     ...pick(createdRecipes[1], recipesKeysPublic),
     author: pick(user, usersKeysPublicWithoutId),
     imageUrl: fakeImageUrl,
+    rating: null,
   });
 });
