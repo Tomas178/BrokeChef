@@ -14,10 +14,20 @@ import { recipesService } from '../recipesService';
 
 const fakeImageKey = 'fakeKey';
 const fakeSteps = ['Step 1', 'Step 2'];
+const fakeImageUrl = 'https://signed-url.com/folder/image.png';
 
 const { mockDeleteFile, mockLoggerError } = vi.hoisted(() => ({
   mockDeleteFile: vi.fn(),
   mockLoggerError: vi.fn(),
+}));
+
+vi.mock('@server/utils/signImages', () => ({
+  signImages: vi.fn((images: string | string[]) => {
+    if (Array.isArray(images)) {
+      return images.map(() => fakeImageUrl);
+    }
+    return fakeImageUrl;
+  }),
 }));
 
 vi.mock('@server/logger', () => ({
@@ -143,6 +153,7 @@ describe('findById', () => {
     expect(retrievedRecipe).toEqual({
       ...insertedRecipe,
       author: pick(user, usersKeysPublicWithoutId),
+      imageUrl: fakeImageUrl,
       ingredients: [],
       tools: [],
       steps: fakeSteps,

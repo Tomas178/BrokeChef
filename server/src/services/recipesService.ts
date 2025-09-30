@@ -22,6 +22,7 @@ import { deleteFile } from '@server/utils/AWSS3Client/deleteFile';
 import config from '@server/config';
 import logger from '@server/logger';
 import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
+import { signImages } from '@server/utils/signImages';
 import { joinStepsToSingleString } from './utils/joinStepsToSingleString';
 import { insertIngredients, insertTools } from './utils/inserts';
 
@@ -123,6 +124,8 @@ export function recipesService(database: Database): RecipesService {
       if (!recipe) {
         throw new RecipeNotFound();
       }
+
+      recipe.imageUrl = await signImages(recipe.imageUrl);
 
       return recipe;
     },
