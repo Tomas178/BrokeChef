@@ -40,7 +40,7 @@ describe('getUserRatingForRecipe', () => {
       fakeRecipeToRateOne.userId
     );
 
-    expect(retrievedRecipe).toEqual(fakeRecipeToRateOne);
+    expect(retrievedRecipe).toEqual(fakeRecipeToRateOne.rating);
   });
 
   it('Should return undefined if rating does not exist', async () => {
@@ -148,8 +148,6 @@ describe('getRecipeRatingsBatch', () => {
     const [realRatingOne, ratingZero, realRatingTwo] =
       await repository.getRecipeRatingsBatch(recipeIds);
 
-    console.log(await repository.getRecipeRatingsBatch(recipeIds));
-
     expect(realRatingOne).toBe(ratedOne.rating);
     expect(realRatingTwo).toBe(ratedTwo.rating);
     expect(ratingZero).toBe(0);
@@ -166,8 +164,6 @@ describe('getRecipeRatingsBatch', () => {
 
     const [realRating, ratingZero] =
       await repository.getRecipeRatingsBatch(recipeIds);
-
-    console.log(await repository.getRecipeRatingsBatch(recipeIds));
 
     expect(realRating).toBe(ratedOne.rating);
     expect(ratingZero).toBe(0);

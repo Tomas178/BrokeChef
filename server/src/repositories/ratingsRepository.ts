@@ -11,8 +11,8 @@ export interface RatingsRepository {
   getUserRatingForRecipe: (
     recipeId: number,
     userId: string
-  ) => Promise<RatingsPublic | undefined>;
-  getRecipeRating: (recipeId: number) => Promise<number>;
+  ) => Promise<number | undefined>;
+  getRecipeRating: (recipeId: number) => Promise<number | undefined>;
   getRecipeRatingsBatch: (recipeIds: number[]) => Promise<number[]>;
   create: (recipeToRate: Insertable<Ratings>) => Promise<RatingsPublic>;
   update: (recipeToUpdate: Insertable<Ratings>) => Promise<RatingsPublic>;
@@ -22,12 +22,14 @@ export interface RatingsRepository {
 export function ratingsRepository(database: Database): RatingsRepository {
   return {
     async getUserRatingForRecipe(recipeId, userId) {
-      return database
+      const rating = await database
         .selectFrom(TABLE)
-        .select(ratingsKeysPublic)
+        .select('rating')
         .where('userId', '=', userId)
         .where('recipeId', '=', recipeId)
         .executeTakeFirst();
+
+      return rating?.rating;
     },
 
     async getRecipeRating(recipeId) {
