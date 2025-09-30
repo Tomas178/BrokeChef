@@ -31,11 +31,11 @@ const [fakeRecipeToRateOne, fakeRecipeForUpdate] = [
   }),
 ];
 
-describe('getUserRating', () => {
+describe('getUserRatingForRecipe', () => {
   it('Should return the rating', async () => {
     await insertAll(database, 'ratings', fakeRecipeToRateOne);
 
-    const retrievedRecipe = await repository.getUserRating(
+    const retrievedRecipe = await repository.getUserRatingForRecipe(
       fakeRecipeToRateOne.recipeId,
       fakeRecipeToRateOne.userId
     );
@@ -45,7 +45,7 @@ describe('getUserRating', () => {
 
   it('Should return undefined if rating does not exist', async () => {
     await expect(
-      repository.getUserRating(
+      repository.getUserRatingForRecipe(
         fakeRecipeToRateOne.recipeId,
         fakeRecipeToRateOne.userId
       )

@@ -8,7 +8,7 @@ import type { Insertable } from 'kysely';
 const TABLE = 'ratings';
 
 export interface RatingsRepository {
-  getUserRating: (
+  getUserRatingForRecipe: (
     recipeId: number,
     userId: string
   ) => Promise<RatingsPublic | undefined>;
@@ -21,7 +21,7 @@ export interface RatingsRepository {
 
 export function ratingsRepository(database: Database): RatingsRepository {
   return {
-    async getUserRating(recipeId, userId) {
+    async getUserRatingForRecipe(recipeId, userId) {
       return database
         .selectFrom(TABLE)
         .select(ratingsKeysPublic)
