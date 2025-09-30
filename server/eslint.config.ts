@@ -65,6 +65,13 @@ export default tseslint.config(
           case: 'camelCase',
         },
       ],
+
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+        },
+      ],
     },
   },
 
