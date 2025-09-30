@@ -44,7 +44,7 @@ export function ratingsRepository(database: Database): RatingsRepository {
         .execute();
 
       const ratingsMap = new Map(
-        result.map(r => [r.recipeId, r.rating ? Number(r.rating) : 0])
+        result.map(r => [r.recipeId, Number(r.rating)])
       );
 
       return recipeIds.map(id => ratingsMap.get(id) ?? 0);
