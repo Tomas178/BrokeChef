@@ -88,10 +88,10 @@ describe('getRecipeRating', () => {
     expect(databaseRating).toEqual(averageRating);
   });
 
-  it('Should return 0 if no ratings exist for recipe', async () => {
-    await expect(repository.getRecipeRating(nonExistantRecipeId)).resolves.toBe(
-      0
-    );
+  it('Should return undefined if no ratings exist for recipe', async () => {
+    await expect(
+      repository.getRecipeRating(nonExistantRecipeId)
+    ).resolves.toBeUndefined();
   });
 });
 
@@ -127,7 +127,7 @@ describe('getRecipeRatingsBatch', () => {
     expect(ratingFromDatabaseTwo).toEqual(ratedTwo.rating);
   });
 
-  it('Should return an array of 2 ratings and 0 when only two recipes rating is found and in the same order as IDs were given', async () => {
+  it('Should return an array of 2 ratings and undefined when only two recipes rating is found and in the same order as IDs were given', async () => {
     const [recipeForBatchTwo] = await insertAll(
       database,
       'recipes',
@@ -145,15 +145,15 @@ describe('getRecipeRatingsBatch', () => {
       ratedTwo.recipeId,
     ];
 
-    const [realRatingOne, ratingZero, realRatingTwo] =
+    const [realRatingOne, ratingUndefined, realRatingTwo] =
       await repository.getRecipeRatingsBatch(recipeIds);
 
     expect(realRatingOne).toBe(ratedOne.rating);
+    expect(ratingUndefined).toBeUndefined();
     expect(realRatingTwo).toBe(ratedTwo.rating);
-    expect(ratingZero).toBe(0);
   });
 
-  it('Should return an array of rating and 0 when only one recipe rating is found', async () => {
+  it('Should return an array of rating and undefined when only one recipe rating is found', async () => {
     const [ratedOne] = await insertAll(
       database,
       'ratings',
@@ -162,11 +162,11 @@ describe('getRecipeRatingsBatch', () => {
 
     const recipeIds = [ratedOne.recipeId, fakeRecipeToRateTwo.recipeId];
 
-    const [realRating, ratingZero] =
+    const [realRating, ratingUndefined] =
       await repository.getRecipeRatingsBatch(recipeIds);
 
     expect(realRating).toBe(ratedOne.rating);
-    expect(ratingZero).toBe(0);
+    expect(ratingUndefined).toBeUndefined();
   });
 });
 

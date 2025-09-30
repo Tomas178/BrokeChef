@@ -13,7 +13,9 @@ export interface RatingsRepository {
     userId: string
   ) => Promise<number | undefined>;
   getRecipeRating: (recipeId: number) => Promise<number | undefined>;
-  getRecipeRatingsBatch: (recipeIds: number[]) => Promise<number[]>;
+  getRecipeRatingsBatch: (
+    recipeIds: number[]
+  ) => Promise<(number | undefined)[]>;
   create: (recipeToRate: Insertable<Ratings>) => Promise<RatingsPublic>;
   update: (recipeToUpdate: Insertable<Ratings>) => Promise<RatingsPublic>;
   remove: (recipeId: number, userId: string) => Promise<RatingsPublic>;
@@ -49,7 +51,7 @@ export function ratingsRepository(database: Database): RatingsRepository {
         result.map(r => [r.recipeId, Number(r.rating)])
       );
 
-      return recipeIds.map(id => ratingsMap.get(id) ?? 0);
+      return recipeIds.map(id => ratingsMap.get(id));
     },
 
     async create(recipeToRate) {
