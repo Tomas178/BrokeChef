@@ -3,6 +3,7 @@ import {
   ratingsKeysPublic,
   type RatingsPublic,
 } from '@server/entities/ratings';
+import type { RatingFromDB } from '@server/entities/shared';
 import type { Insertable } from 'kysely';
 
 const TABLE = 'ratings';
@@ -11,11 +12,9 @@ export interface RatingsRepository {
   getUserRatingForRecipe: (
     recipeId: number,
     userId: string
-  ) => Promise<number | undefined>;
-  getRecipeRating: (recipeId: number) => Promise<number | undefined>;
-  getRecipeRatingsBatch: (
-    recipeIds: number[]
-  ) => Promise<(number | undefined)[]>;
+  ) => Promise<RatingFromDB>;
+  getRecipeRating: (recipeId: number) => Promise<RatingFromDB>;
+  getRecipeRatingsBatch: (recipeIds: number[]) => Promise<RatingFromDB[]>;
   create: (recipeToRate: Insertable<Ratings>) => Promise<RatingsPublic>;
   update: (recipeToUpdate: Insertable<Ratings>) => Promise<RatingsPublic>;
   remove: (recipeId: number, userId: string) => Promise<RatingsPublic>;

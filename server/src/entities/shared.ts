@@ -22,3 +22,5 @@ export const userWithPaginationSchema = paginationSchema.extend({
 });
 
 export type UserWithPagination = z.infer<typeof userWithPaginationSchema>;
+
+export type RatingFromDB = number | undefined;
