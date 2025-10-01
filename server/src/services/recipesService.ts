@@ -26,7 +26,7 @@ import { signImages } from '@server/utils/signImages';
 import { joinStepsToSingleString } from './utils/joinStepsToSingleString';
 import { insertIngredients, insertTools } from './utils/inserts';
 
-interface RecipesService {
+export interface RecipesService {
   createRecipe: (
     recipe: CreateRecipeInput,
     userId: string
