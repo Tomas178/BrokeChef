@@ -1,4 +1,4 @@
-import { fakeRecipe, fakeUser } from '@server/entities/tests/fakes';
+import { fakeRecipeAllInfo, fakeUser } from '@server/entities/tests/fakes';
 import { usersKeysPublicWithoutId } from '@server/entities/users';
 import { pick } from 'lodash-es';
 import type { RecipesRepository } from '@server/repositories/recipesRepository';
@@ -16,7 +16,7 @@ const recipeId = 1;
 
 const mockFindById = vi.fn(
   async (id): Promise<RecipesPublic | undefined> =>
-    fakeRecipe({
+    fakeRecipeAllInfo({
       id,
       userId: authorId,
       author: pick(fakeUser(), usersKeysPublicWithoutId),

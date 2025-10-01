@@ -10,13 +10,18 @@ import { random } from '@tests/utils/random';
 import type { Insertable } from 'kysely';
 import type { CreateRecipeInput } from '@server/controllers/recipes/create';
 import type { AuthUser } from '../users';
-import type { RecipesPublic, RecipesPublicAllInfo } from '../recipes';
+import type {
+  RecipesPublicWithoutRating,
+  RecipesPublicAllInfo,
+} from '../recipes';
 
 const randomOAuthId = () => random.string({ length: 32 });
 
 const randomDuration = () => random.integer({ min: 1, max: 240 });
 
 const randomRecipeId = () => random.integer({ min: 1, max: 10_000_000 });
+
+const randomRating = () => random.integer({ min: 1, max: 5 });
 
 export const fakeUser = <T extends Partial<Insertable<Users>>>(
   overrides: T = {} as T
@@ -54,7 +59,9 @@ export const fakeRecipe = <T extends Partial<Insertable<Recipes>>>(
     updatedAt: new Date(),
   }) satisfies Insertable<Recipes>;
 
-export const fakeRecipeWithAuthor = <T extends Partial<RecipesPublic>>(
+export const fakeRecipeWithAuthor = <
+  T extends Partial<RecipesPublicWithoutRating>,
+>(
   overrides: T = {} as T
 ) => ({
   id: randomRecipeId(),
@@ -84,9 +91,11 @@ export const fakeRecipeAllInfo = <T extends Partial<RecipesPublicAllInfo>>(
   author: {
     email: random.email(),
     name: random.name(),
+    image: random.url(),
   },
   ingredients: [random.string()],
   tools: [random.string()],
+  rating: randomRating(),
   ...overrides,
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -136,7 +145,7 @@ export const fakeRating = <T extends Partial<Insertable<Ratings>>>(
 ) => ({
   recipeId: randomRecipeId(),
   userId: randomOAuthId(),
-  rating: random.integer({ min: 1, max: 5 }),
+  rating: randomRating(),
   ...overrides,
   createdAt: new Date(),
 });

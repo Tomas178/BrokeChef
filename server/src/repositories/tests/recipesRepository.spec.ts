@@ -9,7 +9,7 @@ import {
 import { pick } from 'lodash-es';
 import {
   recipesKeysPublic,
-  type RecipesPublic,
+  type RecipesPublicWithoutRating,
 } from '@server/entities/recipes';
 import {
   usersKeysPublicWithoutId,
@@ -208,7 +208,7 @@ describe('findAll', () => {
     const recipesNotFromRepo = (await selectAll(
       database,
       'recipes'
-    )) as RecipesPublic[];
+    )) as RecipesPublicWithoutRating[];
     recipesNotFromRepo.sort((a, b) => b.id - a.id);
 
     const recipesNotFromRepoWithAuthor = recipesNotFromRepo.map(recipe => ({
@@ -217,7 +217,6 @@ describe('findAll', () => {
         usersNotFromRepo.find(user => user.id === recipe.userId),
         usersKeysPublicWithoutId
       ),
-      rating: null,
     }));
 
     const recipesFromRepo = await repository.findAll(initialPage);

@@ -32,11 +32,15 @@ export const recipesKeysPublic = recipesKeysAll;
 export type RecipesPublic = Pick<
   Selectable<Recipes>,
   (typeof recipesKeysPublic)[number]
-> & { author: UsersPublicWithoutId; rating: number };
+> & { author: UsersPublicWithoutId; rating: Rating };
+
+export type RecipesPublicWithoutRating = Pick<
+  Selectable<Recipes>,
+  (typeof recipesKeysPublic)[number]
+> & { author: UsersPublicWithoutId };
 
 export type RecipesPublicAllInfo = Omit<RecipesPublic, 'steps'> & {
   ingredients: IngredientsName[];
   tools: ToolsName[];
   steps: string[];
-  rating: Rating;
 };

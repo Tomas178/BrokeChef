@@ -1,8 +1,9 @@
 import type { Database, DB, Recipes } from '@server/database';
 import {
   recipesKeysPublic,
-  type RecipesPublic,
+  type RecipesPublicWithoutRating,
   type RecipesPublicAllInfo,
+  type RecipesPublic,
 } from '@server/entities/recipes';
 import {
   usersKeysPublicWithoutId,
@@ -30,7 +31,10 @@ export interface RecipesRepository {
     { offset, limit }: Pagination
   ) => Promise<RecipesPublic[]>;
   totalSavedByUser: (userId: string) => Promise<number>;
-  findAll: ({ offset, limit }: Pagination) => Promise<RecipesPublic[]>;
+  findAll: ({
+    offset,
+    limit,
+  }: Pagination) => Promise<RecipesPublicWithoutRating[]>;
   totalCount: () => Promise<number>;
   isAuthor: (recipeId: number, userId: string) => Promise<boolean>;
   remove: (id: number) => Promise<RecipesPublic>;
@@ -122,7 +126,6 @@ export function recipesRepository(database: Database): RecipesRepository {
         .selectFrom(TABLE)
         .select(recipesKeysPublic)
         .select(withAuthor)
-        .select(withRatings)
         .orderBy('id', 'desc')
         .offset(offset)
         .limit(limit)
