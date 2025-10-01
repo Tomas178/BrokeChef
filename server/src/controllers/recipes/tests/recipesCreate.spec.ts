@@ -10,9 +10,7 @@ import { joinStepsToSingleString } from '@server/services/utils/joinStepsToSingl
 import UserNotFound from '@server/utils/errors/users/UserNotFound';
 import recipesRouter from '..';
 
-const { mockCreateRecipe } = vi.hoisted(() => ({
-  mockCreateRecipe: vi.fn(),
-}));
+const mockCreateRecipe = vi.fn();
 
 vi.mock('@server/services/recipesService', async importActual => {
   const actual: any = await importActual();
