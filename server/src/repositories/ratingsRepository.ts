@@ -2,19 +2,16 @@ import type { Database, Ratings } from '@server/database';
 import {
   ratingsKeysPublic,
   type RatingsPublic,
+  type Rating,
 } from '@server/entities/ratings';
-import type { RatingFromDB } from '@server/entities/shared';
 import type { Insertable } from 'kysely';
 
 const TABLE = 'ratings';
 
 export interface RatingsRepository {
-  getUserRatingForRecipe: (
-    recipeId: number,
-    userId: string
-  ) => Promise<RatingFromDB>;
-  getRecipeRating: (recipeId: number) => Promise<RatingFromDB>;
-  getRecipeRatingsBatch: (recipeIds: number[]) => Promise<RatingFromDB[]>;
+  getUserRatingForRecipe: (recipeId: number, userId: string) => Promise<Rating>;
+  getRecipeRating: (recipeId: number) => Promise<Rating>;
+  getRecipeRatingsBatch: (recipeIds: number[]) => Promise<Rating[]>;
   create: (recipeToRate: Insertable<Ratings>) => Promise<RatingsPublic>;
   update: (recipeToUpdate: Insertable<Ratings>) => Promise<RatingsPublic>;
   remove: (recipeId: number, userId: string) => Promise<RatingsPublic>;
@@ -39,6 +36,10 @@ export function ratingsRepository(database: Database): RatingsRepository {
     },
 
     async getRecipeRatingsBatch(recipeIds) {
+      if (recipeIds.length === 0) {
+        return [];
+      }
+
       const result = await database
         .selectFrom(TABLE)
         .select(['recipeId', ({ fn }) => fn.avg('rating').as('rating')])

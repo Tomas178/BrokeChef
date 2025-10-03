@@ -112,6 +112,10 @@ describe('getRecipeRatingsBatch', () => {
     });
   });
 
+  it('Should return an empty list when given empty list of recipeIds', async () => {
+    await expect(repository.getRecipeRatingsBatch([])).resolves.toEqual([]);
+  });
+
   it('Should return an array of 2 ratings that are correct when two recipeIds are given', async () => {
     const [ratedOne, ratedTwo] = await insertAll(database, 'ratings', [
       fakeRecipeToRateOne,
