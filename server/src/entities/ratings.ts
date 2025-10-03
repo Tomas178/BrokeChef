@@ -21,4 +21,4 @@ export type RatingsPublic = Pick<
   (typeof ratingsKeysPublic)[number]
 >;
 
-export type Rating = Pick<RatingsPublic, 'rating'>['rating'];
+export type Rating = Pick<RatingsPublic, 'rating'>['rating'] | undefined;
