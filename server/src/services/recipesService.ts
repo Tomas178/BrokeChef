@@ -4,6 +4,7 @@ import { recipesRepository as buildRecipesRepository } from '@server/repositorie
 import { ingredientsRepository as buildIngredientsRepository } from '@server/repositories/ingredientsRepository';
 import { recipesIngredientsRepository as buildRecipesIngredientsRepository } from '@server/repositories/recipesIngredientsRepository';
 import { toolsRepository as buildToolsRepository } from '@server/repositories/toolsRepository';
+import { ratingsService as buildRatingsService } from '@server/services/ratingsService';
 import { recipesToolsRepository as buildRecipesToolsRepository } from '@server/repositories/recipesToolsRepository';
 import { assertPostgresError } from '@server/utils/errors';
 import { PostgresError } from 'pg-error-enum';
@@ -23,6 +24,7 @@ import config from '@server/config';
 import logger from '@server/logger';
 import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import { signImages } from '@server/utils/signImages';
+import type { Pagination } from '@server/shared/pagination';
 import { joinStepsToSingleString } from './utils/joinStepsToSingleString';
 import { insertIngredients, insertTools } from './utils/inserts';
 
@@ -32,10 +34,12 @@ export interface RecipesService {
     userId: string
   ) => Promise<RecipesPublic | undefined>;
   findById: (recipeId: number) => Promise<RecipesPublicAllInfo | undefined>;
+  findAll: (pagination: Pagination) => Promise<RecipesPublic[]>;
 }
 
 export function recipesService(database: Database): RecipesService {
   const recipesRepository = buildRecipesRepository(database);
+  const ratingsService = buildRatingsService(database);
 
   return {
     async createRecipe(recipe, userId) {
@@ -128,6 +132,29 @@ export function recipesService(database: Database): RecipesService {
       recipe.imageUrl = await signImages(recipe.imageUrl);
 
       return recipe;
+    },
+
+    async findAll(pagination) {
+      const recipes = await recipesRepository.findAll(pagination);
+
+      const recipeIds = recipes.map(recipe => recipe.id);
+      const imageUrls = recipes.map(recipe => recipe.imageUrl);
+
+      const [ratings, signedUrls] = await Promise.all([
+        ratingsService.getRecipeRatingsBatch(recipeIds),
+        signImages(imageUrls),
+      ]);
+
+      for (const [index, recipe] of recipes.entries()) {
+        recipe.imageUrl = signedUrls[index];
+      }
+
+      const recipesWithRatings: RecipesPublic[] = recipes.map(recipe => ({
+        ...recipe,
+        rating: ratings[recipe.id],
+      }));
+
+      return recipesWithRatings;
     },
   };
 }
