@@ -4,7 +4,7 @@ import {
   fakeUser,
 } from '@server/entities/tests/fakes';
 import { createCallerFactory } from '@server/trpc';
-import { authContext, requestContext } from '@tests/utils/callers';
+import { authContext, requestContext } from '@tests/utils/context';
 import { createTestDatabase } from '@tests/utils/database';
 import { insertAll } from '@tests/utils/record';
 import { wrapInRollbacks } from '@tests/utils/transactions';

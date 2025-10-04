@@ -1,7 +1,7 @@
 import { createCallerFactory } from '@server/trpc';
 import { wrapInRollbacks } from '@tests/utils/transactions';
 import { createTestDatabase } from '@tests/utils/database';
-import { authContext, requestContext } from '@tests/utils/callers';
+import { authContext, requestContext } from '@tests/utils/context';
 import { insertAll } from '@tests/utils/record';
 import { fakeCreateRecipeData, fakeUser } from '@server/entities/tests/fakes';
 import { pick } from 'lodash-es';

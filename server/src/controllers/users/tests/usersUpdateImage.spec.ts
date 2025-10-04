@@ -3,7 +3,7 @@ import { wrapInRollbacks } from '@tests/utils/transactions';
 import { createTestDatabase } from '@tests/utils/database';
 import { insertAll } from '@tests/utils/record';
 import { fakeUser } from '@server/entities/tests/fakes';
-import { authContext, requestContext } from '@tests/utils/callers';
+import { authContext, requestContext } from '@tests/utils/context';
 import UserNotFound from '@server/utils/errors/users/UserNotFound';
 import usersRouter from '..';
 

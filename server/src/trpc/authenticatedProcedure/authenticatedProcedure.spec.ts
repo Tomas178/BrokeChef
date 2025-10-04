@@ -7,7 +7,7 @@ vi.mock('@server/auth', () => ({
 }));
 
 const { auth } = await import('@server/auth');
-import { authContext, requestContext } from '@tests/utils/callers';
+import { authContext, requestContext } from '@tests/utils/context';
 import { createCallerFactory, router } from '..';
 import { authenticatedProcedure } from '.';
 

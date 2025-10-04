@@ -9,7 +9,7 @@ import {
   fakeUser,
 } from '@server/entities/tests/fakes';
 import { joinStepsToArray } from '@server/repositories/utils/joinStepsToArray';
-import { authContext, requestContext } from '@tests/utils/callers';
+import { authContext, requestContext } from '@tests/utils/context';
 import recipesRouter from '..';
 
 const fakeImageUrl = 'https://signed-url.com/folder/image.png';

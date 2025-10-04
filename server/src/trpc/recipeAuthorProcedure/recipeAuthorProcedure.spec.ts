@@ -2,7 +2,7 @@ import { wrapInRollbacks } from '@tests/utils/transactions';
 import { createTestDatabase } from '@tests/utils/database';
 import { insertAll } from '@tests/utils/record';
 import { fakeRecipe, fakeUser } from '@server/entities/tests/fakes';
-import { authContext } from '@tests/utils/callers';
+import { authContext } from '@tests/utils/context';
 import { createCallerFactory, router } from '..';
 import { recipeAuthorProcedure } from '.';
 

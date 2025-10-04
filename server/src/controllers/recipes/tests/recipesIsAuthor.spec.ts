@@ -3,7 +3,7 @@ import { createTestDatabase } from '@tests/utils/database';
 import { insertAll } from '@tests/utils/record';
 import { fakeRecipe, fakeUser } from '@server/entities/tests/fakes';
 import { wrapInRollbacks } from '@tests/utils/transactions';
-import { authContext, requestContext } from '@tests/utils/callers';
+import { authContext, requestContext } from '@tests/utils/context';
 import recipesRouter from '..';
 
 const createCaller = createCallerFactory(recipesRouter);

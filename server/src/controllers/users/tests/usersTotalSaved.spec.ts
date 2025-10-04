@@ -7,7 +7,7 @@ import {
   fakeSavedRecipe,
   fakeUser,
 } from '@server/entities/tests/fakes';
-import { authContext, requestContext } from '@tests/utils/callers';
+import { authContext, requestContext } from '@tests/utils/context';
 import usersRouter from '..';
 
 const createCaller = createCallerFactory(usersRouter);

@@ -11,7 +11,7 @@ import { initialPage } from '@server/shared/pagination';
 import { pick } from 'lodash-es';
 import { usersKeysPublicWithoutId } from '@server/entities/users';
 import { recipesKeysPublic } from '@server/entities/recipes';
-import { authContext, requestContext } from '@tests/utils/callers';
+import { authContext, requestContext } from '@tests/utils/context';
 import usersRouter from '..';
 
 const fakeImageUrl = 'https://signed-url.com/folder/image.png';

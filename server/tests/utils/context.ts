@@ -1,6 +1,6 @@
 import { fakeAuthUser } from '@server/entities/tests/fakes';
 import { authUserSchema, type AuthUser } from '@server/entities/users';
-import type { Context, ContextMinimal } from '@server/trpc';
+import { type Context, type ContextMinimal } from '@server/trpc';
 import type { Request } from 'express';
 
 export const requestContext = (

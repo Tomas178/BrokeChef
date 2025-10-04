@@ -5,7 +5,7 @@ import { insertAll } from '@tests/utils/record';
 import { fakeUser } from '@server/entities/tests/fakes';
 import { pick } from 'lodash-es';
 import { usersKeysPublic } from '@server/entities/users';
-import { authContext, requestContext } from '@tests/utils/callers';
+import { authContext, requestContext } from '@tests/utils/context';
 import usersRouter from '..';
 
 const createCaller = createCallerFactory(usersRouter);
