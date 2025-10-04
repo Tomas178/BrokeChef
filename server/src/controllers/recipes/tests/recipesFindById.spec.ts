@@ -9,7 +9,7 @@ import {
   fakeUser,
 } from '@server/entities/tests/fakes';
 import { joinStepsToArray } from '@server/repositories/utils/joinStepsToArray';
-import { authContext, requestContext } from '@tests/utils/context';
+import { authContext, requestContext } from '@tests/utils/callers';
 import recipesRouter from '..';
 
 const fakeImageUrl = 'https://signed-url.com/folder/image.png';
@@ -69,10 +69,10 @@ await insertAll(database, 'recipesTools', [
   },
 ]);
 
-const { findById } = createCaller(authContext({ db: database }, user));
+const { findById } = createCaller(authContext({ database }, user));
 
 it('Should throw an error if user is not authenticated', async () => {
-  const { findById } = createCaller(requestContext({ db: database }));
+  const { findById } = createCaller(requestContext({ database }));
 
   await expect(findById(1)).rejects.toThrow(/unauthenticated/i);
 });

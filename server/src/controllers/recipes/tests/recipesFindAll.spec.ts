@@ -22,7 +22,7 @@ const database = await wrapInRollbacks(createTestDatabase());
 await clearTables(database, ['recipes']);
 const [user] = await insertAll(database, 'users', fakeUser());
 
-const { findAll } = createCaller({ db: database });
+const { findAll } = createCaller({ database });
 
 it('Should return an empty list if there are no recipes', async () => {
   const recipes = await findAll({});

@@ -9,7 +9,7 @@ import { ZodError } from 'zod';
 import { fromError } from 'zod-validation-error';
 
 export interface Context {
-  db: Database;
+  database: Database;
   req?: Request;
   res?: Response;
   repos?: Partial<Repositories>;
@@ -17,7 +17,7 @@ export interface Context {
   authUser?: AuthUser;
 }
 
-export type ContextMinimal = Pick<Context, 'db'>;
+export type ContextMinimal = Pick<Context, 'database'>;
 
 const t = initTRPC.context<Context>().create({
   transformer: superjson,

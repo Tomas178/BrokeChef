@@ -7,7 +7,7 @@ import {
   fakeSavedRecipe,
   fakeUser,
 } from '@server/entities/tests/fakes';
-import { authContext, requestContext } from '@tests/utils/context';
+import { authContext, requestContext } from '@tests/utils/callers';
 import usersRouter from '..';
 
 const createCaller = createCallerFactory(usersRouter);
@@ -15,10 +15,10 @@ const database = await wrapInRollbacks(createTestDatabase());
 
 const [user] = await insertAll(database, 'users', fakeUser());
 
-const { totalSaved } = createCaller(authContext({ db: database }, user));
+const { totalSaved } = createCaller(authContext({ database }, user));
 
 it('Should throw an error if user is not authenticated', async () => {
-  const { totalSaved } = createCaller(requestContext({ db: database }));
+  const { totalSaved } = createCaller(requestContext({ database }));
 
   await expect(totalSaved()).rejects.toThrow(/unauthenticated/i);
 });

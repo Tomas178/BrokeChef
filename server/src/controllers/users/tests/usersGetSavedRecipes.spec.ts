@@ -4,7 +4,7 @@ import {
   fakeUser,
 } from '@server/entities/tests/fakes';
 import { createCallerFactory } from '@server/trpc';
-import { authContext, requestContext } from '@tests/utils/context';
+import { authContext, requestContext } from '@tests/utils/callers';
 import { createTestDatabase } from '@tests/utils/database';
 import { insertAll } from '@tests/utils/record';
 import { wrapInRollbacks } from '@tests/utils/transactions';
@@ -39,12 +39,10 @@ const [recipeOne, recipeTwo] = await insertAll(database, 'recipes', [
   fakeRecipe({ userId: userCreator.id }),
 ]);
 
-const { getSavedRecipes } = createCaller(
-  authContext({ db: database }, userSaver)
-);
+const { getSavedRecipes } = createCaller(authContext({ database }, userSaver));
 
 it('Should throw an error if user is not authenticated', async () => {
-  const { getSavedRecipes } = createCaller(requestContext({ db: database }));
+  const { getSavedRecipes } = createCaller(requestContext({ database }));
 
   await expect(getSavedRecipes({})).rejects.toThrow(/unauthenticated/i);
 });

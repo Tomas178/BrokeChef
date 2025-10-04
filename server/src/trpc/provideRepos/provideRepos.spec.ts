@@ -20,7 +20,7 @@ afterEach(() => {
 
 it('provides repos', async () => {
   const context = {
-    db: database,
+    database,
   };
 
   const caller = createCallerFactory(routes);
@@ -32,7 +32,7 @@ it('provides repos', async () => {
 
 it('skips providing repos if they are already in context', async () => {
   const context = {
-    db: database,
+    database,
     repos: {
       recipesRepository: {},
     },

@@ -29,7 +29,7 @@ export default function provideServices<TKeys extends ServicesKeys>(
     const servicesWanted = Object.fromEntries(
       servicesWantedTuples.map(([key, serviceFactory]) => [
         key,
-        servicesAlreadyProvided[key] || serviceFactory(ctx.db),
+        servicesAlreadyProvided[key] || serviceFactory(ctx.database),
       ])
     ) as Pick<Services, TKeys>;
 

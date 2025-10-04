@@ -11,7 +11,7 @@ import { initialPage } from '@server/shared/pagination';
 import { pick } from 'lodash-es';
 import { usersKeysPublicWithoutId } from '@server/entities/users';
 import { recipesKeysPublic } from '@server/entities/recipes';
-import { authContext, requestContext } from '@tests/utils/context';
+import { authContext, requestContext } from '@tests/utils/callers';
 import usersRouter from '..';
 
 const fakeImageUrl = 'https://signed-url.com/folder/image.png';
@@ -30,7 +30,7 @@ const database = await wrapInRollbacks(createTestDatabase());
 
 const [user] = await insertAll(database, 'users', fakeUser());
 
-const { getRecipes } = createCaller(authContext({ db: database }, user));
+const { getRecipes } = createCaller(authContext({ database }, user));
 
 const [createdRecipeOne, createdRecipeTwo] = await insertAll(
   database,
@@ -39,7 +39,7 @@ const [createdRecipeOne, createdRecipeTwo] = await insertAll(
 );
 
 it('Should throw an error if user is not authenticated', async () => {
-  const { getRecipes } = createCaller(requestContext({ db: database }));
+  const { getRecipes } = createCaller(requestContext({ database }));
 
   await expect(getRecipes({})).rejects.toThrow(/unauthenticated/i);
 });

@@ -21,7 +21,7 @@ import { uploadImage } from './utils/AWSS3Client/uploadImage';
 import { s3Client } from './utils/AWSS3Client/client';
 import { AllowedMimeType } from './enums/AllowedMimetype';
 
-export default function createApp(db: Database) {
+export default function createApp(database: Database) {
   const app = express();
 
   app.use(
@@ -90,7 +90,7 @@ export default function createApp(db: Database) {
     createExpressMiddleware({
       createContext({ req, res }: CreateExpressContextOptions): Context {
         return {
-          db,
+          database,
           req,
           res,
         };

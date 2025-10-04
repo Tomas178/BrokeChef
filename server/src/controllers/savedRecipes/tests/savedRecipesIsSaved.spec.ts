@@ -1,7 +1,7 @@
 import { createCallerFactory } from '@server/trpc';
 import { wrapInRollbacks } from '@tests/utils/transactions';
 import { createTestDatabase } from '@tests/utils/database';
-import { authContext, requestContext } from '@tests/utils/context';
+import { authContext, requestContext } from '@tests/utils/callers';
 import { insertAll } from '@tests/utils/record';
 import {
   fakeRecipe,
@@ -25,13 +25,13 @@ const [recipe] = await insertAll(
 );
 
 it('Should throw an error if user is not authenticated', async () => {
-  const { isSaved } = createCaller(requestContext({ db: database }));
+  const { isSaved } = createCaller(requestContext({ database }));
 
   await expect(isSaved(recipe.id)).rejects.toThrow(/unauthenticated/i);
 });
 
 it('Should return false if user has not saved the recipe', async () => {
-  const { isSaved } = createCaller(authContext({ db: database }, userNotSaved));
+  const { isSaved } = createCaller(authContext({ database }, userNotSaved));
 
   await expect(isSaved(recipe.id)).resolves.toBeFalsy();
 });
@@ -41,7 +41,7 @@ it('Should return true if user has saved the recipe', async () => {
     fakeSavedRecipe({ userId: userSaved.id, recipeId: recipe.id }),
   ]);
 
-  const { isSaved } = createCaller(authContext({ db: database }, userSaved));
+  const { isSaved } = createCaller(authContext({ database }, userSaved));
 
   await expect(isSaved(savedRecipes.recipeId)).resolves.toBeTruthy();
 });

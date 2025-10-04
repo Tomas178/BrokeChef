@@ -3,7 +3,7 @@ import { wrapInRollbacks } from '@tests/utils/transactions';
 import { createTestDatabase } from '@tests/utils/database';
 import { insertAll } from '@tests/utils/record';
 import { fakeRecipe, fakeUser } from '@server/entities/tests/fakes';
-import { authContext, requestContext } from '@tests/utils/context';
+import { authContext, requestContext } from '@tests/utils/callers';
 import { pick } from 'lodash-es';
 import { recipesKeysPublic } from '@server/entities/recipes';
 import { usersKeysPublicWithoutId } from '@server/entities/users';
@@ -25,10 +25,10 @@ const database = await wrapInRollbacks(createTestDatabase());
 
 const [user] = await insertAll(database, 'users', fakeUser());
 
-const { getCreatedRecipes } = createCaller(authContext({ db: database }, user));
+const { getCreatedRecipes } = createCaller(authContext({ database }, user));
 
 it('Should throw an error if user is not authenticated', async () => {
-  const { getCreatedRecipes } = createCaller(requestContext({ db: database }));
+  const { getCreatedRecipes } = createCaller(requestContext({ database }));
 
   await expect(getCreatedRecipes({})).rejects.toThrow(/unauthenticated/i);
 });

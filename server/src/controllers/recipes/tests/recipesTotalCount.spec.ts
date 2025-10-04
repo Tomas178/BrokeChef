@@ -13,7 +13,7 @@ await clearTables(database, ['users', 'recipes']);
 const [user] = await insertAll(database, 'users', fakeUser());
 const userId = user.id;
 
-const { totalCount } = createCaller({ db: database });
+const { totalCount } = createCaller({ database });
 
 it('Should return zero when there are no records in database', async () => {
   await expect(totalCount()).resolves.toBe(0);

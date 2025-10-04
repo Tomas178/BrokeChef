@@ -32,7 +32,7 @@ export default function provideRepos<TKeys extends RepositoriesKeys>(
         // Accept a repo injected through tests or create a new instance.
         // This is not optimized for performance to create new instances,
         // but it's fine for demonstration purposes.
-        reposAlreadyProvided[key] || repoFactory(ctx.db),
+        reposAlreadyProvided[key] || repoFactory(ctx.database),
       ])
     ) as Pick<Repositories, TKeys>;
 

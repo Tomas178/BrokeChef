@@ -2,7 +2,7 @@ import { wrapInRollbacks } from '@tests/utils/transactions';
 import { createTestDatabase } from '@tests/utils/database';
 import { insertAll } from '@tests/utils/record';
 import { fakeRecipe, fakeUser } from '@server/entities/tests/fakes';
-import { authContext } from '@tests/utils/context';
+import { authContext } from '@tests/utils/callers';
 import { createCallerFactory, router } from '..';
 import { recipeAuthorProcedure } from '.';
 
@@ -23,7 +23,7 @@ const [recipeOne, recipeTwo] = await insertAll(database, 'recipes', [
 ]);
 
 const createCaller = createCallerFactory(routes);
-const authenticated = createCaller(authContext({ db: database }, userOne));
+const authenticated = createCaller(authContext({ database }, userOne));
 
 it('Should pass ir recipe belongs to the user', async () => {
   const response = await authenticated.testCall(recipeOne.id);

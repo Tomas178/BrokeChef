@@ -2,7 +2,7 @@ import { createCallerFactory } from '@server/trpc';
 import { wrapInRollbacks } from '@tests/utils/transactions';
 import { createTestDatabase } from '@tests/utils/database';
 import { insertAll } from '@tests/utils/record';
-import { authContext, requestContext } from '@tests/utils/context';
+import { authContext, requestContext } from '@tests/utils/callers';
 import {
   fakeRecipe,
   fakeSavedRecipe,
@@ -31,10 +31,10 @@ const [savedRecipe] = await insertAll(
   fakeSavedRecipe({ userId: userOneSaver.id, recipeId: recipe.id })
 );
 
-const { unsave } = createCaller(authContext({ db: database }, userOneSaver));
+const { unsave } = createCaller(authContext({ database }, userOneSaver));
 
 it('Should throw an error if user is not authenticated', async () => {
-  const { unsave } = createCaller(requestContext({ db: database }));
+  const { unsave } = createCaller(requestContext({ database }));
 
   await expect(unsave(1)).rejects.toThrow(/unauthenticated/i);
 });
@@ -45,7 +45,7 @@ it('Should throw an error if recipe is not found', async () => {
 });
 
 it('Should throw an error if author is saved recipe record is not found', async () => {
-  const { unsave } = createCaller(authContext({ db: database }, userTwoSaver));
+  const { unsave } = createCaller(authContext({ database }, userTwoSaver));
 
   await expect(unsave(recipe.id)).rejects.toThrow(/not found/i);
 });

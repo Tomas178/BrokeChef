@@ -1,23 +1,27 @@
 import { createCallerFactory } from '@server/trpc';
 import { wrapInRollbacks } from '@tests/utils/transactions';
 import { createTestDatabase } from '@tests/utils/database';
-import { authContext, requestContext } from '@tests/utils/context';
+import { authContext, requestContext } from '@tests/utils/callers';
 import { insertAll } from '@tests/utils/record';
 import { fakeCreateRecipeData, fakeUser } from '@server/entities/tests/fakes';
 import { pick } from 'lodash-es';
 import { recipesKeysPublic } from '@server/entities/recipes';
 import { joinStepsToSingleString } from '@server/services/utils/joinStepsToSingleString';
 import UserNotFound from '@server/utils/errors/users/UserNotFound';
+import type { Database } from '@server/database';
 import recipesRouter from '..';
 
 const mockCreateRecipe = vi.fn();
 
+// MOCK THIS LIKE I MOCK REPOSITORIES IN RATINGS SERVICE
+
 vi.mock('@server/services/recipesService', async importActual => {
-  const actual: any = await importActual();
+  const actual =
+    await importActual<typeof import('@server/services/recipesService')>();
 
   return {
     ...actual,
-    recipesService: (database_: any) => ({
+    recipesService: (database_: Database) => ({
       ...actual.recipesService(database_),
       createRecipe: mockCreateRecipe,
     }),
@@ -29,10 +33,10 @@ const database = await wrapInRollbacks(createTestDatabase());
 
 const [user] = await insertAll(database, 'users', fakeUser());
 
-beforeEach(() => mockCreateRecipe.mockClear());
+beforeEach(() => mockCreateRecipe.mockReset());
 
 it('Should throw an error if user is not authenticated', async () => {
-  const { create } = createCaller(requestContext({ db: database }));
+  const { create } = createCaller(requestContext({ database }));
 
   await expect(create(fakeCreateRecipeData())).rejects.toThrow(
     /unauthenticated/i
@@ -49,9 +53,12 @@ it('Should create a persisted recipe', async () => {
     steps: stepsInASingleString,
   });
 
-  const { create } = createCaller(authContext({ db: database }, user));
+  const { create } = createCaller(authContext({ database }, user));
 
   const recipeCreated = await create(createRecipeData);
+
+  expect(mockCreateRecipe).toHaveBeenCalledWith(createRecipeData, user.id);
+  expect(mockCreateRecipe).toHaveBeenCalledTimes(1);
 
   expect(recipeCreated).toMatchObject({
     ...pick(createRecipeData, recipesKeysPublic),
@@ -64,7 +71,7 @@ it('Should throw an error on failure to create recipe when userId is not found',
 
   const { create } = createCaller(
     authContext(
-      { db: database },
+      { database },
       { ...user, id: user.id.replaceAll(/[a-z]/gi, 'a') }
     )
   );
@@ -79,7 +86,7 @@ it('Should throw a general error when insertion to database fails', async () => 
 
   const { create } = createCaller(
     authContext(
-      { db: database },
+      { database },
       { ...user, id: user.id.replaceAll(/[a-z]/gi, 'a') }
     )
   );
