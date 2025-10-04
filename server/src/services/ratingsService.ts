@@ -1,5 +1,5 @@
 import type { Database } from '@server/database';
-import type { RatingsPublic } from '@server/entities/ratings';
+import type { RatingsPublic, Rating } from '@server/entities/ratings';
 import { ratingsRepository as buildRatingsRepository } from '@server/repositories/ratingsRepository';
 import { recipesRepository as buildRecipesRepository } from '@server/repositories/recipesRepository';
 import { assertPostgresError } from '@server/utils/errors';
@@ -8,7 +8,6 @@ import RatingNotFound from '@server/utils/errors/recipes/RatingNotFound';
 import RecipeAlreadyRated from '@server/utils/errors/recipes/RecipeAlreadyRated';
 import { NoResultError } from 'kysely';
 import { PostgresError } from 'pg-error-enum';
-import type { RatingFromDB } from '@server/entities/shared';
 import {
   validateRecipeAndUserIsNotAuthor,
   validateRecipeExists,
@@ -21,12 +20,10 @@ export interface RatingInput {
 }
 
 interface RatingsService {
-  getUserRatingForRecipe: (
-    recipeId: number,
-    userId: string
-  ) => Promise<RatingFromDB>;
-  getRecipeRating: (recipeId: number) => Promise<RatingFromDB>;
-  getRecipeRatingsBatch: (recipeIds: number[]) => Promise<RatingFromDB[]>;
+  getUserRatingForRecipe: (recipeId: number, userId: string) => Promise<Rating>;
+  getRecipeRatingsBatch: (
+    recipeIds: number[]
+  ) => Promise<Record<number, Rating>>;
   create: (recipeToRate: RatingInput) => Promise<RatingsPublic | undefined>;
   update: (recipeToUpdate: RatingInput) => Promise<RatingsPublic | undefined>;
   remove: (
@@ -47,14 +44,6 @@ export function ratingsService(database: Database): RatingsService {
         recipeId,
         userId
       );
-
-      return rating;
-    },
-
-    async getRecipeRating(recipeId) {
-      await validateRecipeExists(recipesRepository, recipeId);
-
-      const rating = await ratingsRepository.getRecipeRating(recipeId);
 
       return rating;
     },

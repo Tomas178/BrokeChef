@@ -3,7 +3,6 @@ import { ratingsService as buildRatingsService } from '@server/services/ratingsS
 import type { Database } from '@server/database';
 import type { RatingsRepository } from '@server/repositories/ratingsRepository';
 import { NoResultError } from 'kysely';
-import type { RecipesRepository } from '@server/repositories/recipesRepository';
 import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import CannotRateOwnRecipe from '@server/utils/errors/recipes/CannotRateOwnRecipe';
 import { PostgresError } from 'pg-error-enum';
@@ -21,10 +20,6 @@ vi.mock('@server/services/utils/recipeValidations', () => ({
 const mockRatingsRepoGetUserRatingForRecipe: Mock<
   RatingsRepository['getUserRatingForRecipe']
 > = vi.fn(async () => fakeSingleRating);
-
-const mockRatingsRepoGetRecipeRating: Mock<
-  RatingsRepository['getRecipeRating']
-> = vi.fn(async () => fakeAverageRating);
 
 const mockRatingsRepoGetRecipeRatingsBatch: Mock<
   RatingsRepository['getRecipeRatingsBatch']
@@ -58,21 +53,14 @@ const mockRatingsRepoRemove: Mock<RatingsRepository['remove']> = vi.fn(
 
 const mockRatingsRepository = {
   getUserRatingForRecipe: mockRatingsRepoGetUserRatingForRecipe,
-  getRecipeRating: mockRatingsRepoGetRecipeRating,
   getRecipeRatingsBatch: mockRatingsRepoGetRecipeRatingsBatch,
   create: mockRatingsRepoCreate,
   update: mockRatingsRepoUpdate,
   remove: mockRatingsRepoRemove,
 } as RatingsRepository;
 
-const mockRecipesRepository = {} as RecipesRepository;
-
 vi.mock('@server/repositories/ratingsRepository', () => ({
   ratingsRepository: () => mockRatingsRepository,
-}));
-
-vi.mock('@server/repositories/recipesRepository', () => ({
-  recipesRepository: () => mockRecipesRepository,
 }));
 
 const mockDatabase = {} as Database;
@@ -115,30 +103,6 @@ describe('getUserRatingForRecipe', () => {
     await expect(
       ratingsService.getUserRatingForRecipe(recipeId, authorId)
     ).resolves.toBe(fakeSingleRating);
-  });
-});
-
-describe('getRecipeRating', async () => {
-  it('Should throw an error when recipe does not exist', async () => {
-    mockValidateRecipeExists.mockRejectedValueOnce(new RecipeNotFound());
-
-    await expect(ratingsService.getRecipeRating(recipeId)).rejects.toThrow(
-      /not found/i
-    );
-  });
-
-  it('Should return undefined if no ratings were found for the given recipe', async () => {
-    mockRatingsRepoGetRecipeRating.mockResolvedValueOnce(undefined);
-
-    await expect(
-      ratingsService.getRecipeRating(recipeId)
-    ).resolves.toBeUndefined();
-  });
-
-  it('Should return an average rating for the given recipe when ratings are present', async () => {
-    await expect(ratingsService.getRecipeRating(recipeId)).resolves.toBe(
-      fakeAverageRating
-    );
   });
 });
 
