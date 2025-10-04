@@ -53,48 +53,6 @@ describe('getUserRatingForRecipe', () => {
   });
 });
 
-describe('getRecipeRating', () => {
-  it('Should return the average rating for recipe when single rating exists', async () => {
-    const [insertedRating] = await insertAll(
-      database,
-      'ratings',
-      fakeRecipeToRateOne
-    );
-
-    const rating = await repository.getRecipeRating(insertedRating.recipeId);
-
-    expect(rating).toEqual(insertedRating.rating);
-  });
-
-  it('Should return the average rating for recipe when multiple ratings exist', async () => {
-    const fakeRecipeToRateTwo = fakeRating({
-      recipeId: recipeOne.id,
-      userId: userTwo.id,
-    });
-
-    const [insertedRatingOne, insertedRatingTwo] = await insertAll(
-      database,
-      'ratings',
-      [fakeRecipeToRateOne, fakeRecipeToRateTwo]
-    );
-
-    const averageRating =
-      (insertedRatingOne.rating + insertedRatingTwo.rating) / 2;
-
-    const databaseRating = await repository.getRecipeRating(
-      insertedRatingOne.recipeId
-    );
-
-    expect(databaseRating).toEqual(averageRating);
-  });
-
-  it('Should return undefined if no ratings exist for recipe', async () => {
-    await expect(
-      repository.getRecipeRating(nonExistantRecipeId)
-    ).resolves.toBeUndefined();
-  });
-});
-
 describe('getRecipeRatingsBatch', () => {
   let recipeForBatchOne: { id: number };
   let fakeRecipeToRateTwo: ReturnType<typeof fakeRating>;
@@ -113,7 +71,7 @@ describe('getRecipeRatingsBatch', () => {
   });
 
   it('Should return an empty list when given empty list of recipeIds', async () => {
-    await expect(repository.getRecipeRatingsBatch([])).resolves.toEqual([]);
+    await expect(repository.getRecipeRatingsBatch([])).resolves.toEqual({});
   });
 
   it('Should return an array of 2 ratings that are correct when two recipeIds are given', async () => {
@@ -124,11 +82,10 @@ describe('getRecipeRatingsBatch', () => {
 
     const recipeIds = [ratedOne.recipeId, ratedTwo.recipeId];
 
-    const [ratingFromDatabaseOne, ratingFromDatabaseTwo] =
-      await repository.getRecipeRatingsBatch(recipeIds);
+    const ratings = await repository.getRecipeRatingsBatch(recipeIds);
 
-    expect(ratingFromDatabaseOne).toEqual(ratedOne.rating);
-    expect(ratingFromDatabaseTwo).toEqual(ratedTwo.rating);
+    expect(ratings[ratedOne.recipeId]).toEqual(ratedOne.rating);
+    expect(ratings[ratedTwo.recipeId]).toEqual(ratedTwo.rating);
   });
 
   it('Should return an array of 2 ratings and undefined when only two recipes rating is found and in the same order as IDs were given', async () => {
@@ -149,12 +106,11 @@ describe('getRecipeRatingsBatch', () => {
       ratedTwo.recipeId,
     ];
 
-    const [realRatingOne, ratingUndefined, realRatingTwo] =
-      await repository.getRecipeRatingsBatch(recipeIds);
+    const ratings = await repository.getRecipeRatingsBatch(recipeIds);
 
-    expect(realRatingOne).toBe(ratedOne.rating);
-    expect(ratingUndefined).toBeUndefined();
-    expect(realRatingTwo).toBe(ratedTwo.rating);
+    expect(ratings[ratedOne.recipeId]).toBe(ratedOne.rating);
+    expect(ratings[recipeForBatchTwo.id]).toBeUndefined();
+    expect(ratings[ratedTwo.recipeId]).toBe(ratedTwo.rating);
   });
 
   it('Should return an array of rating and undefined when only one recipe rating is found', async () => {
@@ -166,11 +122,10 @@ describe('getRecipeRatingsBatch', () => {
 
     const recipeIds = [ratedOne.recipeId, fakeRecipeToRateTwo.recipeId];
 
-    const [realRating, ratingUndefined] =
-      await repository.getRecipeRatingsBatch(recipeIds);
+    const ratings = await repository.getRecipeRatingsBatch(recipeIds);
 
-    expect(realRating).toBe(ratedOne.rating);
-    expect(ratingUndefined).toBeUndefined();
+    expect(ratings[ratedOne.recipeId]).toBe(ratedOne.rating);
+    expect(ratings[fakeRecipeToRateTwo.recipeId]).toBeUndefined();
   });
 });
 

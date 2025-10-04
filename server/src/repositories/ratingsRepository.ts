@@ -10,8 +10,9 @@ const TABLE = 'ratings';
 
 export interface RatingsRepository {
   getUserRatingForRecipe: (recipeId: number, userId: string) => Promise<Rating>;
-  getRecipeRating: (recipeId: number) => Promise<Rating>;
-  getRecipeRatingsBatch: (recipeIds: number[]) => Promise<Rating[]>;
+  getRecipeRatingsBatch: (
+    recipeIds: number[]
+  ) => Promise<Record<number, Rating>>;
   create: (recipeToRate: Insertable<Ratings>) => Promise<RatingsPublic>;
   update: (recipeToUpdate: Insertable<Ratings>) => Promise<RatingsPublic>;
   remove: (recipeId: number, userId: string) => Promise<RatingsPublic>;
@@ -30,14 +31,9 @@ export function ratingsRepository(database: Database): RatingsRepository {
       return rating?.rating;
     },
 
-    async getRecipeRating(recipeId) {
-      const [rating] = await this.getRecipeRatingsBatch([recipeId]);
-      return rating;
-    },
-
     async getRecipeRatingsBatch(recipeIds) {
       if (recipeIds.length === 0) {
-        return [];
+        return {};
       }
 
       const result = await database
@@ -47,11 +43,9 @@ export function ratingsRepository(database: Database): RatingsRepository {
         .groupBy('recipeId')
         .execute();
 
-      const ratingsMap = new Map(
+      return Object.fromEntries(
         result.map(r => [r.recipeId, Number(r.rating)])
       );
-
-      return recipeIds.map(id => ratingsMap.get(id));
     },
 
     async create(recipeToRate) {
