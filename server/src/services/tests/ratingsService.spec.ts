@@ -156,12 +156,9 @@ describe('update', () => {
   });
 
   it('Should update the rating', async () => {
-    const updatedRecipe = await ratingsService.update(fakeRecipeToUpdate);
+    const updatedRating = await ratingsService.update(fakeRecipeToUpdate);
 
-    expect(updatedRecipe).toEqual({
-      ...fakeRecipeToUpdate,
-      createdAt: expect.any(Date),
-    });
+    expect(updatedRating).toBe(fakeRecipeToUpdate.rating);
   });
 });
 

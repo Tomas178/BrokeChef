@@ -22,7 +22,7 @@ export interface RatingInput {
 interface RatingsService {
   getUserRatingForRecipe: (recipeId: number, userId: string) => Promise<Rating>;
   create: (recipeToRate: RatingInput) => Promise<RatingsPublic | undefined>;
-  update: (recipeToUpdate: RatingInput) => Promise<RatingsPublic | undefined>;
+  update: (recipeToUpdate: RatingInput) => Promise<Rating | undefined>;
   remove: (
     userId: string,
     recipeId: number
@@ -71,7 +71,7 @@ export function ratingsService(database: Database): RatingsService {
 
       const updatedRating = await ratingsRepository.update(recipeToUpdate);
 
-      return updatedRating;
+      return updatedRating.rating;
     },
 
     async remove(userId, recipeId) {
