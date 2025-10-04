@@ -2,6 +2,7 @@ import { createTestDatabase } from '@tests/utils/database';
 import { wrapInRollbacks } from '@tests/utils/transactions';
 import { clearTables, insertAll, selectAll } from '@tests/utils/record';
 import {
+  fakeRating,
   fakeRecipe,
   fakeSavedRecipe,
   fakeUser,
@@ -23,7 +24,7 @@ const repository = recipesRepository(database);
 
 await clearTables(database, ['recipes', 'tools', 'ingredients']);
 
-const [userOne, userTwo, userThree] = await insertAll(database, 'users', [
+const [authorOne, authorTwo, userRater] = await insertAll(database, 'users', [
   fakeUser(),
   fakeUser(),
   fakeUser(),
@@ -31,10 +32,10 @@ const [userOne, userTwo, userThree] = await insertAll(database, 'users', [
 
 const defaultRecipes = await insertAll(database, 'recipes', [
   fakeRecipe({
-    userId: userOne.id,
+    userId: authorOne.id,
   }),
   fakeRecipe({
-    userId: userTwo.id,
+    userId: authorTwo.id,
   }),
 ]);
 
@@ -42,7 +43,7 @@ const [recipeOne, recipeTwo] = defaultRecipes;
 
 const fakeRecipeDefault = (recipe: Parameters<typeof fakeRecipe>[0] = {}) =>
   fakeRecipe({
-    userId: userOne.id,
+    userId: authorOne.id,
     ...recipe,
   });
 
@@ -55,7 +56,7 @@ describe('create', () => {
     expect(createdRecipe).toEqual({
       id: expect.any(Number),
       ...pick(recipe, recipesKeysPublic),
-      author: pick(userOne, usersKeysPublicWithoutId),
+      author: pick(authorOne, usersKeysPublicWithoutId),
       rating: null,
     });
   });
@@ -75,18 +76,35 @@ describe('findById', () => {
 
     expect(recipeById).toEqual({
       ...pick(recipeById, recipesKeysPublic),
-      author: pick(userOne, usersKeysPublicWithoutId),
+      author: pick(authorOne, usersKeysPublicWithoutId),
       ingredients: [],
       tools: [],
       rating: null,
     });
+  });
+
+  it('Should return a recipe with an average rating', async () => {
+    const [userRaterTwo] = await insertAll(database, 'users', fakeUser());
+
+    const recipeId = recipeOne.id;
+    const [ratingOne, ratingTwo] = await insertAll(database, 'ratings', [
+      fakeRating({ userId: userRater.id, recipeId }),
+      fakeRating({ userId: userRaterTwo.id, recipeId }),
+    ]);
+
+    const recipeById = await repository.findById(recipeId);
+
+    expect(recipeById).toHaveProperty(
+      'rating',
+      (ratingOne.rating + ratingTwo.rating) / 2
+    );
   });
 });
 
 describe('findCreatedByUser', () => {
   it('Should return an empty array when there is no recipe created by user', async () => {
     const recipes = await repository.findCreatedByUser(
-      userThree.id,
+      userRater.id,
       initialPage
     );
 
@@ -97,34 +115,57 @@ describe('findCreatedByUser', () => {
     const [createdRecipes] = await insertAll(
       database,
       'recipes',
-      fakeRecipe({ userId: userThree.id })
+      fakeRecipe({ userId: userRater.id })
     );
 
     const [createdRecipesByUser] = await repository.findCreatedByUser(
-      userThree.id,
+      userRater.id,
       initialPage
     );
 
     expect(createdRecipesByUser).toEqual({
       ...pick(createdRecipes, recipesKeysPublic),
-      author: pick(userThree, usersKeysPublicWithoutId),
+      author: pick(userRater, usersKeysPublicWithoutId),
       rating: null,
     });
+  });
+
+  it('Should return a recipe that user has created with a correct rating', async () => {
+    const [createdRecipes] = await insertAll(
+      database,
+      'recipes',
+      fakeRecipe({ userId: userRater.id })
+    );
+
+    const [ratingOne, ratingTwo] = await insertAll(database, 'ratings', [
+      fakeRating({ userId: authorOne.id, recipeId: createdRecipes.id }),
+      fakeRating({ userId: authorTwo.id, recipeId: createdRecipes.id }),
+    ]);
+
+    const [createdRecipesByUser] = await repository.findCreatedByUser(
+      userRater.id,
+      initialPage
+    );
+
+    expect(createdRecipesByUser).toHaveProperty(
+      'rating',
+      (ratingOne.rating + ratingTwo.rating) / 2
+    );
   });
 });
 
 describe('totalCreatedByUser', () => {
   it('Should return 0', async () => {
-    await expect(repository.totalCreatedByUser(userThree.id)).resolves.toBe(0);
+    await expect(repository.totalCreatedByUser(userRater.id)).resolves.toBe(0);
   });
 
   it('Should return the amount that was created', async () => {
     const created = await insertAll(database, 'recipes', [
-      fakeRecipe({ userId: userThree.id }),
-      fakeRecipe({ userId: userThree.id }),
+      fakeRecipe({ userId: userRater.id }),
+      fakeRecipe({ userId: userRater.id }),
     ]);
 
-    await expect(repository.totalCreatedByUser(userThree.id)).resolves.toBe(
+    await expect(repository.totalCreatedByUser(userRater.id)).resolves.toBe(
       created.length
     );
   });
@@ -133,7 +174,7 @@ describe('totalCreatedByUser', () => {
 describe('findSavedByUser', () => {
   it('Should return an empty array when there is no recipe saved by user', async () => {
     const savedRecipes = await repository.findSavedByUser(
-      userThree.id,
+      userRater.id,
       initialPage
     );
 
@@ -144,7 +185,7 @@ describe('findSavedByUser', () => {
     const [savedRecipes] = await insertAll(
       database,
       'savedRecipes',
-      fakeSavedRecipe({ userId: userOne.id, recipeId: recipeOne.id })
+      fakeSavedRecipe({ userId: authorOne.id, recipeId: recipeOne.id })
     );
 
     const [savedRecipesByUser] = await repository.findSavedByUser(
@@ -154,24 +195,47 @@ describe('findSavedByUser', () => {
 
     expect(savedRecipesByUser).toEqual({
       ...pick(recipeOne, recipesKeysPublic),
-      author: pick(userOne, usersKeysPublicWithoutId),
+      author: pick(authorOne, usersKeysPublicWithoutId),
       rating: null,
     });
+  });
+
+  it('Should return a recipe that user has saved created with a correct rating', async () => {
+    const [savedRecipes] = await insertAll(
+      database,
+      'savedRecipes',
+      fakeSavedRecipe({ userId: authorOne.id, recipeId: recipeOne.id })
+    );
+
+    const [ratingOne, ratingTwo] = await insertAll(database, 'ratings', [
+      fakeRating({ userId: authorOne.id, recipeId: savedRecipes.recipeId }),
+      fakeRating({ userId: authorTwo.id, recipeId: savedRecipes.recipeId }),
+    ]);
+
+    const [savedRecipesByUser] = await repository.findSavedByUser(
+      savedRecipes.userId,
+      initialPage
+    );
+
+    expect(savedRecipesByUser).toHaveProperty(
+      'rating',
+      (ratingOne.rating + ratingTwo.rating) / 2
+    );
   });
 });
 
 describe('totalSavedByUser', () => {
   it('Should return 0', async () => {
-    await expect(repository.totalSavedByUser(userThree.id)).resolves.toBe(0);
+    await expect(repository.totalSavedByUser(userRater.id)).resolves.toBe(0);
   });
 
   it('Should return the amount that was saved', async () => {
     const saved = await insertAll(database, 'savedRecipes', [
-      fakeSavedRecipe({ recipeId: recipeOne.id, userId: userThree.id }),
-      fakeSavedRecipe({ recipeId: recipeTwo.id, userId: userThree.id }),
+      fakeSavedRecipe({ recipeId: recipeOne.id, userId: userRater.id }),
+      fakeSavedRecipe({ recipeId: recipeTwo.id, userId: userRater.id }),
     ]);
 
-    await expect(repository.totalSavedByUser(userThree.id)).resolves.toBe(
+    await expect(repository.totalSavedByUser(userRater.id)).resolves.toBe(
       saved.length
     );
   });
@@ -187,16 +251,16 @@ describe('findAll', () => {
   it('Should return 5 recipes ordered descendingly by ID', async () => {
     await insertAll(database, 'recipes', [
       fakeRecipe({
-        userId: userOne.id,
+        userId: authorOne.id,
       }),
       fakeRecipe({
-        userId: userOne.id,
+        userId: authorOne.id,
       }),
       fakeRecipe({
-        userId: userOne.id,
+        userId: authorOne.id,
       }),
       fakeRecipe({
-        userId: userOne.id,
+        userId: authorOne.id,
       }),
     ]);
 
@@ -234,26 +298,43 @@ describe('totalCount', () => {
 
 describe('isAuthor', () => {
   it('Should return true', async () => {
-    const isAuthor = await repository.isAuthor(recipeOne.id, userOne.id);
+    const isAuthor = await repository.isAuthor(recipeOne.id, authorOne.id);
 
     expect(isAuthor).toBeTruthy();
   });
 
   it('Should return false', async () => {
-    const isAuthor = await repository.isAuthor(recipeOne.id, userTwo.id);
+    const isAuthor = await repository.isAuthor(recipeOne.id, authorTwo.id);
 
     expect(isAuthor).toBeFalsy();
   });
 });
 
 describe('remove', () => {
-  it('Should remove a recipe', async () => {
+  it('Should remove a recipe with a rating null', async () => {
     const removedRecipe = await repository.remove(recipeOne.id);
 
     expect(removedRecipe).toEqual({
       ...pick(removedRecipe, recipesKeysPublic),
-      author: pick(userOne, usersKeysPublicWithoutId),
+      author: pick(authorOne, usersKeysPublicWithoutId),
       rating: null,
+    });
+  });
+
+  it('Should remove a recipe with correct rating', async () => {
+    const recipeId = recipeOne.id;
+
+    const [ratingOne, ratingTwo] = await insertAll(database, 'ratings', [
+      fakeRating({ userId: authorOne.id, recipeId }),
+      fakeRating({ userId: authorTwo.id, recipeId }),
+    ]);
+
+    const removedRecipe = await repository.remove(recipeId);
+
+    expect(removedRecipe).toEqual({
+      ...pick(removedRecipe, recipesKeysPublic),
+      author: pick(authorOne, usersKeysPublicWithoutId),
+      rating: (ratingOne.rating + ratingTwo.rating) / 2,
     });
   });
 

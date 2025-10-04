@@ -40,6 +40,15 @@ export interface RecipesRepository {
   remove: (id: number) => Promise<RecipesPublic>;
 }
 
+function normalizeRating<T extends { rating: number | string | null }>(
+  recipe: T
+): T {
+  return {
+    ...recipe,
+    rating: recipe.rating ? Number(recipe.rating) : recipe.rating,
+  };
+}
+
 export function recipesRepository(database: Database): RecipesRepository {
   return {
     async create(recipe) {
@@ -65,16 +74,16 @@ export function recipesRepository(database: Database): RecipesRepository {
 
       if (!recipe) return;
 
-      return {
+      return normalizeRating({
         ...recipe,
         steps: joinStepsToArray(recipe.steps),
         ingredients: recipe.ingredients ?? [],
         tools: recipe.tools ?? [],
-      };
+      });
     },
 
     async findCreatedByUser(userId, { offset, limit }) {
-      return database
+      const recipes = await database
         .selectFrom(TABLE)
         .select(recipesKeysPublic)
         .select(withAuthor)
@@ -84,6 +93,8 @@ export function recipesRepository(database: Database): RecipesRepository {
         .offset(offset)
         .limit(limit)
         .execute();
+
+      return recipes.map(recipe => normalizeRating(recipe));
     },
 
     async totalCreatedByUser(userId) {
@@ -97,7 +108,7 @@ export function recipesRepository(database: Database): RecipesRepository {
     },
 
     async findSavedByUser(userId, { offset, limit }) {
-      return database
+      const recipes = await database
         .selectFrom(TABLE)
         .innerJoin('savedRecipes', 'savedRecipes.recipeId', 'recipes.id')
         .select(prefixTable(TABLE, recipesKeysPublic))
@@ -108,6 +119,8 @@ export function recipesRepository(database: Database): RecipesRepository {
         .offset(offset)
         .limit(limit)
         .execute();
+
+      return recipes.map(recipe => normalizeRating(recipe));
     },
 
     async totalSavedByUser(userId) {
@@ -153,13 +166,15 @@ export function recipesRepository(database: Database): RecipesRepository {
     },
 
     async remove(id) {
-      return database
+      const recipe = await database
         .deleteFrom(TABLE)
         .where('id', '=', id)
         .returning(recipesKeysPublic)
         .returning(withAuthor)
         .returning(withRatings)
         .executeTakeFirstOrThrow(() => new RecipeNotFound());
+
+      return normalizeRating(recipe);
     },
   };
 }
