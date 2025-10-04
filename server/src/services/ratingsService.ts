@@ -21,9 +21,6 @@ export interface RatingInput {
 
 interface RatingsService {
   getUserRatingForRecipe: (recipeId: number, userId: string) => Promise<Rating>;
-  getRecipeRatingsBatch: (
-    recipeIds: number[]
-  ) => Promise<Record<number, Rating>>;
   create: (recipeToRate: RatingInput) => Promise<RatingsPublic | undefined>;
   update: (recipeToUpdate: RatingInput) => Promise<RatingsPublic | undefined>;
   remove: (
@@ -46,16 +43,6 @@ export function ratingsService(database: Database): RatingsService {
       );
 
       return rating;
-    },
-
-    async getRecipeRatingsBatch(recipeIds) {
-      for (const id of recipeIds) {
-        await validateRecipeExists(recipesRepository, id);
-      }
-
-      const ratings = await ratingsRepository.getRecipeRatingsBatch(recipeIds);
-
-      return ratings;
     },
 
     async create(recipeToRate) {

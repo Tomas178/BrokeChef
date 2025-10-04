@@ -4,7 +4,7 @@ import { recipesRepository as buildRecipesRepository } from '@server/repositorie
 import { ingredientsRepository as buildIngredientsRepository } from '@server/repositories/ingredientsRepository';
 import { recipesIngredientsRepository as buildRecipesIngredientsRepository } from '@server/repositories/recipesIngredientsRepository';
 import { toolsRepository as buildToolsRepository } from '@server/repositories/toolsRepository';
-import { ratingsService as buildRatingsService } from '@server/services/ratingsService';
+import { ratingsRepository as buildRatingsRepository } from '@server/repositories/ratingsRepository';
 import { recipesToolsRepository as buildRecipesToolsRepository } from '@server/repositories/recipesToolsRepository';
 import { assertPostgresError } from '@server/utils/errors';
 import { PostgresError } from 'pg-error-enum';
@@ -39,7 +39,7 @@ export interface RecipesService {
 
 export function recipesService(database: Database): RecipesService {
   const recipesRepository = buildRecipesRepository(database);
-  const ratingsService = buildRatingsService(database);
+  const ratingsRepository = buildRatingsRepository(database);
 
   return {
     async createRecipe(recipe, userId) {
@@ -141,7 +141,7 @@ export function recipesService(database: Database): RecipesService {
       const imageUrls = recipes.map(recipe => recipe.imageUrl);
 
       const [ratings, signedUrls] = await Promise.all([
-        ratingsService.getRecipeRatingsBatch(recipeIds),
+        ratingsRepository.getRecipeRatingsBatch(recipeIds),
         signImages(imageUrls),
       ]);
 
