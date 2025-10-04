@@ -169,14 +169,6 @@ describe('remove', async () => {
   const userId = fakeRecipeToRate.userId;
   const recipeId = fakeRecipeToRate.recipeId;
 
-  it('Should throw an error when recipe does not exist', async () => {
-    mockValidateRecipeExists.mockRejectedValueOnce(new RecipeNotFound());
-
-    await expect(ratingsService.remove(userId, recipeId)).rejects.toThrow(
-      /not found/i
-    );
-  });
-
   it('Should throw an error if no result has been returned from database', async () => {
     mockRatingsRepoRemove.mockRejectedValueOnce(new NoResultError({} as any));
 

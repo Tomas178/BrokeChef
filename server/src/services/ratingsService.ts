@@ -75,8 +75,6 @@ export function ratingsService(database: Database): RatingsService {
     },
 
     async remove(userId, recipeId) {
-      await validateRecipeExists(recipesRepository, recipeId);
-
       try {
         const removedRating = await ratingsRepository.remove(recipeId, userId);
 
