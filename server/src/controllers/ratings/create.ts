@@ -5,19 +5,24 @@ import { ratingsSchema } from '@server/entities/ratings';
 import RecipeAlreadyRated from '@server/utils/errors/recipes/RecipeAlreadyRated';
 import { TRPCError } from '@trpc/server';
 import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
+import CannotRateOwnRecipe from '@server/utils/errors/recipes/CannotRateOwnRecipe';
 
-const createRatingSchema = ratingsSchema.pick({
+export const createRatingSchema = ratingsSchema.pick({
   recipeId: true,
-  userId: true,
   rating: true,
 });
 
 export default authenticatedProcedure
   .use(provideServices({ ratingsService }))
   .input(createRatingSchema)
-  .mutation(async ({ input, ctx: { services } }) => {
+  .mutation(async ({ input, ctx: { authUser, services } }) => {
     try {
-      const rating = await services.ratingsService.create(input);
+      const createRatingInput = {
+        ...input,
+        userId: authUser.id,
+      };
+
+      const rating = await services.ratingsService.create(createRatingInput);
 
       return rating;
     } catch (error) {
@@ -31,6 +36,13 @@ export default authenticatedProcedure
       if (error instanceof RecipeAlreadyRated) {
         throw new TRPCError({
           code: 'CONFLICT',
+          message: error.message,
+        });
+      }
+
+      if (error instanceof CannotRateOwnRecipe) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
           message: error.message,
         });
       }

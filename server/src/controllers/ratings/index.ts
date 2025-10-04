@@ -6,7 +6,7 @@ import remove from './remove';
 
 export default router({
   getUserRatingForRecipe,
-  create,
+  rate: create,
   update,
   remove,
 });
