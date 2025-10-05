@@ -54,7 +54,16 @@ export function ratingsService(database: Database): RatingsService {
       );
 
       try {
-        const ratedRecipe = await ratingsRepository.create(recipeToRate);
+        const newRating = await ratingsRepository.create(recipeToRate);
+
+        const updatedRecipe = await recipesRepository.findById(
+          newRating.recipeId
+        );
+
+        const ratedRecipe: RatingsPublic = {
+          ...newRating,
+          rating: updatedRecipe?.rating ?? newRating.rating,
+        };
 
         return ratedRecipe;
       } catch (error) {
@@ -71,7 +80,11 @@ export function ratingsService(database: Database): RatingsService {
 
       const updatedRating = await ratingsRepository.update(recipeToUpdate);
 
-      return updatedRating.rating;
+      const updatedRecipe = await recipesRepository.findById(
+        updatedRating.recipeId
+      );
+
+      return updatedRecipe?.rating ?? updatedRating.rating;
     },
 
     async remove(userId, recipeId) {

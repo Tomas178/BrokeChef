@@ -1,4 +1,4 @@
-import { fakeRating } from '@server/entities/tests/fakes';
+import { fakeRating, fakeRecipeAllInfo } from '@server/entities/tests/fakes';
 import { ratingsService as buildRatingsService } from '@server/services/ratingsService';
 import type { Database } from '@server/database';
 import type { RatingsRepository } from '@server/repositories/ratingsRepository';
@@ -7,10 +7,11 @@ import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import CannotRateOwnRecipe from '@server/utils/errors/recipes/CannotRateOwnRecipe';
 import { PostgresError } from 'pg-error-enum';
 import type { Mock } from 'vitest';
+import type { RecipesRepository } from '@server/repositories/recipesRepository';
 
 const mockValidateRecipeExists = vi.hoisted(() => vi.fn());
 const mockValidateRecipeAndUserIsNotAuthor = vi.hoisted(() => vi.fn());
-const fakeSingleRating = vi.hoisted(() => 5);
+const [fakeSingleRating, fakeAverageRating] = vi.hoisted(() => [5, 3.5]);
 
 vi.mock('@server/services/utils/recipeValidations', () => ({
   validateRecipeExists: mockValidateRecipeExists,
@@ -54,8 +55,20 @@ const mockRatingsRepository = {
   remove: mockRatingsRepoRemove,
 } as Partial<RatingsRepository>;
 
+const mockRecipesFindById: Mock<RecipesRepository['findById']> = vi.fn(
+  async id => fakeRecipeAllInfo({ id, rating: fakeAverageRating, steps: [] })
+);
+
+const mockRecipesRepository = {
+  findById: mockRecipesFindById,
+} as Partial<RecipesRepository>;
+
 vi.mock('@server/repositories/ratingsRepository', () => ({
   ratingsRepository: () => mockRatingsRepository,
+}));
+
+vi.mock('@server/repositories/recipesRepository', () => ({
+  recipesRepository: () => mockRecipesRepository,
 }));
 
 const mockDatabase = {} as Database;
@@ -69,12 +82,12 @@ const recipeId = 1;
 const fakeRecipeToRate = fakeRating({
   userId: nonAuthorId,
   recipeId: recipeId,
-  rating: 5,
+  rating: fakeSingleRating,
 });
 
 const fakeRecipeToUpdate = fakeRating({
   ...fakeRecipeToRate,
-  rating: 3,
+  rating: fakeAverageRating,
 });
 
 describe('getUserRatingForRecipe', () => {
@@ -141,6 +154,7 @@ describe('create', () => {
 
     expect(ratedRecipe).toEqual({
       ...fakeRecipeToRate,
+      rating: fakeAverageRating,
       createdAt: expect.any(Date),
     });
   });
@@ -157,6 +171,7 @@ describe('update', () => {
 
   it('Should update the rating', async () => {
     const updatedRating = await ratingsService.update(fakeRecipeToUpdate);
+    console.log(updatedRating);
 
     expect(updatedRating).toBe(fakeRecipeToUpdate.rating);
   });
