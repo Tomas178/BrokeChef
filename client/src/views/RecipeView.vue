@@ -15,6 +15,7 @@ import RecipeDetailsCard from '@/components/RecipeDetailsCard.vue';
 import Spinner from '@/components/Spinner.vue';
 import useToast from '@/composables/useToast';
 import Dialog from '@/components/Dialog.vue';
+import { formatRecipeRating } from '@/utils/formatRecipeRating';
 
 const { showLoading, updateToast } = useToast();
 
@@ -95,7 +96,7 @@ async function handleUnsave() {
 }
 
 const hoveredRating = ref(0);
-const userRating = ref<Rating>(0);
+const userRating = ref<Rating>(undefined);
 
 const [rateRecipe, rateErrorMessage] = useErrorMessage<
   [CreateRatingInput],
@@ -166,7 +167,11 @@ async function handleRemoveRating() {
   const id = showLoading('Removing your rating...');
 
   try {
-    await removeRating();
+    const ratingAfterRemoval = await removeRating();
+
+    if (recipe.value) {
+      recipe.value.rating = ratingAfterRemoval;
+    }
 
     userRating.value = undefined;
     updateToast(id, 'success', 'Rating removed successfully');
@@ -180,10 +185,13 @@ async function handleRemoveRating() {
 }
 
 onBeforeMount(async () => {
-  recipe.value = await trpc.recipes.findById.query(recipeId);
-  isAuthor.value = await trpc.recipes.isAuthor.query(recipeId);
-  isSaved.value = await trpc.savedRecipes.isSaved.query(recipeId);
-  userRating.value = await trpc.ratings.getUserRatingForRecipe.query(recipeId);
+  [recipe.value, isAuthor.value, isSaved.value, userRating.value] =
+    await Promise.all([
+      trpc.recipes.findById.query(recipeId),
+      trpc.recipes.isAuthor.query(recipeId),
+      trpc.savedRecipes.isSaved.query(recipeId),
+      trpc.ratings.getUserRatingForRecipe.query(recipeId),
+    ]);
 });
 </script>
 
@@ -246,6 +254,7 @@ onBeforeMount(async () => {
             <div class="flex justify-between gap-2 text-gray-500 lg:text-xl">
               <div class="flex items-center justify-between">
                 <button
+                  data-testid="remove-rating"
                   v-if="userRating"
                   type="button"
                   @click="handleRemoveRating"
@@ -260,7 +269,7 @@ onBeforeMount(async () => {
                   v-if="recipe.rating"
                   class="font-bold tracking-wider text-yellow-400"
                 >
-                  {{ recipe.rating.toFixed(1) }}/5
+                  {{ formatRecipeRating(recipe.rating) }}/5
                 </span>
                 <span
                   data-testid="not-rated-text"
