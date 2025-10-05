@@ -15,7 +15,7 @@ defineEmits<{
 
 <template>
   <div
-    class="min-h-screen flex-row justify-center lg:relative lg:mx-14 lg:my-8 lg:flex lg:gap-4"
+    class="max-h-fit flex-row justify-center lg:relative lg:mx-14 lg:my-8 lg:flex lg:gap-4"
   >
     <WelcomeText v-if="welcomeText" />
     <div

@@ -34,7 +34,7 @@ const links = computed(() => [
       </FwbNavbarLink>
     </template>
     <main>
-      <div class="flex min-h-screen flex-col">
+      <div class="flex flex-col">
         <RouterView />
       </div>
     </main>
