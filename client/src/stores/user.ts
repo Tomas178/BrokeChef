@@ -128,6 +128,7 @@ export const useUserStore = defineStore('user', () => {
   async function updateEmail(newEmail: string) {
     const { error } = await authClient.changeEmail({
       newEmail,
+      callbackURL: frontendBase,
     });
 
     if (error) throw new Error(error.message);
