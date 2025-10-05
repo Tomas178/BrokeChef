@@ -155,6 +155,14 @@ onMounted(async () => {
             </div>
           </template>
         </div>
+        <FwbButton
+          @click="router.push(`/user/${user.id}/edit`)"
+          class="text-primary-green absolute right-15 -bottom-8 inline-flex translate-y-1/2 cursor-pointer self-start rounded-3xl bg-white px-2 py-1 text-lg font-bold shadow-md hover:bg-white hover:outline-2 lg:-bottom-14 lg:px-6 lg:py-2 lg:text-3xl"
+          pill
+          square
+        >
+          Edit Profile
+        </FwbButton>
       </div>
 
       <div class="m-15 flex flex-col gap-10 lg:my-20 lg:ml-25 xl:my-25">
