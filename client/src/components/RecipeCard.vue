@@ -44,7 +44,7 @@ const isLoading = ref(true);
         <span> • {{ format(recipe.createdAt, 'd MMM yyyy') }}</span>
         <span
           v-if="recipe.rating !== undefined"
-          class="font-semibold text-yellow-500 md:ml-auto lg:text-2xl"
+          class="text-rating font-semibold md:ml-auto lg:text-2xl"
         >
           ★ {{ formatRecipeRating(recipe.rating) }}
         </span>

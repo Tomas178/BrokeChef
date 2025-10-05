@@ -302,8 +302,7 @@ onBeforeMount(async () => {
                 <svg
                   class="h-6 w-6 sm:h-12 sm:w-12 lg:h-14 lg:w-14"
                   :class="{
-                    'fill-yellow-400':
-                      star <= (hoveredRating || userRating || 0),
+                    'fill-rating': star <= (hoveredRating || userRating || 0),
                     'fill-gray-300': star > (hoveredRating || userRating || 0),
                   }"
                   xmlns="http://www.w3.org/2000/svg"
