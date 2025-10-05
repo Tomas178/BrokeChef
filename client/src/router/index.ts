@@ -51,6 +51,13 @@ const router = createRouter({
           component: () => import('../views/RecipeView.vue'),
           props: true,
         },
+        {
+          beforeEnter: [authenticate],
+          path: `${profilePath}/:id/edit`,
+          name: 'EditUserProfile',
+          component: () => import('../views/EditProfileView.vue'),
+          props: true,
+        },
       ],
     },
     {
