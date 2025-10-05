@@ -84,7 +84,7 @@ onMounted(async () => {
     </div>
     <div class="flex flex-col">
       <div
-        class="grid grid-cols-1 justify-center gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 xl:gap-10"
+        class="grid grid-cols-1 justify-center gap-4 md:grid-cols-2 md:gap-6 xl:gap-10 2xl:grid-cols-4"
       >
         <RecipeCard
           v-for="recipe in recipes"

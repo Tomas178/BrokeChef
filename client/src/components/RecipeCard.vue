@@ -5,6 +5,7 @@ import { titleCase } from 'title-case';
 import { ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import Spinner from './Spinner.vue';
+import { formatRecipeRating } from '@/utils/formatRecipeRating';
 
 defineProps<{
   recipe: RecipesPublic;
@@ -38,9 +39,15 @@ const isLoading = ref(true);
     <div
       class="flex w-full flex-1 flex-col rounded-md bg-black/10 p-2 lg:px-5 lg:py-3"
     >
-      <div class="justify-center text-xs leading-loose sm:text-base">
+      <div class="flex items-center gap-2 text-xs leading-loose sm:text-base">
         <span>{{ recipe.author.name }}</span>
         <span> • {{ format(recipe.createdAt, 'd MMM yyyy') }}</span>
+        <span
+          v-if="recipe.rating !== undefined"
+          class="font-semibold text-yellow-500 md:ml-auto lg:text-2xl"
+        >
+          ★ {{ formatRecipeRating(recipe.rating) }}
+        </span>
       </div>
       <span class="mt-2 inline-flex font-bold text-slate-700 lg:text-2xl">
         {{ titleCase(recipe.title.toLowerCase()) }}
