@@ -48,8 +48,8 @@ const isLoading = ref(true);
         >
           ★ {{ formatRecipeRating(recipe.rating) }}/5
         </span>
-        <span v-else class="font-semibold text-red-500 md:ml-auto lg:text-2xl">
-          No ratings
+        <span v-else class="font-semibold text-red-500 md:ml-auto lg:text-xl">
+          Rate it!
         </span>
       </div>
       <span class="mt-2 inline-flex font-bold text-slate-700 lg:text-2xl">
