@@ -6,11 +6,14 @@ import RecipeAlreadyRated from '@server/utils/errors/recipes/RecipeAlreadyRated'
 import { TRPCError } from '@trpc/server';
 import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import CannotRateOwnRecipe from '@server/utils/errors/recipes/CannotRateOwnRecipe';
+import * as z from 'zod';
 
 export const createRatingSchema = ratingsSchema.pick({
   recipeId: true,
   rating: true,
 });
+
+export type CreateRatingInput = z.infer<typeof createRatingSchema>;
 
 export default authenticatedProcedure
   .use(provideServices({ ratingsService }))

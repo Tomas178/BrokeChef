@@ -13,7 +13,7 @@ import {
   validateRecipeExists,
 } from './utils/recipeValidations';
 
-export interface RatingInput {
+interface RatingInputFull {
   userId: string;
   recipeId: number;
   rating: number;
@@ -21,8 +21,8 @@ export interface RatingInput {
 
 interface RatingsService {
   getUserRatingForRecipe: (recipeId: number, userId: string) => Promise<Rating>;
-  create: (recipeToRate: RatingInput) => Promise<RatingsPublic | undefined>;
-  update: (recipeToUpdate: RatingInput) => Promise<Rating | undefined>;
+  create: (recipeToRate: RatingInputFull) => Promise<RatingsPublic | undefined>;
+  update: (recipeToUpdate: RatingInputFull) => Promise<Rating | undefined>;
   remove: (
     userId: string,
     recipeId: number
