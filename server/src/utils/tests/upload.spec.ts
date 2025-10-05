@@ -1,6 +1,4 @@
-/* eslint-disable unicorn/no-null */
 import type { Request } from 'express';
-import { describe, it, expect } from 'vitest';
 import { upload } from '../upload';
 
 describe('upload', () => {
