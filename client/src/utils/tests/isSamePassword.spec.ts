@@ -1,4 +1,4 @@
-import { isSamePassword } from './isSamePassword';
+import { isSamePassword } from '../isSamePassword';
 
 const password = 'password123';
 
