@@ -46,7 +46,7 @@ const isLoading = ref(true);
           v-if="recipe.rating !== undefined"
           class="text-rating font-semibold md:ml-auto lg:text-2xl"
         >
-          ★ {{ formatRecipeRating(recipe.rating) }}
+          ★ {{ formatRecipeRating(recipe.rating) }}/5
         </span>
       </div>
       <span class="mt-2 inline-flex font-bold text-slate-700 lg:text-2xl">
