@@ -45,6 +45,7 @@ const mockRatingsRepoRemove: Mock<RatingsRepository['remove']> = vi.fn(
     fakeRating({
       userId,
       recipeId,
+      rating: fakeAverageRating,
     })
 );
 
@@ -192,9 +193,6 @@ describe('remove', async () => {
   it('Should remove the rating', async () => {
     const removedRating = await ratingsService.remove(userId, recipeId);
 
-    expect(removedRating).toMatchObject({
-      userId,
-      recipeId,
-    });
+    expect(removedRating).toBe(fakeAverageRating);
   });
 });

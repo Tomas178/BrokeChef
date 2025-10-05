@@ -22,11 +22,8 @@ interface RatingInputFull {
 interface RatingsService {
   getUserRatingForRecipe: (recipeId: number, userId: string) => Promise<Rating>;
   create: (recipeToRate: RatingInputFull) => Promise<RatingsPublic | undefined>;
-  update: (recipeToUpdate: RatingInputFull) => Promise<Rating | undefined>;
-  remove: (
-    userId: string,
-    recipeId: number
-  ) => Promise<RatingsPublic | undefined>;
+  update: (recipeToUpdate: RatingInputFull) => Promise<Rating>;
+  remove: (userId: string, recipeId: number) => Promise<Rating>;
 }
 
 export function ratingsService(database: Database): RatingsService {
@@ -91,7 +88,11 @@ export function ratingsService(database: Database): RatingsService {
       try {
         const removedRating = await ratingsRepository.remove(recipeId, userId);
 
-        return removedRating;
+        const updatedRecipe = await recipesRepository.findById(
+          removedRating.recipeId
+        );
+
+        return updatedRecipe?.rating ?? removedRating.rating;
       } catch (error) {
         if (error instanceof NoResultError) throw new RatingNotFound();
       }

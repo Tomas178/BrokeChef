@@ -61,6 +61,6 @@ describe('Authenticated tests', () => {
       mockedRating.recipeId,
       mockedRating.userId
     );
-    expect(removedRating).toBeUndefined();
+    expect(removedRating).toBe(mockedRating.rating);
   });
 });

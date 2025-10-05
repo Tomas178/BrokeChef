@@ -1,7 +1,11 @@
 <script lang="ts" setup>
 import { trpc } from '@/trpc';
 import { useRoute, useRouter } from 'vue-router';
-import type { RecipesPublicAllInfo } from '@server/shared/types';
+import type {
+  CreateRatingInput,
+  Rating,
+  RecipesPublicAllInfo,
+} from '@server/shared/types';
 import { onBeforeMount, ref } from 'vue';
 import { titleCase } from 'title-case';
 import { format } from 'date-fns';
@@ -26,15 +30,6 @@ const isLoading = ref(true);
 const recipeId = Number(route.params.id);
 
 const dialogRef = ref<InstanceType<typeof Dialog> | null>(null);
-
-onBeforeMount(async () => {
-  recipe.value = await trpc.recipes.findById.query(recipeId);
-  isAuthor.value = await trpc.recipes.isAuthor.query(recipeId);
-  isSaved.value = await trpc.savedRecipes.isSaved.query(recipeId);
-  console.log(recipe.value);
-  console.log(isAuthor.value);
-  console.log(isSaved.value);
-});
 
 function showDialog() {
   dialogRef.value?.open();
@@ -74,9 +69,8 @@ async function handleSave() {
   try {
     await saveRecipe();
 
-    updateToast(id, 'success', 'Recipe saved successfully');
-
     isSaved.value = true;
+    updateToast(id, 'success', 'Recipe saved successfully');
   } catch {
     updateToast(id, 'error', saveErrorMessage.value || DEFAULT_SERVER_ERROR);
   }
@@ -93,13 +87,104 @@ async function handleUnsave() {
   try {
     await unsaveRecipe();
 
-    updateToast(id, 'success', 'Recipe unsaved successfully');
-
     isSaved.value = false;
+    updateToast(id, 'success', 'Recipe unsaved successfully');
   } catch {
     updateToast(id, 'error', unsaveErrorMessage.value || DEFAULT_SERVER_ERROR);
   }
 }
+
+const hoveredRating = ref(0);
+const userRating = ref<Rating>(0);
+
+const [rateRecipe, rateErrorMessage] = useErrorMessage<
+  [CreateRatingInput],
+  ReturnType<typeof trpc.ratings.rate.mutate>,
+  typeof trpc.ratings.rate.mutate
+>(
+  async (fullRating: CreateRatingInput) =>
+    await trpc.ratings.rate.mutate(fullRating),
+  true
+);
+
+async function handleCreateRating(rating: number) {
+  const id = showLoading('Saving rating...');
+
+  try {
+    const ratingData: CreateRatingInput = { rating, recipeId };
+    const createdRating = await rateRecipe(ratingData);
+
+    if (recipe.value) {
+      recipe.value.rating = createdRating?.rating;
+    }
+
+    userRating.value = rating;
+    updateToast(id, 'success', 'Rating saved successfully');
+  } catch {
+    updateToast(id, 'error', rateErrorMessage.value || DEFAULT_SERVER_ERROR);
+  }
+}
+
+const [updateRating, updateRatingErrorMessage] = useErrorMessage<
+  [CreateRatingInput],
+  ReturnType<typeof trpc.ratings.update.mutate>,
+  typeof trpc.ratings.update.mutate
+>(
+  async (fullRating: CreateRatingInput) =>
+    await trpc.ratings.update.mutate(fullRating),
+  true
+);
+
+async function handleUpdateRating(rating: number) {
+  const id = showLoading('Updating rating...');
+
+  try {
+    const ratingData: CreateRatingInput = { rating, recipeId };
+    const updatedRating = await updateRating(ratingData);
+
+    if (recipe.value) {
+      recipe.value.rating = updatedRating;
+    }
+
+    userRating.value = rating;
+    updateToast(id, 'success', 'Rating updated successfully');
+  } catch {
+    updateToast(
+      id,
+      'error',
+      updateRatingErrorMessage.value || DEFAULT_SERVER_ERROR
+    );
+  }
+}
+
+const [removeRating, removeRatingErrorMessage] = useErrorMessage(
+  async () => await trpc.ratings.remove.mutate(recipeId),
+  true
+);
+
+async function handleRemoveRating() {
+  const id = showLoading('Removing your rating...');
+
+  try {
+    await removeRating();
+
+    userRating.value = undefined;
+    updateToast(id, 'success', 'Rating removed successfully');
+  } catch {
+    updateToast(
+      id,
+      'error',
+      removeRatingErrorMessage.value || DEFAULT_SERVER_ERROR
+    );
+  }
+}
+
+onBeforeMount(async () => {
+  recipe.value = await trpc.recipes.findById.query(recipeId);
+  isAuthor.value = await trpc.recipes.isAuthor.query(recipeId);
+  isSaved.value = await trpc.savedRecipes.isSaved.query(recipeId);
+  userRating.value = await trpc.ratings.getUserRatingForRecipe.query(recipeId);
+});
 </script>
 
 <template>
@@ -122,7 +207,7 @@ async function handleUnsave() {
       </div>
 
       <div
-        class="mx-4 flex flex-row justify-between gap-2 md:mx-16 lg:col-span-4 lg:mt-4 lg:mr-28 lg:mb-4 lg:ml-4 lg:flex-col"
+        class="mx-4 flex flex-col justify-between gap-4 md:mx-16 lg:col-span-4 lg:mt-4 lg:mr-28 lg:mb-4 lg:ml-4"
       >
         <div class="flex flex-col">
           <div class="justify-center">
@@ -156,33 +241,101 @@ async function handleUnsave() {
           </div>
         </div>
 
-        <div class="mt-auto flex justify-end self-end">
-          <button
-            v-if="isAuthor"
-            @click="showDialog"
-            type="button"
-            class="cursor-pointer rounded-3xl bg-red-400/90 px-6 py-2 text-xl leading-tight font-medium text-white hover:scale-105"
-          >
-            Delete
-          </button>
+        <div class="flex flex-wrap justify-between gap-4 md:gap-6">
+          <div class="mt-auto flex flex-col self-start">
+            <div class="flex justify-between gap-2 text-gray-500 lg:text-xl">
+              <div class="flex items-center justify-between">
+                <button
+                  v-if="userRating"
+                  type="button"
+                  @click="handleRemoveRating"
+                  class="cursor-pointer text-sm text-gray-400 transition-colors hover:text-red-400 md:text-base"
+                >
+                  Remove
+                </button>
+              </div>
+              <div>
+                <span
+                  data-testid="average-rating"
+                  v-if="recipe.rating"
+                  class="font-bold tracking-wider text-yellow-400"
+                >
+                  {{ recipe.rating.toFixed(1) }}/5
+                </span>
+                <span
+                  data-testid="not-rated-text"
+                  v-else
+                  class="text-primary-green"
+                >
+                  Be the first one to Rate!
+                </span>
+              </div>
+            </div>
 
-          <button
-            v-else-if="!isSaved"
-            @click="handleSave"
-            type="button"
-            class="gradient-action-button cursor-pointer rounded-3xl px-6 py-2 text-xl leading-tight font-medium text-white hover:scale-105"
-          >
-            Save
-          </button>
+            <div
+              data-testid="star-rating"
+              class="flex items-center justify-center gap-1 lg:justify-start"
+            >
+              <button
+                v-for="star in 5"
+                :key="star"
+                :data-testid="`star-${star}`"
+                type="button"
+                @click="
+                  userRating
+                    ? handleUpdateRating(star)
+                    : handleCreateRating(star)
+                "
+                @mouseenter="hoveredRating = star"
+                @mouseleave="hoveredRating = 0"
+                class="cursor-pointer transition-transform hover:scale-110"
+              >
+                <svg
+                  class="h-6 w-6 sm:h-12 sm:w-12 lg:h-14 lg:w-14"
+                  :class="{
+                    'fill-yellow-400':
+                      star <= (hoveredRating || userRating || 0),
+                    'fill-gray-300': star > (hoveredRating || userRating || 0),
+                  }"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
 
-          <button
-            v-else
-            @click="handleUnsave"
-            type="button"
-            class="gradient-action-button cursor-pointer rounded-3xl px-6 py-2 text-xl leading-tight font-medium text-white hover:scale-105"
-          >
-            Unsave
-          </button>
+          <div class="mt-auto self-end">
+            <button
+              v-if="isAuthor"
+              @click="showDialog"
+              type="button"
+              class="cursor-pointer rounded-3xl bg-red-400/90 px-6 py-2 text-xl leading-tight font-medium text-white hover:scale-105"
+            >
+              Delete
+            </button>
+
+            <button
+              v-else-if="!isSaved"
+              @click="handleSave"
+              type="button"
+              class="gradient-action-button cursor-pointer rounded-3xl px-6 py-2 text-xl leading-tight font-medium text-white hover:scale-105"
+            >
+              Save
+            </button>
+
+            <button
+              v-else
+              @click="handleUnsave"
+              type="button"
+              class="gradient-action-button cursor-pointer rounded-3xl px-6 py-2 text-xl leading-tight font-medium text-white hover:scale-105"
+            >
+              Unsave
+            </button>
+          </div>
         </div>
 
         <Dialog

@@ -10,9 +10,12 @@ export default authenticatedProcedure
   .input(integerIdSchema)
   .mutation(async ({ input: recipeId, ctx: { authUser, services } }) => {
     try {
-      await services.ratingsService.remove(authUser.id, recipeId);
+      const ratingAfterRemoval = await services.ratingsService.remove(
+        authUser.id,
+        recipeId
+      );
 
-      return;
+      return ratingAfterRemoval;
     } catch (error) {
       if (error instanceof RatingNotFound) {
         throw new TRPCError({
