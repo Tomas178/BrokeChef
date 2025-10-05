@@ -4,8 +4,9 @@ import { createTestDatabase } from '@tests/utils/database';
 import { insertAll } from '@tests/utils/record';
 import { fakeRating, fakeRecipe, fakeUser } from '@server/entities/tests/fakes';
 import { authContext, requestContext } from '@tests/utils/context';
-import type { RatingsRepository } from '@server/repositories/ratingsRepository';
 import { NoResultError } from 'kysely';
+import type { RatingsRepository } from '@server/repositories/ratingsRepository';
+import type { RecipesRepository } from '@server/repositories/recipesRepository';
 import ratingsRouter from '..';
 
 const mockRatingsRepositoryRemove = vi.fn();
@@ -18,6 +19,16 @@ vi.mock('@server/repositories/ratingsRepository', () => ({
   ratingsRepository: () => mockRatingsRepository,
 }));
 
+const mockRecipesRepositoryFindById = vi.fn();
+
+const mockRecipesRepository: Partial<RecipesRepository> = {
+  findById: mockRecipesRepositoryFindById,
+};
+
+vi.mock('@server/repositories/recipesRepository', () => ({
+  recipesRepository: () => mockRecipesRepository,
+}));
+
 const createCaller = createCallerFactory(ratingsRouter);
 const database = await wrapInRollbacks(createTestDatabase());
 
@@ -28,7 +39,10 @@ const [recipe] = await insertAll(
   fakeRecipe({ userId: user.id })
 );
 
-beforeEach(() => mockRatingsRepositoryRemove.mockReset());
+beforeEach(() => {
+  mockRatingsRepositoryRemove.mockReset();
+  mockRecipesRepositoryFindById.mockReset();
+});
 
 describe('Unauthenticated tests', () => {
   const { remove } = createCaller(requestContext({ database }));
@@ -49,10 +63,13 @@ describe('Authenticated tests', () => {
     await expect(remove(recipe.id)).rejects.toThrow(/not found/i);
   });
 
-  it('Should remove the rating', async () => {
+  it('Should remove the rating and return undefined when no ratings for the recipe are left', async () => {
     const mockedRating = fakeRating({ userId: user.id, recipeId: recipe.id });
 
-    mockRatingsRepositoryRemove.mockResolvedValueOnce(mockedRating);
+    mockRatingsRepositoryRemove.mockResolvedValueOnce(
+      fakeRating({ recipeId: mockedRating.recipeId })
+    );
+    mockRecipesRepositoryFindById.mockResolvedValueOnce(undefined);
 
     const removedRating = await remove(mockedRating.recipeId);
 
@@ -61,6 +78,36 @@ describe('Authenticated tests', () => {
       mockedRating.recipeId,
       mockedRating.userId
     );
+
+    expect(mockRecipesRepositoryFindById).toHaveBeenCalledOnce();
+    expect(mockRecipesRepositoryFindById).toHaveBeenCalledWith(
+      mockedRating.recipeId
+    );
+
+    expect(removedRating).toBeUndefined();
+  });
+
+  it('Should remove the rating and return new rating for the recipe if any ratings are left', async () => {
+    const mockedRating = fakeRating({ userId: user.id, recipeId: recipe.id });
+
+    mockRatingsRepositoryRemove.mockResolvedValueOnce(
+      fakeRating({ recipeId: mockedRating.recipeId })
+    );
+    mockRecipesRepositoryFindById.mockResolvedValueOnce(mockedRating);
+
+    const removedRating = await remove(mockedRating.recipeId);
+
+    expect(mockRatingsRepositoryRemove).toHaveBeenCalledOnce();
+    expect(mockRatingsRepositoryRemove).toHaveBeenCalledWith(
+      mockedRating.recipeId,
+      mockedRating.userId
+    );
+
+    expect(mockRecipesRepositoryFindById).toHaveBeenCalledOnce();
+    expect(mockRecipesRepositoryFindById).toHaveBeenCalledWith(
+      mockedRating.recipeId
+    );
+
     expect(removedRating).toBe(mockedRating.rating);
   });
 });

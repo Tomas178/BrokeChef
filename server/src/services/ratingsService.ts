@@ -92,7 +92,7 @@ export function ratingsService(database: Database): RatingsService {
           removedRating.recipeId
         );
 
-        return updatedRecipe?.rating ?? removedRating.rating;
+        return updatedRecipe?.rating;
       } catch (error) {
         if (error instanceof NoResultError) throw new RatingNotFound();
       }
