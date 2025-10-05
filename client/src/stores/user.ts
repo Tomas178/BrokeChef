@@ -2,9 +2,11 @@ import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
 import { authClient } from '@/lib/auth-client';
 import { frontendBase, resetPasswordBase } from '@/config';
+import { useRouter } from 'vue-router';
 
 export const useUserStore = defineStore('user', () => {
   const authToken = ref<string | null>(localStorage.getItem('authToken'));
+  const router = useRouter();
 
   const session = authClient.useSession();
   const id = ref<string | undefined>(undefined);
@@ -108,10 +110,36 @@ export const useUserStore = defineStore('user', () => {
     if (error) throw new Error(error.message);
   }
 
+  async function updatePassword(credentials: {
+    currentPassword: string;
+    newPassword: string;
+  }) {
+    const { currentPassword, newPassword } = credentials;
+
+    const { error } = await authClient.changePassword({
+      currentPassword,
+      newPassword,
+      revokeOtherSessions: true,
+    });
+
+    if (error) throw new Error(error.message);
+  }
+
+  async function updateEmail(newEmail: string) {
+    const { error } = await authClient.changeEmail({
+      newEmail,
+    });
+
+    if (error) throw new Error(error.message);
+  }
+
   async function logout() {
     const { error } = await authClient.signOut({
       fetchOptions: {
-        onSuccess: () => console.log('User logged out successfully!'),
+        onSuccess: async () => {
+          console.log('User logged out successfully!');
+          await router.push({ name: 'Login' });
+        },
         onError: (ctx) => console.log(ctx.error.message),
       },
     });
@@ -130,6 +158,8 @@ export const useUserStore = defineStore('user', () => {
     socialLogin,
     sendResetPasswordLink,
     resetPassword,
+    updatePassword,
+    updateEmail,
     logout,
   };
 });
