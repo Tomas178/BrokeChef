@@ -43,10 +43,13 @@ const isLoading = ref(true);
         <span>{{ recipe.author.name }}</span>
         <span> • {{ format(recipe.createdAt, 'd MMM yyyy') }}</span>
         <span
-          v-if="recipe.rating !== undefined"
+          v-if="recipe.rating"
           class="text-rating font-semibold md:ml-auto lg:text-2xl"
         >
           ★ {{ formatRecipeRating(recipe.rating) }}/5
+        </span>
+        <span v-else class="font-semibold text-red-500 md:ml-auto lg:text-2xl">
+          No ratings
         </span>
       </div>
       <span class="mt-2 inline-flex font-bold text-slate-700 lg:text-2xl">
