@@ -19,6 +19,7 @@ export default defineConfig({
         'src/types/',
         'src/enums',
         'src/logger.ts',
+        'src/auth.ts',
       ],
     },
 

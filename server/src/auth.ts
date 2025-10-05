@@ -21,6 +21,28 @@ export const auth = betterAuth({
       emailVerified: 'email_verified',
       ...createdAndUpdated,
     },
+
+    changeEmail: {
+      enabled: true,
+      sendChangeEmailVerification: async ({ user, newEmail, url }) => {
+        const verifyEmailTemplate = await getTemplate(
+          s3Client,
+          config.auth.aws.s3.buckets.emailTemplates,
+          EmailTemplate.VERIFY_EMAIL
+        );
+
+        const htmlContent = await formEmailTemplate(verifyEmailTemplate, {
+          username: user.name,
+          url,
+        });
+
+        await sendMail(transporter, {
+          to: newEmail,
+          subject: 'Verify your email address',
+          html: htmlContent,
+        });
+      },
+    },
   },
 
   session: {
