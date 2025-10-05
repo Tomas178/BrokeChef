@@ -4,7 +4,7 @@ import {
   fakeTool,
   fakeUser,
 } from '@server/entities/tests/fakes';
-import { insertAll, selectAll } from '@tests/utils/record';
+import { clearTables, insertAll, selectAll } from '@tests/utils/record';
 import { createTestDatabase } from '@tests/utils/database';
 import { wrapInRollbacks } from '@tests/utils/transactions';
 import { toolsRepository as buildToolsRepository } from '@server/repositories/toolsRepository';
@@ -23,6 +23,17 @@ const recipesIngredientsRepository =
   buildRecipesIngredientsRepository(database);
 
 const [user] = await insertAll(database, 'users', [fakeUser()]);
+
+beforeAll(
+  async () =>
+    await clearTables(database, [
+      'recipes',
+      'tools',
+      'recipesTools',
+      'ingredients',
+      'recipesIngredients',
+    ])
+);
 
 describe('insertTools', () => {
   it('Should not add any tools when given empty array', async () => {
