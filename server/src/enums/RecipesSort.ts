@@ -1,7 +1,8 @@
 export enum RecipesSort {
   NEWEST = 'newest',
   OLDEST = 'oldest',
-  RATING = 'rating',
+  HIGHEST_RATING = 'highestRating',
+  LOWEST_RATING = 'lowestRating',
 }
 
 export type RecipesSortValues = `${RecipesSort}`;
