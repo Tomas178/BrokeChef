@@ -13,6 +13,9 @@ export async function up(database: Kysely<any>) {
     .addColumn('created_at', 'timestamptz', c =>
       c.notNull().defaultTo(sql`CURRENT_TIMESTAMP`)
     )
+    .addColumn('updated_at', 'timestamptz', c =>
+      c.notNull().defaultTo(sql`CURRENT_TIMESTAMP`)
+    )
     .addPrimaryKeyConstraint('ratings_primary_key', ['user_id', 'recipe_id'])
     .addCheckConstraint('check_rating', sql`rating BETWEEN 1 AND 5`)
     .execute();

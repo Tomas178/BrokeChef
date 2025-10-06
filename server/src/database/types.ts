@@ -38,6 +38,7 @@ export interface Ratings {
   createdAt: Generated<Timestamp>;
   rating: number;
   recipeId: number;
+  updatedAt: Generated<Timestamp>;
   userId: string;
 }
 
