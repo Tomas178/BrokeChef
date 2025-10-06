@@ -1,3 +1,4 @@
+import { RecipesSort } from '@server/enums/RecipesSort';
 import * as z from 'zod';
 
 export const integerIdSchema = z.number().int().positive();
@@ -17,8 +18,23 @@ export const paginationSchema = z.object({
   limit: z.number().int().min(1).max(100).default(5),
 });
 
+export const paginationWithSortSchema = paginationSchema.extend({
+  sort: z.enum(RecipesSort).default(RecipesSort.NEWEST),
+});
+
+export const initialPage = {
+  offset: 0,
+  limit: 5,
+};
+
+export const initialPageWithSort = {
+  ...initialPage,
+  sort: RecipesSort.NEWEST,
+};
+
 export const userWithPaginationSchema = paginationSchema.extend({
   userId: oauthUserIdSchema.optional(),
 });
 
+export type PaginationWithSort = z.infer<typeof paginationWithSortSchema>;
 export type UserWithPagination = z.infer<typeof userWithPaginationSchema>;

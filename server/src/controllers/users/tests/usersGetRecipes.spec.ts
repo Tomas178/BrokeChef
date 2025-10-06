@@ -7,7 +7,7 @@ import {
   fakeUser,
 } from '@server/entities/tests/fakes';
 import { wrapInRollbacks } from '@tests/utils/transactions';
-import { initialPage } from '@server/shared/pagination';
+import { initialPage } from '@server/entities/shared';
 import { pick } from 'lodash-es';
 import { usersKeysPublicWithoutId } from '@server/entities/users';
 import { recipesKeysPublic } from '@server/entities/recipes';

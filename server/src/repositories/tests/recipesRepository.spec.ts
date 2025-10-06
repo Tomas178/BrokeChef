@@ -16,7 +16,7 @@ import {
   usersKeysPublicWithoutId,
   type UsersPublic,
 } from '@server/entities/users';
-import { initialPage } from '@server/shared/pagination';
+import { initialPage, initialPageWithSort } from '@server/entities/shared';
 import { recipesRepository } from '../recipesRepository';
 
 const database = await wrapInRollbacks(createTestDatabase());
@@ -243,7 +243,7 @@ describe('totalSavedByUser', () => {
 
 describe('findAll', () => {
   it('Should return all recipes', async () => {
-    const recipes = await repository.findAll(initialPage);
+    const recipes = await repository.findAll(initialPageWithSort);
 
     expect(recipes).toHaveLength(defaultRecipes.length);
   });
@@ -283,7 +283,7 @@ describe('findAll', () => {
       ),
     }));
 
-    const recipesFromRepo = await repository.findAll(initialPage);
+    const recipesFromRepo = await repository.findAll(initialPageWithSort);
 
     expect(recipesFromRepo).toHaveLength(5);
     expect(recipesFromRepo).toEqual(recipesNotFromRepoWithAuthor.slice(0, 5));

@@ -23,7 +23,7 @@ import {
   fakeSavedRecipe,
   fakeUser,
 } from '@server/entities/tests/fakes';
-import { initialPage } from '@server/shared/pagination';
+import { initialPage } from '@server/entities/shared';
 import { pick } from 'lodash-es';
 import { recipesKeysPublic } from '@server/entities/recipes';
 import {

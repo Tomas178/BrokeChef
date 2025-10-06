@@ -10,7 +10,7 @@ import {
 import { pick } from 'lodash-es';
 import { recipesKeysPublic } from '@server/entities/recipes';
 import { usersKeysPublicWithoutId } from '@server/entities/users';
-import { initialPage } from '@server/shared/pagination';
+import { initialPage } from '@server/entities/shared';
 import { joinStepsToSingleString } from '../utils/joinStepsToSingleString';
 import { recipesService } from '../recipesService';
 
