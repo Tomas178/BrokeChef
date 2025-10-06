@@ -3,5 +3,4 @@ export enum EmailTemplate {
   RESET_PASSWORD = 'resetPassword.html',
 }
 
-export type EmailTemplateKeys =
-  (typeof EmailTemplate)[keyof typeof EmailTemplate];
+export type EmailTemplateValues = `${EmailTemplate}`;

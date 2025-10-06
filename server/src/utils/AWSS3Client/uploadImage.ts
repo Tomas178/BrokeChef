@@ -1,14 +1,14 @@
 import { PutObjectCommand, type S3Client } from '@aws-sdk/client-s3';
 import config from '@server/config';
-import type { AllowedMimetypeKeys } from '@server/enums/AllowedMimetype';
-import type { ImageFolderKeys } from '@server/enums/ImageFolder';
+import type { AllowedMimetypeValues } from '@server/enums/AllowedMimetype';
+import type { ImageFolderValues } from '@server/enums/ImageFolder';
 import { formUniqueFilename } from '../formUniqueFilename';
 
 export async function uploadImage(
   s3Client: S3Client,
-  folder: ImageFolderKeys,
+  folder: ImageFolderValues,
   buffer: Buffer,
-  contentType: AllowedMimetypeKeys
+  contentType: AllowedMimetypeValues
 ): Promise<string> {
   const uniqueFilename = formUniqueFilename();
 

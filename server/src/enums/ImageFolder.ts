@@ -3,4 +3,4 @@ export enum ImageFolder {
   PROFILES = 'Profiles',
 }
 
-export type ImageFolderKeys = (typeof ImageFolder)[keyof typeof ImageFolder];
+export type ImageFolderValues = `${ImageFolder}`;

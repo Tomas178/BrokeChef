@@ -5,5 +5,4 @@ export enum AllowedMimeType {
 
 export const allowedMimetypesArray = Object.values(AllowedMimeType) as string[];
 
-export type AllowedMimetypeKeys =
-  (typeof AllowedMimeType)[keyof typeof AllowedMimeType];
+export type AllowedMimetypeValues = `${AllowedMimeType}`;
