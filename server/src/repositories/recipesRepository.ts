@@ -1,7 +1,6 @@
 import type { Database, DB, Recipes } from '@server/database';
 import {
   recipesKeysPublic,
-  type RecipesPublicWithoutRating,
   type RecipesPublicAllInfo,
   type RecipesPublic,
 } from '@server/entities/recipes';
@@ -9,11 +8,18 @@ import {
   usersKeysPublicWithoutId,
   type UsersPublicWithoutId,
 } from '@server/entities/users';
-import type { Pagination } from '@server/shared/pagination';
+import type { Pagination, PaginationWithSort } from '@server/shared/pagination';
 import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import { prefixTable } from '@server/utils/strings';
-import type { AliasedRawBuilder, ExpressionBuilder, Insertable } from 'kysely';
+import {
+  sql,
+  type AliasedRawBuilder,
+  type ExpressionBuilder,
+  type Insertable,
+  type OrderByDirection,
+} from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
+import { RecipesSort, type RecipesSortValues } from '@server/enums/RecipesSort';
 import { joinStepsToArray } from './utils/joinStepsToArray';
 
 const TABLE = 'recipes';
@@ -34,7 +40,8 @@ export interface RecipesRepository {
   findAll: ({
     offset,
     limit,
-  }: Pagination) => Promise<RecipesPublicWithoutRating[]>;
+    sort,
+  }: PaginationWithSort) => Promise<RecipesPublic[]>;
   totalCount: () => Promise<number>;
   isAuthor: (recipeId: number, userId: string) => Promise<boolean>;
   remove: (id: number) => Promise<RecipesPublic>;
@@ -48,6 +55,9 @@ function normalizeRating<T extends { rating: number | string | null }>(
     rating: recipe.rating ? Number(recipe.rating) : recipe.rating,
   };
 }
+
+const orderNullsLast = (direction: OrderByDirection) =>
+  sql`${sql.raw(direction)} nulls last`;
 
 export function recipesRepository(database: Database): RecipesRepository {
   return {
@@ -134,15 +144,20 @@ export function recipesRepository(database: Database): RecipesRepository {
       return Number(count);
     },
 
-    async findAll({ offset, limit }) {
-      return database
+    async findAll({ offset, limit, sort }) {
+      const orderByClause = convertSort(sort);
+
+      const recipes = await database
         .selectFrom(TABLE)
         .select(recipesKeysPublic)
         .select(withAuthor)
-        .orderBy('id', 'desc')
+        .select(withRatings)
+        .orderBy(orderByClause.column, orderNullsLast(orderByClause.direction))
         .offset(offset)
         .limit(limit)
         .execute();
+
+      return recipes.map(recipe => normalizeRating(recipe) as RecipesPublic);
     },
 
     async totalCount() {
@@ -216,4 +231,19 @@ function withRatings(eb: ExpressionBuilder<DB, 'recipes'>) {
     .select(({ fn }) => fn.avg('rating').as('averageRating'))
     .whereRef('ratings.recipeId', '=', 'recipes.id')
     .as('rating') as unknown as AliasedRawBuilder<number, 'rating'>;
+}
+
+interface Order {
+  column: 'rating' | 'id';
+  direction: OrderByDirection;
+}
+
+function convertSort(sort: RecipesSortValues): Order {
+  return sort === RecipesSort.HIGHEST_RATING
+    ? { column: 'rating', direction: 'desc' }
+    : sort === RecipesSort.LOWEST_RATING
+      ? { column: 'rating', direction: 'asc' }
+      : sort === RecipesSort.OLDEST
+        ? { column: 'id', direction: 'asc' }
+        : { column: 'id', direction: 'desc' };
 }

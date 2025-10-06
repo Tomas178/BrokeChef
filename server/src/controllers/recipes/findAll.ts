@@ -1,7 +1,7 @@
 import { publicProcedure } from '@server/trpc';
 import provideServices from '@server/trpc/provideServices';
 import { recipesService } from '@server/services/recipesService';
-import { paginationSchema } from '@server/entities/shared';
+import { paginationWithSortSchema } from '@server/entities/shared';
 
 export default publicProcedure
   .use(
@@ -9,12 +9,9 @@ export default publicProcedure
       recipesService,
     })
   )
-  .input(paginationSchema)
-  .query(async ({ input: { offset, limit }, ctx: { services } }) => {
-    const recipes = await services.recipesService.findAll({
-      offset,
-      limit,
-    });
+  .input(paginationWithSortSchema)
+  .query(async ({ input: paginationWithSort, ctx: { services } }) => {
+    const recipes = await services.recipesService.findAll(paginationWithSort);
 
     return recipes;
   });

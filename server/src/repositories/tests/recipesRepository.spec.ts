@@ -17,6 +17,7 @@ import {
   type UsersPublic,
 } from '@server/entities/users';
 import { initialPage, initialPageWithSort } from '@server/entities/shared';
+import { RecipesSort } from '@server/enums/RecipesSort';
 import { recipesRepository } from '../recipesRepository';
 
 const database = await wrapInRollbacks(createTestDatabase());
@@ -248,7 +249,7 @@ describe('findAll', () => {
     expect(recipes).toHaveLength(defaultRecipes.length);
   });
 
-  it('Should return 5 recipes ordered descendingly by ID', async () => {
+  it('Should return 5 recipes newest recipes', async () => {
     await insertAll(database, 'recipes', [
       fakeRecipe({
         userId: authorOne.id,
@@ -281,12 +282,190 @@ describe('findAll', () => {
         usersNotFromRepo.find(user => user.id === recipe.userId),
         usersKeysPublicWithoutId
       ),
+      rating: null,
     }));
 
     const recipesFromRepo = await repository.findAll(initialPageWithSort);
 
-    expect(recipesFromRepo).toHaveLength(5);
+    expect(recipesFromRepo).toHaveLength(initialPageWithSort.limit);
     expect(recipesFromRepo).toEqual(recipesNotFromRepoWithAuthor.slice(0, 5));
+  });
+
+  it('Should return 5 oldest recipes', async () => {
+    await insertAll(database, 'recipes', [
+      fakeRecipe({
+        userId: authorOne.id,
+      }),
+      fakeRecipe({
+        userId: authorOne.id,
+      }),
+      fakeRecipe({
+        userId: authorOne.id,
+      }),
+      fakeRecipe({
+        userId: authorOne.id,
+      }),
+    ]);
+
+    const usersNotFromRepo = (await selectAll(
+      database,
+      'users'
+    )) as UsersPublic[];
+
+    const recipesNotFromRepo = (await selectAll(
+      database,
+      'recipes'
+    )) as RecipesPublicWithoutRating[];
+    recipesNotFromRepo.sort((a, b) => a.id - b.id);
+
+    const recipesNotFromRepoWithAuthor = recipesNotFromRepo.map(recipe => ({
+      ...recipe,
+      author: pick(
+        usersNotFromRepo.find(user => user.id === recipe.userId),
+        usersKeysPublicWithoutId
+      ),
+      rating: null,
+    }));
+
+    const recipesFromRepo = await repository.findAll({
+      ...initialPageWithSort,
+      sort: RecipesSort.OLDEST,
+    });
+
+    expect(recipesFromRepo).toHaveLength(initialPageWithSort.limit);
+    expect(recipesFromRepo).toEqual(recipesNotFromRepoWithAuthor.slice(0, 5));
+  });
+
+  it('Should return 5 highest rated recipes', async () => {
+    const [recipeThree, recipeFour, recipeFive, recipeSix] = await insertAll(
+      database,
+      'recipes',
+      [
+        fakeRecipe({ userId: authorOne.id }),
+        fakeRecipe({ userId: authorOne.id }),
+        fakeRecipe({ userId: authorOne.id }),
+        fakeRecipe({ userId: authorOne.id }),
+      ]
+    );
+
+    const [ratedThree, ratedFour, ratedFive, ratedSix] = await insertAll(
+      database,
+      'ratings',
+      [
+        fakeRating({
+          recipeId: recipeThree.id,
+          userId: userRater.id,
+          rating: 5,
+        }),
+        fakeRating({
+          recipeId: recipeFour.id,
+          userId: userRater.id,
+          rating: 4,
+        }),
+        fakeRating({
+          recipeId: recipeFive.id,
+          userId: userRater.id,
+          rating: 3,
+        }),
+        fakeRating({ recipeId: recipeSix.id, userId: userRater.id, rating: 2 }),
+      ]
+    );
+
+    const recipesFromRepo = await repository.findAll({
+      ...initialPageWithSort,
+      sort: RecipesSort.HIGHEST_RATING,
+    });
+
+    expect(recipesFromRepo).toHaveLength(initialPageWithSort.limit);
+    expect(recipesFromRepo[0]).toMatchObject({
+      ...recipeThree,
+      rating: ratedThree.rating,
+    });
+
+    expect(recipesFromRepo[1]).toMatchObject({
+      ...recipeFour,
+      rating: ratedFour.rating,
+    });
+
+    expect(recipesFromRepo[2]).toMatchObject({
+      ...recipeFive,
+      rating: ratedFive.rating,
+    });
+
+    expect(recipesFromRepo[3]).toMatchObject({
+      ...recipeSix,
+      rating: ratedSix.rating,
+    });
+
+    expect(recipesFromRepo[4]).toMatchObject({
+      rating: null,
+    });
+  });
+
+  it('Should return 5 lowest rated recipes', async () => {
+    const [recipeThree, recipeFour, recipeFive, recipeSix] = await insertAll(
+      database,
+      'recipes',
+      [
+        fakeRecipe({ userId: authorOne.id }),
+        fakeRecipe({ userId: authorOne.id }),
+        fakeRecipe({ userId: authorOne.id }),
+        fakeRecipe({ userId: authorOne.id }),
+      ]
+    );
+
+    const [ratedThree, ratedFour, ratedFive, ratedSix] = await insertAll(
+      database,
+      'ratings',
+      [
+        fakeRating({
+          recipeId: recipeThree.id,
+          userId: userRater.id,
+          rating: 1,
+        }),
+        fakeRating({
+          recipeId: recipeFour.id,
+          userId: userRater.id,
+          rating: 2,
+        }),
+        fakeRating({
+          recipeId: recipeFive.id,
+          userId: userRater.id,
+          rating: 3,
+        }),
+        fakeRating({ recipeId: recipeSix.id, userId: userRater.id, rating: 4 }),
+      ]
+    );
+
+    const recipesFromRepo = await repository.findAll({
+      ...initialPageWithSort,
+      sort: RecipesSort.LOWEST_RATING,
+    });
+
+    expect(recipesFromRepo).toHaveLength(initialPageWithSort.limit);
+    expect(recipesFromRepo[0]).toMatchObject({
+      ...recipeThree,
+      rating: ratedThree.rating,
+    });
+
+    expect(recipesFromRepo[1]).toMatchObject({
+      ...recipeFour,
+      rating: ratedFour.rating,
+    });
+
+    expect(recipesFromRepo[2]).toMatchObject({
+      ...recipeFive,
+      rating: ratedFive.rating,
+    });
+
+    expect(recipesFromRepo[3]).toMatchObject({
+      ...recipeSix,
+      rating: ratedSix.rating,
+    });
+
+    expect(recipesFromRepo[4]).toMatchObject({
+      rating: null,
+    });
   });
 });
 

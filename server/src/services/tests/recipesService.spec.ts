@@ -10,7 +10,7 @@ import {
 import { pick } from 'lodash-es';
 import { recipesKeysPublic } from '@server/entities/recipes';
 import { usersKeysPublicWithoutId } from '@server/entities/users';
-import { initialPage } from '@server/entities/shared';
+import { initialPageWithSort } from '@server/entities/shared';
 import { joinStepsToSingleString } from '../utils/joinStepsToSingleString';
 import { recipesService } from '../recipesService';
 
@@ -191,7 +191,7 @@ describe('findById', () => {
 
 describe('findAll', () => {
   it('Should return an empty list when no recipeIds are given', async () => {
-    await expect(service.findAll(initialPage)).resolves.toEqual([]);
+    await expect(service.findAll(initialPageWithSort)).resolves.toEqual([]);
   });
 
   it('Should return recipes with signed images', async () => {
@@ -200,7 +200,7 @@ describe('findAll', () => {
       fakeRecipe({ userId: author.id }),
     ]);
 
-    const recipes = await service.findAll(initialPage);
+    const recipes = await service.findAll(initialPageWithSort);
     expect(recipes).toHaveLength(2);
 
     expect(recipes[0]).toMatchObject({
@@ -219,7 +219,7 @@ describe('findAll', () => {
       fakeRecipe({ userId: author.id }),
     ]);
 
-    const recipes = await service.findAll(initialPage);
+    const recipes = await service.findAll(initialPageWithSort);
     expect(recipes).toHaveLength(insertedRecipes.length);
 
     expect(recipes[0]).toHaveProperty('rating', undefined);
@@ -241,7 +241,7 @@ describe('findAll', () => {
       ]
     );
 
-    const recipes = await service.findAll(initialPage);
+    const recipes = await service.findAll(initialPageWithSort);
     expect(recipes).toHaveLength(2);
 
     expect(recipes[0]).toHaveProperty('rating', ratedRecipeTwo.rating);
