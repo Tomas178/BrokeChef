@@ -15,6 +15,7 @@ export default defineConfig({
         '**/src/trpc/index.ts',
         '**/src/repositories/index.ts',
         '**/src/services/index.ts',
+        'src/shared',
         'src/index.ts',
         'src/types/',
         'src/enums',
