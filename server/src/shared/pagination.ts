@@ -1,6 +1,5 @@
-export const initialPage = {
-  offset: 0,
-  limit: 5,
-};
+import type { initialPage } from './types';
 
 export type Pagination = typeof initialPage;
+
+export { type PaginationWithSort } from '@server/entities/shared';
