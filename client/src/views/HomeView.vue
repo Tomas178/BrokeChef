@@ -2,10 +2,11 @@
 import RecipeCard from '@/components/RecipeCard.vue';
 import { FwbDropdown, FwbPagination } from 'flowbite-vue';
 import { trpc } from '@/trpc';
-import type { Pagination } from '@server/shared/pagination';
+import type { PaginationWithSort } from '@server/shared/pagination';
 import type { RecipesPublic } from '@server/shared/types';
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { SortingTypes } from '@server/shared/enums';
 
 const route = useRoute();
 const router = useRouter();
@@ -17,10 +18,20 @@ const totalCount = ref(0);
 const totalPages = ref(1);
 const currentPage = ref(1);
 
-const pagination = reactive<Pagination>({
+const pagination = reactive<PaginationWithSort>({
   offset: 0,
   limit: 36,
+  sort: SortingTypes.NEWEST,
 });
+
+const sortOptions = [
+  { label: 'Newest', value: SortingTypes.NEWEST },
+  { label: 'Highest Rated', value: SortingTypes.HIGHEST_RATING },
+  { label: 'Lowest Rated', value: SortingTypes.LOWEST_RATING },
+  { label: 'Oldest', value: SortingTypes.OLDEST },
+];
+
+const selectedSort = computed(() => pagination.sort);
 
 const fetchPage = async (page: number) => {
   currentPage.value = page;
@@ -28,14 +39,19 @@ const fetchPage = async (page: number) => {
 
   const [fetchedRecipes] = await Promise.all([
     trpc.recipes.findAll.query(pagination),
-    changeQueryParams(currentPage.value),
+    changeQueryParams(currentPage.value, pagination.sort),
   ]);
 
   recipes.value = fetchedRecipes;
 };
 
-const changeQueryParams = async (pageNumber: number) => {
-  await router.replace({ query: { page: pageNumber.toString() } });
+const changeQueryParams = async (pageNumber: number, sort?: SortingTypes) => {
+  await router.replace({
+    query: {
+      page: pageNumber.toString(),
+      sort: sort ?? pagination.sort,
+    },
+  });
 };
 
 const isValidPage = (pageNumber: string | number): boolean => {
@@ -56,6 +72,11 @@ const getParamPage = async (): Promise<number> => {
   const validPage = isValidPage(rawPageString);
 
   return validPage ? Number(rawPageString) : 1;
+};
+
+const onSortChange = async (newSort: SortingTypes) => {
+  pagination.sort = newSort;
+  await fetchPage(1);
 };
 
 onMounted(async () => {
@@ -83,7 +104,27 @@ onMounted(async () => {
       </span>
     </div>
     <div class="flex flex-col">
-      <FwbDropdown color="light" class="mb-4 ml-auto"> fs </FwbDropdown>
+      <FwbDropdown
+        color="light"
+        :text="`Sort: ${sortOptions.find((o) => o.value === selectedSort)?.label ?? 'Newest'}`"
+        placement="bottom"
+        align-to-end
+        close-inside
+        class="mb-4 self-end"
+      >
+        <ul class="w-48">
+          <li
+            v-for="option in sortOptions"
+            :key="option.value"
+            class="cursor-pointer px-4 py-2 font-bold hover:bg-gray-100"
+            :class="[option.value === selectedSort ? 'bg-gray-400' : '']"
+            @click="onSortChange(option.value)"
+          >
+            {{ option.label }}
+          </li>
+        </ul>
+      </FwbDropdown>
+
       <div
         class="grid grid-cols-1 justify-center gap-4 md:grid-cols-2 md:gap-6 xl:gap-10 2xl:grid-cols-4"
       >
@@ -93,6 +134,7 @@ onMounted(async () => {
           :recipe="recipe"
         />
       </div>
+
       <FwbPagination
         v-model="currentPage"
         :total-items="totalCount"
