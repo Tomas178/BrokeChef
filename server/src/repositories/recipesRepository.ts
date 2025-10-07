@@ -12,7 +12,6 @@ import type { Pagination, PaginationWithSort } from '@server/shared/pagination';
 import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import { prefixTable } from '@server/utils/strings';
 import {
-  sql,
   type AliasedRawBuilder,
   type ExpressionBuilder,
   type Insertable,
@@ -55,9 +54,6 @@ function normalizeRating<T extends { rating: number | string | null }>(
     rating: recipe.rating ? Number(recipe.rating) : recipe.rating,
   };
 }
-
-const orderNullsLast = (direction: OrderByDirection) =>
-  sql`${sql.raw(direction)} nulls last`;
 
 export function recipesRepository(database: Database): RecipesRepository {
   return {
@@ -152,7 +148,9 @@ export function recipesRepository(database: Database): RecipesRepository {
         .select(recipesKeysPublic)
         .select(withAuthor)
         .select(withRatings)
-        .orderBy(orderByClause.column, orderNullsLast(orderByClause.direction))
+        .orderBy(orderByClause.column, ob =>
+          ob[orderByClause.direction === 'asc' ? 'asc' : 'desc']().nullsLast()
+        )
         .offset(offset)
         .limit(limit)
         .execute();
