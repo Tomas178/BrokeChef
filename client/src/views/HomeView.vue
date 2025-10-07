@@ -7,20 +7,27 @@ import type { RecipesPublic } from '@server/shared/types';
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { SortingTypes } from '@server/shared/enums';
+import Spinner from '@/components/Spinner.vue';
 
 const route = useRoute();
 const router = useRouter();
 
+const RECIPES_PER_PAGE = 3;
+
 const recipes = ref<RecipesPublic[]>([]);
-
 const totalCount = ref(0);
+const isLoading = ref(false);
+const isRecipes = computed(() => recipes.value.length > 0);
+const errorMessage = 'Failed to load recipes. Please try again.';
 
-const totalPages = ref(1);
+const totalPages = computed(() =>
+  Math.ceil(totalCount.value / RECIPES_PER_PAGE)
+);
 const currentPage = ref(1);
 
 const pagination = reactive<PaginationWithSort>({
   offset: 0,
-  limit: 36,
+  limit: RECIPES_PER_PAGE,
   sort: SortingTypes.NEWEST,
 });
 
@@ -29,29 +36,43 @@ const sortOptions = [
   { label: 'Highest Rated', value: SortingTypes.HIGHEST_RATING },
   { label: 'Lowest Rated', value: SortingTypes.LOWEST_RATING },
   { label: 'Oldest', value: SortingTypes.OLDEST },
-];
+] as const;
 
-const selectedSort = computed(() => pagination.sort);
+const selectedSortLabel = computed(
+  () => sortOptions.find((o) => o.value === pagination.sort)?.label ?? 'Newest'
+);
 
 const fetchPage = async (page: number) => {
-  currentPage.value = page;
-  pagination.offset = (page - 1) * pagination.limit;
+  isLoading.value = true;
 
-  const [fetchedRecipes] = await Promise.all([
-    trpc.recipes.findAll.query(pagination),
-    changeQueryParams(currentPage.value, pagination.sort),
-  ]);
+  try {
+    currentPage.value = page;
+    pagination.offset = (page - 1) * RECIPES_PER_PAGE;
 
-  recipes.value = fetchedRecipes;
+    const [fetchedRecipes] = await Promise.all([
+      trpc.recipes.findAll.query(pagination),
+      updateQueryParams(page, pagination.sort),
+    ]);
+
+    recipes.value = fetchedRecipes;
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch {
+    isLoading.value = false;
+  } finally {
+    isLoading.value = false;
+  }
 };
 
-const changeQueryParams = async (pageNumber: number, sort?: SortingTypes) => {
-  await router.replace({
-    query: {
-      page: pageNumber.toString(),
-      sort: sort ?? pagination.sort,
-    },
-  });
+const updateQueryParams = async (pageNumber: number, sort?: SortingTypes) => {
+  const newQuery = { page: pageNumber.toString(), sort };
+
+  if (
+    route.query.page !== newQuery.page ||
+    route.query.sort !== newQuery.sort
+  ) {
+    await router.replace({ query: newQuery });
+  }
 };
 
 const isValidPage = (pageNumber: string | number): boolean => {
@@ -62,28 +83,35 @@ const isValidPage = (pageNumber: string | number): boolean => {
   return pageNumberConverted >= 1 && pageNumberConverted <= totalPages.value;
 };
 
-const getParamPage = async (): Promise<number> => {
+const getPageFromRoute = (): number => {
   const rawPage = route.query.page;
+  const pageStr = Array.isArray(rawPage) ? rawPage[0] : rawPage;
+  return pageStr && isValidPage(pageStr) ? Number(pageStr) : 1;
+};
 
-  const rawPageString = Array.isArray(rawPage)
-    ? (rawPage[0] ?? '')
-    : (rawPage ?? '');
-
-  const validPage = isValidPage(rawPageString);
-
-  return validPage ? Number(rawPageString) : 1;
+const getSortFromRoute = (): SortingTypes => {
+  const rawSort = route.query.sort;
+  const sortStr = Array.isArray(rawSort) ? rawSort[0] : rawSort;
+  return sortOptions.some((o) => o.value === sortStr)
+    ? (sortStr as SortingTypes)
+    : SortingTypes.NEWEST;
 };
 
 const onSortChange = async (newSort: SortingTypes) => {
+  if (pagination.sort === newSort) return;
+
+  console.log(`Sort in onSortChange: ${{ newSort }}`);
   pagination.sort = newSort;
   await fetchPage(1);
 };
 
 onMounted(async () => {
   totalCount.value = await trpc.recipes.totalCount.query();
-  totalPages.value = Math.ceil(totalCount.value / pagination.limit);
 
-  const pageNumber = await getParamPage();
+  const pageNumber = getPageFromRoute();
+  const sort = getSortFromRoute();
+  console.log(`Sort in onMounted: ${sort}`);
+  pagination.sort = sort;
 
   await fetchPage(pageNumber);
 });
@@ -106,18 +134,19 @@ onMounted(async () => {
     <div class="flex flex-col">
       <FwbDropdown
         color="light"
-        :text="`Sort: ${sortOptions.find((o) => o.value === selectedSort)?.label ?? 'Newest'}`"
+        :text="`Sort: ${selectedSortLabel}`"
         placement="bottom"
         align-to-end
         close-inside
         class="mb-4 self-end"
+        :disabled="isLoading || !isRecipes"
       >
         <ul class="w-36 sm:w-48">
           <li
             v-for="option in sortOptions"
             :key="option.value"
-            class="cursor-pointer px-4 py-2 font-bold hover:bg-gray-100"
-            :class="[option.value === selectedSort ? 'bg-gray-400' : '']"
+            class="cursor-pointer px-4 py-2 font-bold transition-colors hover:bg-gray-100"
+            :class="[option.value === pagination.sort ? 'bg-gray-200' : '']"
             @click="onSortChange(option.value)"
           >
             {{ option.label }}
@@ -125,7 +154,12 @@ onMounted(async () => {
         </ul>
       </FwbDropdown>
 
+      <!-- Loading state -->
+      <Spinner class="self-center" v-if="isLoading" />
+
+      <!-- Non-empty state -->
       <div
+        v-else-if="isRecipes"
         class="grid grid-cols-1 justify-center gap-4 md:grid-cols-2 md:gap-6 xl:gap-10 2xl:grid-cols-4"
       >
         <RecipeCard
@@ -135,16 +169,22 @@ onMounted(async () => {
         />
       </div>
 
+      <!-- Empty State -->
+      <div v-else class="flex items-center justify-center py-20">
+        <span class="text-center text-gray-600">{{ errorMessage }}</span>
+      </div>
+
       <FwbPagination
         v-model="currentPage"
         :total-items="totalCount"
-        :per-page="pagination.limit"
+        :per-page="RECIPES_PER_PAGE"
         hide-labels
         show-icons
         enable-first-last
         @update:model-value="fetchPage(currentPage)"
         class="mt-10 flex justify-center [&_button]:cursor-pointer"
         large
+        :disabled="isLoading || !isRecipes"
       />
     </div>
   </div>
