@@ -4,8 +4,9 @@ import AuthenticationForm from '@/components/Forms/AuthenticationForm/Authentica
 import SubmitButton from '@/components/Forms/AuthenticationForm/SubmitButton.vue';
 import useErrorMessage from '@/composables/useErrorMessage';
 import useToast from '@/composables/useToast';
-import { loginPath } from '@/config';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
+import { ROUTE_NAMES } from '@/router/consts/routeNames';
+import { ROUTE_PATHS } from '@/router/consts/routePaths';
 import { useUserStore } from '@/stores/user';
 import { isSamePassword } from '@/utils/isSamePassword';
 import { FwbInput } from 'flowbite-vue';
@@ -42,7 +43,7 @@ async function handleResetPassword() {
 
     setTimeout(async () => {
       await router.push({
-        name: 'Login',
+        name: ROUTE_NAMES.LOGIN,
       });
     }, 1500);
   } catch {
@@ -87,7 +88,7 @@ async function handleResetPassword() {
 
       <div class="justify-end self-stretch text-center">
         <RouterLink
-          :to="loginPath"
+          :to="ROUTE_PATHS.LOGIN"
           class="hover:text-secondary-green text-primary-green"
         >
           Sign in

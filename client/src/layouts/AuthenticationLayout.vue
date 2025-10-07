@@ -3,20 +3,21 @@ import { FwbNavbarLink } from 'flowbite-vue';
 import { useUserStore } from '@/stores/user';
 import StackedLayout from './StackedLayout.vue';
 import { computed } from 'vue';
+import { ROUTE_NAMES } from '@/router/consts/routeNames';
 
 const user = useUserStore();
 
 const links = computed(() => [
-  { label: 'Explore recipes', name: 'Home' },
+  { label: 'Explore recipes', name: ROUTE_NAMES.HOME },
 
   ...(user.isLoggedIn
     ? [
-        { label: 'Create a recipe', name: 'CreateRecipe' },
-        { label: 'Profile', name: 'MyProfile' },
+        { label: 'Create a recipe', name: ROUTE_NAMES.CREATE_RECIPE },
+        { label: 'Profile', name: ROUTE_NAMES.MY_PROFILE },
       ]
     : [
-        { label: 'Login', name: 'Login' },
-        { label: 'Signup', name: 'Signup' },
+        { label: 'Login', name: ROUTE_NAMES.LOGIN },
+        { label: 'Signup', name: ROUTE_NAMES.SIGNUP },
       ]),
 ]);
 </script>

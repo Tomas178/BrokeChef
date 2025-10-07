@@ -6,9 +6,10 @@ import { ref } from 'vue';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
 import useErrorMessage from '@/composables/useErrorMessage';
 import { useUserStore } from '@/stores/user';
-import { requestResetPasswordPath, signupPath } from '@/config';
 import { useRouter } from 'vue-router';
 import useToast from '@/composables/useToast';
+import { ROUTE_PATHS } from '@/router/consts/routePaths';
+import { ROUTE_NAMES } from '@/router/consts/routeNames';
 
 const { showLoading, updateToast } = useToast();
 
@@ -39,7 +40,7 @@ async function handleLogin() {
 
     setTimeout(async () => {
       await router.push({
-        name: 'Home',
+        name: ROUTE_NAMES.HOME,
       });
     }, 1500);
   } catch {
@@ -50,7 +51,7 @@ async function handleLogin() {
 const formFooter = {
   text: 'Don’t have an account? ',
   redirectPageName: 'Sign Up',
-  redirectPageFullLink: signupPath,
+  redirectPageFullLink: ROUTE_PATHS.SIGNUP,
 };
 </script>
 
@@ -84,7 +85,7 @@ const formFooter = {
       <div
         class="text-primary-green hover:text-secondary-green justify-center text-end leading-loose"
       >
-        <RouterLink :to="requestResetPasswordPath"
+        <RouterLink :to="ROUTE_PATHS.REQUEST_RESET_PASSWORD"
           >Forgot your password?</RouterLink
         >
       </div>

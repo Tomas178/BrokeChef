@@ -16,6 +16,7 @@ import Spinner from '@/components/Spinner.vue';
 import useToast from '@/composables/useToast';
 import Dialog from '@/components/Dialog.vue';
 import { formatRecipeRating } from '@/utils/formatRecipeRating';
+import { ROUTE_NAMES } from '@/router/consts/routeNames';
 
 const { showLoading, updateToast } = useToast();
 
@@ -51,7 +52,7 @@ async function handleDelete() {
 
     setTimeout(async () => {
       await router.push({
-        name: 'Home',
+        name: ROUTE_NAMES.HOME,
       });
     }, 1000);
   } catch {

@@ -8,8 +8,8 @@ import useErrorMessage from '@/composables/useErrorMessage';
 import { useUserStore } from '@/stores/user';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
 import { isSamePassword } from '@/utils/isSamePassword';
-import { loginPath } from '@/config';
 import useToast from '@/composables/useToast';
+import { ROUTE_PATHS } from '@/router/consts/routePaths';
 
 const { showLoading, updateToast } = useToast();
 
@@ -55,7 +55,7 @@ async function handleSignup() {
 const formFooter = {
   text: 'Already have an account? ',
   redirectPageName: 'Sign In',
-  redirectPageFullLink: loginPath,
+  redirectPageFullLink: ROUTE_PATHS.LOGIN,
 };
 </script>
 

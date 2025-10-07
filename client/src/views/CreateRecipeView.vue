@@ -10,6 +10,7 @@ import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { apiOrigin } from '@/config';
 import useToast from '@/composables/useToast';
+import { ROUTE_NAMES } from '@/router/consts/routeNames';
 
 const { showLoading, updateToast } = useToast();
 
@@ -83,7 +84,7 @@ async function handleCreateRecipe() {
   if (recipe) {
     setTimeout(async () => {
       await router.push({
-        name: 'Recipe',
+        name: ROUTE_NAMES.RECIPE,
         params: { id: recipe?.id },
       });
     }, 1500);
