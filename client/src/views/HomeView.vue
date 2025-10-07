@@ -100,7 +100,6 @@ const getSortFromRoute = (): SortingTypes => {
 const onSortChange = async (newSort: SortingTypes) => {
   if (pagination.sort === newSort) return;
 
-  console.log(`Sort in onSortChange: ${{ newSort }}`);
   pagination.sort = newSort;
   await fetchPage(1);
 };
@@ -110,7 +109,7 @@ onMounted(async () => {
 
   const pageNumber = getPageFromRoute();
   const sort = getSortFromRoute();
-  console.log(`Sort in onMounted: ${sort}`);
+
   pagination.sort = sort;
 
   await fetchPage(pageNumber);
