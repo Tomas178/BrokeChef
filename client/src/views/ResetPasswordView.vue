@@ -5,19 +5,17 @@ import SubmitButton from '@/components/Forms/AuthenticationForm/SubmitButton.vue
 import useErrorMessage from '@/composables/useErrorMessage';
 import useToast from '@/composables/useToast';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
-import { ROUTE_NAMES } from '@/router/consts/routeNames';
 import { ROUTE_PATHS } from '@/router/consts/routePaths';
+import { navigateToLogin } from '@/router/utils';
 import { useUserStore } from '@/stores/user';
 import { isSamePassword } from '@/utils/isSamePassword';
 import { FwbInput } from 'flowbite-vue';
 import { ref } from 'vue';
-import { RouterLink, useRouter } from 'vue-router';
+import { RouterLink } from 'vue-router';
 
 const { showLoading, updateToast } = useToast();
 
 const { resetPassword } = useUserStore();
-
-const router = useRouter();
 
 const password = ref('');
 const repeatPassword = ref('');
@@ -41,11 +39,7 @@ async function handleResetPassword() {
     password.value = '';
     repeatPassword.value = '';
 
-    setTimeout(async () => {
-      await router.push({
-        name: ROUTE_NAMES.LOGIN,
-      });
-    }, 1500);
+    await navigateToLogin(1500);
   } catch {
     updateToast(id, 'error', errorMessage.value || DEFAULT_SERVER_ERROR);
   }

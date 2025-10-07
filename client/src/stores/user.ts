@@ -2,12 +2,10 @@ import { defineStore } from 'pinia';
 import { ref, computed, watch } from 'vue';
 import { authClient } from '@/lib/auth-client';
 import { frontendBase, resetPasswordBase } from '@/config';
-import { useRouter } from 'vue-router';
-import { ROUTE_NAMES } from '@/router/consts/routeNames';
+import { navigateToLogin } from '@/router/utils';
 
 export const useUserStore = defineStore('user', () => {
   const authToken = ref<string | null>(localStorage.getItem('authToken'));
-  const router = useRouter();
 
   const session = authClient.useSession();
   const id = ref<string | undefined>(undefined);
@@ -140,7 +138,7 @@ export const useUserStore = defineStore('user', () => {
       fetchOptions: {
         onSuccess: async () => {
           console.log('User logged out successfully!');
-          await router.push({ name: ROUTE_NAMES.LOGIN });
+          await navigateToLogin();
         },
         onError: (ctx) => console.log(ctx.error.message),
       },

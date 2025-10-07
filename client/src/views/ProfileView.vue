@@ -12,7 +12,7 @@ import { DEFAULT_SERVER_ERROR } from '../consts';
 import useToast from '@/composables/useToast';
 import RecipesList from '@/components/RecipesList/RecipesList.vue';
 import { RECIPE_TYPE } from '@/components/RecipesList/types';
-import { ROUTE_PATHS } from '@/router/consts/routePaths';
+import { navigateToUserEditProfile } from '@/router/utils';
 
 const { showLoading, updateToast } = useToast();
 
@@ -182,7 +182,7 @@ onMounted(async () => await getUser());
         <span class="text-xl lg:text-2xl">{{ user.name }}</span>
 
         <FwbButton
-          @click="router.push(ROUTE_PATHS.EDIT_MY_PROFILE)"
+          @click="navigateToUserEditProfile({ id: user.id })"
           class="text-primary-green inline-flex cursor-pointer self-start rounded-3xl bg-white px-2 py-1 text-lg font-bold shadow-md hover:bg-white hover:outline-2 lg:px-6 lg:py-2 lg:text-3xl"
           pill
           square

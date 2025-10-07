@@ -6,6 +6,7 @@ import { ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import Spinner from './Spinner.vue';
 import { formatRecipeRating } from '@/utils/formatRecipeRating';
+import { ROUTE_NAMES } from '@/router/consts/routeNames';
 
 defineProps<{
   recipe: RecipesPublic;
@@ -16,7 +17,7 @@ const isLoading = ref(true);
 
 <template>
   <RouterLink
-    :to="{ name: 'Recipe', params: { id: recipe.id } }"
+    :to="{ name: ROUTE_NAMES.RECIPE, params: { id: recipe.id } }"
     class="hover:outline-secondary-green relative flex w-full flex-col items-center rounded-md hover:outline-3"
   >
     <div

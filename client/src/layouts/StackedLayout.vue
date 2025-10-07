@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { FwbNavbar, FwbNavbarCollapse, FwbNavbarLink } from 'flowbite-vue';
-import type { RouteNamesValues } from '@/router/consts/routeNames';
+import { ROUTE_NAMES, type RouteNamesValues } from '@/router/consts/routeNames';
 
 const { links } = defineProps<{
   links: {
@@ -25,7 +25,7 @@ const navigation = computed(() =>
   <FwbNavbar class="relative z-50">
     <template #logo>
       <RouterLink
-        :to="{ name: 'Home' }"
+        :to="{ name: ROUTE_NAMES.HOME }"
         class="flex items-center space-x-2 hover:scale-105"
       >
         <img src="@/assets/logo.svg" alt="BrokChef Logo" class="h-12 w-auto" />

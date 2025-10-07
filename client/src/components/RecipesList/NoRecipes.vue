@@ -1,15 +1,16 @@
 <script lang="ts" setup>
-import { RECIPE_TYPE, type recipeTypeKeys } from './types';
+import { ROUTE_NAMES } from '@/router/consts/routeNames';
+import { RECIPE_TYPE, type RecipeTypeValues } from './types';
 
 defineProps<{
-  recipeType: recipeTypeKeys;
+  recipeType: RecipeTypeValues;
 }>();
 </script>
 
 <template>
   <div v-if="recipeType === RECIPE_TYPE.SAVED" class="text-center">
     <RouterLink
-      :to="{ name: 'Home' }"
+      :to="{ name: ROUTE_NAMES.HOME }"
       class="text-primary-green hover:text-secondary-green text-xl lg:text-3xl"
     >
       Go and Explore Recipes
@@ -18,7 +19,7 @@ defineProps<{
 
   <div v-else class="text-center">
     <RouterLink
-      :to="{ name: 'CreateRecipe' }"
+      :to="{ name: ROUTE_NAMES.CREATE_RECIPE }"
       class="text-primary-green hover:text-secondary-green text-xl lg:text-3xl"
     >
       Go and Create Recipes

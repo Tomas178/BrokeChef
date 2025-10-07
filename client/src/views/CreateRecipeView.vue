@@ -6,15 +6,12 @@ import { reactive, computed, ref } from 'vue';
 import { trpc } from '@/trpc';
 import useErrorMessage from '@/composables/useErrorMessage';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
-import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { apiOrigin } from '@/config';
 import useToast from '@/composables/useToast';
-import { ROUTE_NAMES } from '@/router/consts/routeNames';
+import { navigateToRecipe } from '@/router/utils';
 
 const { showLoading, updateToast } = useToast();
-
-const router = useRouter();
 
 const recipeForm = reactive<CreateRecipeInput>({
   title: '',
@@ -81,14 +78,7 @@ async function handleCreateRecipe() {
   recipeForm.imageUrl = '';
   recipeImageFile.value = undefined;
 
-  if (recipe) {
-    setTimeout(async () => {
-      await router.push({
-        name: ROUTE_NAMES.RECIPE,
-        params: { id: recipe?.id },
-      });
-    }, 1500);
-  }
+  await navigateToRecipe({ id: recipe.id }, 1500);
 }
 </script>
 

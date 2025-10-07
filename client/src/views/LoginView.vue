@@ -1,21 +1,20 @@
 <script lang="ts" setup>
 import AuthenticationForm from '@/components/Forms/AuthenticationForm/AuthenticationForm.vue';
-import AuthActions from '@/components/Forms/AuthenticationForm/AuthActions.vue';
+import AuthActions, {
+  type Footer,
+} from '@/components/Forms/AuthenticationForm/AuthActions.vue';
 import { FwbInput } from 'flowbite-vue';
 import { ref } from 'vue';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
 import useErrorMessage from '@/composables/useErrorMessage';
 import { useUserStore } from '@/stores/user';
-import { useRouter } from 'vue-router';
 import useToast from '@/composables/useToast';
 import { ROUTE_PATHS } from '@/router/consts/routePaths';
-import { ROUTE_NAMES } from '@/router/consts/routeNames';
+import { navigateToHome } from '@/router/utils';
 
 const { showLoading, updateToast } = useToast();
 
 const { login } = useUserStore();
-
-const router = useRouter();
 
 const userForm = ref({
   email: '',
@@ -38,17 +37,13 @@ async function handleLogin() {
     userForm.value.email = '';
     userForm.value.password = '';
 
-    setTimeout(async () => {
-      await router.push({
-        name: ROUTE_NAMES.HOME,
-      });
-    }, 1500);
+    await navigateToHome(undefined, 1500);
   } catch {
     updateToast(id, 'error', errorMessage.value || DEFAULT_SERVER_ERROR);
   }
 }
 
-const formFooter = {
+const formFooter: Footer = {
   text: 'Don’t have an account? ',
   redirectPageName: 'Sign Up',
   redirectPageFullLink: ROUTE_PATHS.SIGNUP,

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { trpc } from '@/trpc';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import type {
   CreateRatingInput,
   Rating,
@@ -16,12 +16,12 @@ import Spinner from '@/components/Spinner.vue';
 import useToast from '@/composables/useToast';
 import Dialog from '@/components/Dialog.vue';
 import { formatRecipeRating } from '@/utils/formatRecipeRating';
+import { navigateToHome } from '@/router/utils';
 import { ROUTE_NAMES } from '@/router/consts/routeNames';
 
 const { showLoading, updateToast } = useToast();
 
 const route = useRoute();
-const router = useRouter();
 
 const recipe = ref<RecipesPublicAllInfo>();
 const isAuthor = ref(false);
@@ -50,11 +50,7 @@ async function handleDelete() {
 
     updateToast(id, 'success', 'Recipe Removed!');
 
-    setTimeout(async () => {
-      await router.push({
-        name: ROUTE_NAMES.HOME,
-      });
-    }, 1000);
+    await navigateToHome(undefined, 1000);
   } catch {
     updateToast(id, 'error', deleteErrorMessage.value || DEFAULT_SERVER_ERROR);
   }
@@ -232,7 +228,10 @@ onBeforeMount(async () => {
                 class="text-primary-green hover:text-secondary-green"
               >
                 <RouterLink
-                  :to="{ name: 'UserProfile', params: { id: recipe.userId } }"
+                  :to="{
+                    name: ROUTE_NAMES.USER_PROFILE,
+                    params: { id: recipe.userId },
+                  }"
                 >
                   {{ recipe.author.name }}
                 </RouterLink>

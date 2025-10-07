@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import AuthenticationForm from '@/components/Forms/AuthenticationForm/AuthenticationForm.vue';
-import AuthActions from '@/components/Forms/AuthenticationForm/AuthActions.vue';
+import AuthActions, {
+  type Footer,
+} from '@/components/Forms/AuthenticationForm/AuthActions.vue';
 import AlertError from '@/components/AlertError.vue';
 import { FwbInput } from 'flowbite-vue';
 import { ref } from 'vue';
@@ -52,7 +54,7 @@ async function handleSignup() {
   }
 }
 
-const formFooter = {
+const formFooter: Footer = {
   text: 'Already have an account? ',
   redirectPageName: 'Sign In',
   redirectPageFullLink: ROUTE_PATHS.LOGIN,
