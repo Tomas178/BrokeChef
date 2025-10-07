@@ -1,1 +1,1 @@
-export * from '@server/enums/RecipesSort';
+export * from '@server/enums/SortingTypes';

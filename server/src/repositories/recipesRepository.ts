@@ -18,7 +18,10 @@ import {
   type OrderByDirection,
 } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
-import { RecipesSort, type RecipesSortValues } from '@server/enums/RecipesSort';
+import {
+  SortingTypes,
+  type SortingTypesValues,
+} from '@server/enums/SortingTypes';
 import { joinStepsToArray } from './utils/joinStepsToArray';
 
 const TABLE = 'recipes';
@@ -236,12 +239,12 @@ interface Order {
   direction: OrderByDirection;
 }
 
-function convertSort(sort: RecipesSortValues): Order {
-  return sort === RecipesSort.HIGHEST_RATING
+function convertSort(sort: SortingTypesValues): Order {
+  return sort === SortingTypes.HIGHEST_RATING
     ? { column: 'rating', direction: 'desc' }
-    : sort === RecipesSort.LOWEST_RATING
+    : sort === SortingTypes.LOWEST_RATING
       ? { column: 'rating', direction: 'asc' }
-      : sort === RecipesSort.OLDEST
+      : sort === SortingTypes.OLDEST
         ? { column: 'id', direction: 'asc' }
         : { column: 'id', direction: 'desc' };
 }

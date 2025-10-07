@@ -17,7 +17,7 @@ import {
   type UsersPublic,
 } from '@server/entities/users';
 import { initialPage, initialPageWithSort } from '@server/entities/shared';
-import { RecipesSort } from '@server/enums/RecipesSort';
+import { SortingTypes } from '@server/enums/SortingTypes';
 import { recipesRepository } from '../recipesRepository';
 
 const database = await wrapInRollbacks(createTestDatabase());
@@ -329,7 +329,7 @@ describe('findAll', () => {
 
     const recipesFromRepo = await repository.findAll({
       ...initialPageWithSort,
-      sort: RecipesSort.OLDEST,
+      sort: SortingTypes.OLDEST,
     });
 
     expect(recipesFromRepo).toHaveLength(initialPageWithSort.limit);
@@ -373,7 +373,7 @@ describe('findAll', () => {
 
     const recipesFromRepo = await repository.findAll({
       ...initialPageWithSort,
-      sort: RecipesSort.HIGHEST_RATING,
+      sort: SortingTypes.HIGHEST_RATING,
     });
 
     expect(recipesFromRepo).toHaveLength(initialPageWithSort.limit);
@@ -439,7 +439,7 @@ describe('findAll', () => {
 
     const recipesFromRepo = await repository.findAll({
       ...initialPageWithSort,
-      sort: RecipesSort.LOWEST_RATING,
+      sort: SortingTypes.LOWEST_RATING,
     });
 
     expect(recipesFromRepo).toHaveLength(initialPageWithSort.limit);

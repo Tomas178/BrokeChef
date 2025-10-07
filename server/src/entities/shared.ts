@@ -1,4 +1,4 @@
-import { RecipesSort } from '@server/enums/RecipesSort';
+import { SortingTypes } from '@server/enums/SortingTypes';
 import * as z from 'zod';
 
 export const integerIdSchema = z.number().int().positive();
@@ -19,7 +19,7 @@ export const paginationSchema = z.object({
 });
 
 export const paginationWithSortSchema = paginationSchema.extend({
-  sort: z.enum(RecipesSort).default(RecipesSort.NEWEST),
+  sort: z.enum(SortingTypes).default(SortingTypes.NEWEST),
 });
 
 export const initialPage = {
@@ -29,7 +29,7 @@ export const initialPage = {
 
 export const initialPageWithSort = {
   ...initialPage,
-  sort: RecipesSort.NEWEST,
+  sort: SortingTypes.NEWEST,
 };
 
 export const userWithPaginationSchema = paginationSchema.extend({
