@@ -112,7 +112,7 @@ onMounted(async () => {
         close-inside
         class="mb-4 self-end"
       >
-        <ul class="w-48">
+        <ul class="w-36 sm:w-48">
           <li
             v-for="option in sortOptions"
             :key="option.value"
