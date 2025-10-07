@@ -1,3 +1,5 @@
+import type { ObjectValues } from './routeNames';
+
 export const ROUTE_PATHS = {
   HOME: '',
   SIGNUP: '/signup',
@@ -10,3 +12,5 @@ export const ROUTE_PATHS = {
   USER_PROFILE: '/profile/:id',
   EDIT_MY_PROFILE: '/profile/:id/edit',
 } as const;
+
+export type RoutePathsValues = ObjectValues<typeof ROUTE_PATHS>;

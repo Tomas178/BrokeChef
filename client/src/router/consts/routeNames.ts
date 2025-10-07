@@ -10,3 +10,7 @@ export const ROUTE_NAMES = {
   USER_PROFILE: 'UserProfile',
   EDIT_MY_PROFILE: 'EditMyProfile',
 } as const;
+
+export type ObjectValues<T> = T[keyof T];
+
+export type RouteNamesValues = ObjectValues<typeof ROUTE_NAMES>;
