@@ -1,17 +1,17 @@
 <script lang="ts" setup>
-import type { RecipesPublic } from '@server/shared/types';
+import { computed, onMounted, reactive, ref } from 'vue';
 import RecipeCard from '@/components/RecipeCard.vue';
+import Spinner from '@/components/Spinner.vue';
 import NavButton from './NavButton.vue';
 import NoRecipes from '@/components/RecipesList/NoRecipes.vue';
-import { RECIPE_TYPE, type recipeTypeKeys } from './types';
-import { computed, onMounted, reactive, ref } from 'vue';
+import { RECIPE_TYPE, type RecipeTypeValues } from './types';
 import { trpc } from '@/trpc';
+import type { RecipesPublic } from '@server/shared/types';
 import type { Pagination } from '@server/shared/pagination';
-import Spinner from '../Spinner.vue';
 
 const { title, recipeType, userId } = defineProps<{
   title: string;
-  recipeType: recipeTypeKeys;
+  recipeType: RecipeTypeValues;
   userId: string | undefined;
 }>();
 
