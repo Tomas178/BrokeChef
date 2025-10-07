@@ -1,16 +1,19 @@
 <script lang="ts" setup>
+import type { RoutePathsValues } from '@/router/consts/routePaths';
 import SubmitButton from './SubmitButton.vue';
 import { useUserStore } from '@/stores/user';
 
 const { socialLogin } = useUserStore();
 
+export type Footer = {
+  text: string;
+  redirectPageName: string;
+  redirectPageFullLink: RoutePathsValues;
+};
+
 const { actionName, footer } = defineProps<{
   actionName: string;
-  footer: {
-    text: string;
-    redirectPageName: string;
-    redirectPageFullLink: string;
-  };
+  footer: Footer;
 }>();
 </script>
 
