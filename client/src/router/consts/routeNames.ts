@@ -4,7 +4,7 @@ export const ROUTE_NAMES = {
   LOGIN: 'Login',
   REQUEST_RESET_PASSWORD: 'RequestResetPassword',
   RESET_PASSWORD: 'ResetPassword',
-  CREATE_RECIPES: 'CreateRecipe',
+  CREATE_RECIPE: 'CreateRecipe',
   RECIPE: 'Recipe',
   MY_PROFILE: 'MyProfile',
   USER_PROFILE: 'UserProfile',
