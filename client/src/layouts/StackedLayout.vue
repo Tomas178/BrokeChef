@@ -2,11 +2,12 @@
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { FwbNavbar, FwbNavbarCollapse, FwbNavbarLink } from 'flowbite-vue';
+import type { RouteNamesValues } from '@/router/consts/routeNames';
 
 const { links } = defineProps<{
   links: {
     label: string;
-    name: string;
+    name: RouteNamesValues;
   }[];
 }>();
 
