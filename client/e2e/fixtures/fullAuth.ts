@@ -1,7 +1,8 @@
 import { test as base, expect, Page } from '@playwright/test';
 import { clearEmails, waitForEmailLink } from '../utils/mailhog';
 import { fakeSignupUser } from '../utils/fakeData';
-import { checkAfterLogin, loginUser, signupUser } from '../utils/auth';
+import { fullLoginProcedure, signupUser } from '../utils/auth';
+import { ROUTE_PATHS } from '@/router/consts/routePaths';
 
 export type User = ReturnType<typeof fakeSignupUser>;
 
@@ -15,16 +16,14 @@ export const test = base.extend<AuthFixtures>({
 
     const user = fakeSignupUser();
 
-    await page.goto('/signup');
+    await page.goto(ROUTE_PATHS.SIGNUP);
     await signupUser(page, user);
 
     const verificationLink = await waitForEmailLink();
 
     await page.goto(verificationLink);
 
-    await page.goto('/login');
-    await loginUser(page, user);
-    await checkAfterLogin(page);
+    await fullLoginProcedure(page, user);
 
     await use({ page, user });
     await page.close();

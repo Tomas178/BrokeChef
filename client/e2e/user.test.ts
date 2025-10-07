@@ -15,6 +15,7 @@ import {
   getErrorMessage,
   getToastContainer,
 } from './utils/toast';
+import { ROUTE_PATHS } from '@/router/consts/routePaths';
 
 const user = fakeSignupUser();
 
@@ -32,7 +33,7 @@ test.describe.serial('Signup and login sequence', () => {
   });
 
   test('Visitor is shown that passwords do not match', async ({ page }) => {
-    await page.goto('/signup');
+    await page.goto(ROUTE_PATHS.SIGNUP);
 
     const toastContainer = await getToastContainer(page);
     const errorMessage = await getErrorMessage(page);
@@ -44,7 +45,7 @@ test.describe.serial('Signup and login sequence', () => {
   });
 
   test('Visitor is shown that password is too short', async ({ page }) => {
-    await page.goto('/signup');
+    await page.goto(ROUTE_PATHS.SIGNUP);
 
     const toastContainer = await getToastContainer(page);
     const errorMessage = await getErrorMessage(page);
@@ -57,7 +58,7 @@ test.describe.serial('Signup and login sequence', () => {
   });
 
   test('Visitor can signup', async ({ page }) => {
-    await page.goto('/signup');
+    await page.goto(ROUTE_PATHS.SIGNUP);
 
     const toastContainer = await getToastContainer(page);
 
@@ -67,7 +68,7 @@ test.describe.serial('Signup and login sequence', () => {
   });
 
   test('Visitor is shown that email is taken', async ({ page }) => {
-    await page.goto('/signup');
+    await page.goto(ROUTE_PATHS.SIGNUP);
 
     const toastContainer = await getToastContainer(page);
     const errorMessage = await getErrorMessage(page);
@@ -83,16 +84,16 @@ test.describe.serial('Signup and login sequence', () => {
       test('Visitor can access homepage', async ({ page }) => {
         await page.goto('/');
 
-        await page.waitForURL('/?page=1');
+        await page.waitForURL(HOME_PAGE_URL);
 
-        await expect(page).toHaveURL('/?page=1');
+        await expect(page).toHaveURL(HOME_PAGE_URL);
       });
     });
 
     test.describe('Forbidden routes without being logged in', () => {
       test('Visitor cannot access profile page without being logged in', async ({
         page,
-      }) => await checkIfRedirects(page, '/profile'));
+      }) => await checkIfRedirects(page, ROUTE_PATHS.MY_PROFILE));
 
       test('Visitor cannot access other user profile page without being logged in', async ({
         page,
@@ -104,7 +105,7 @@ test.describe.serial('Signup and login sequence', () => {
 
       test('Visitor cannot access create recipe page without being logged in', async ({
         page,
-      }) => await checkIfRedirects(page, '/create-recipe'));
+      }) => await checkIfRedirects(page, ROUTE_PATHS.CREATE_RECIPE));
     });
   });
 
@@ -112,7 +113,7 @@ test.describe.serial('Signup and login sequence', () => {
     let toastContainer: Locator;
 
     test.beforeEach(async ({ page }) => {
-      await page.goto('/login');
+      await page.goto(ROUTE_PATHS.LOGIN);
 
       toastContainer = await getToastContainer(page);
     });
@@ -125,7 +126,7 @@ test.describe.serial('Signup and login sequence', () => {
       await checkLocator(toastContainer, ERROR_VERIFY_EMAIL);
 
       await page.reload();
-      await expect(page).toHaveURL('/login');
+      await expect(page).toHaveURL(ROUTE_PATHS.LOGIN);
     });
 
     test('Go to the verification link', async ({ page }) => {
@@ -157,7 +158,7 @@ test.describe.serial('Signup and login sequence', () => {
 
         await expect(logoutLink).toBeHidden();
 
-        await expect(page).toHaveURL('/login');
+        await expect(page).toHaveURL(ROUTE_PATHS.LOGIN);
 
         await page.reload();
         await expect(logoutLink).toBeHidden();
@@ -174,7 +175,7 @@ test.describe.serial('Request and reset password sequence', () => {
       const toastContainer = await getToastContainer(page);
 
       await test.step('1 - Go to request password page', async () => {
-        await page.goto('/request-reset-password');
+        await page.goto(ROUTE_PATHS.REQUEST_RESET_PASSWORD);
       });
 
       await test.step('2 - Request reset password', async () => {
@@ -192,7 +193,7 @@ test.describe.serial('Request and reset password sequence', () => {
       const toastContainer = await getToastContainer(page);
 
       await test.step('1 - Go to request password page', async () => {
-        await page.goto('/request-reset-password');
+        await page.goto(ROUTE_PATHS.REQUEST_RESET_PASSWORD);
       });
 
       await test.step('2 - Request reset password', async () => {

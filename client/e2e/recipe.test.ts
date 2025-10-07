@@ -10,8 +10,9 @@ import {
   ImageData,
 } from './utils/recipe';
 import { checkLocator, getToastContainer } from './utils/toast';
+import { ROUTE_PATHS } from '@/router/consts/routePaths';
 
-const CREATE_RECIPE_PATH = '/create-recipe';
+const CREATE_RECIPE_PATH = ROUTE_PATHS.CREATE_RECIPE;
 const LOADING_MESSAGE = /creating/i;
 
 test.describe.serial('Create recipe without image and delete it', () => {

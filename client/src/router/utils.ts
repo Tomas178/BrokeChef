@@ -1,12 +1,10 @@
-import { useRouter } from 'vue-router';
+import router from '@/router';
 import type {
   HomeQueryParams,
   RecipeRouteParams,
   UserProfileRouteParams,
 } from './types';
 import { ROUTE_NAMES } from './consts/routeNames';
-
-const router = useRouter();
 
 const delayedNavigate = async (
   navigationFn: () => Promise<void>,
