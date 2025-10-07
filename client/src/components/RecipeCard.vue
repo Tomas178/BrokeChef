@@ -9,7 +9,6 @@ import { formatRecipeRating } from '@/utils/formatRecipeRating';
 
 defineProps<{
   recipe: RecipesPublic;
-  hoverScale: boolean;
 }>();
 
 const isLoading = ref(true);
@@ -18,10 +17,7 @@ const isLoading = ref(true);
 <template>
   <RouterLink
     :to="{ name: 'Recipe', params: { id: recipe.id } }"
-    :class="[
-      'hover:outline-secondary-green relative flex w-full flex-col items-center rounded-md hover:outline-3',
-      hoverScale ? 'hover:scale-105' : '',
-    ]"
+    class="hover:outline-secondary-green relative flex w-full flex-col items-center rounded-md hover:outline-3"
   >
     <div
       class="flex h-48 w-full items-center justify-center overflow-hidden rounded-md bg-gray-200 lg:h-84"

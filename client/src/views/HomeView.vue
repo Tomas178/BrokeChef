@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import RecipeCard from '@/components/RecipeCard.vue';
-import { FwbPagination } from 'flowbite-vue';
+import { FwbDropdown, FwbPagination } from 'flowbite-vue';
 import { trpc } from '@/trpc';
 import type { Pagination } from '@server/shared/pagination';
 import type { RecipesPublic } from '@server/shared/types';
@@ -83,6 +83,7 @@ onMounted(async () => {
       </span>
     </div>
     <div class="flex flex-col">
+      <FwbDropdown color="light" class="mb-4 ml-auto"> fs </FwbDropdown>
       <div
         class="grid grid-cols-1 justify-center gap-4 md:grid-cols-2 md:gap-6 xl:gap-10 2xl:grid-cols-4"
       >
@@ -90,7 +91,6 @@ onMounted(async () => {
           v-for="recipe in recipes"
           :key="recipe.id"
           :recipe="recipe"
-          :hover-scale="true"
         />
       </div>
       <FwbPagination

@@ -30,8 +30,6 @@ const isLoadingImage = ref(true);
 
 const [getUser] = useErrorMessage(async () => {
   user.value = await trpc.users.findById.query(props.id);
-
-  console.log(user.value);
 });
 
 const goBack = async () => {
@@ -85,14 +83,7 @@ watch(profileImageFile, async (newFile) => {
   profileImageFile.value = undefined;
 });
 
-onMounted(async () => {
-  await getUser();
-
-  if (!user.value) {
-    console.log('User not found');
-    return;
-  }
-});
+onMounted(async () => await getUser());
 </script>
 
 <template>
