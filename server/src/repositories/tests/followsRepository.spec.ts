@@ -172,10 +172,10 @@ describe('getFollowing', () => {
   });
 });
 
-describe('getFollowed', () => {
+describe('getFollowers', () => {
   it('Should return an empty array when user is not followed by anyone', async () => {
     await expect(
-      repository.getFollowed(followLink.followedId)
+      repository.getFollowers(followLink.followedId)
     ).resolves.toEqual([]);
   });
 
@@ -188,7 +188,7 @@ describe('getFollowed', () => {
     expect(followsInDatabase).toHaveLength(1);
     expect(followsInDatabase[0]).toMatchObject(followLink);
 
-    const followingUsers = await repository.getFollowed(followLink.followedId);
+    const followingUsers = await repository.getFollowers(followLink.followedId);
 
     expect(followingUsers).toHaveLength(1);
     expect(followingUsers[0]).toEqual(pick(userFollower, usersKeysPublic));
@@ -212,7 +212,7 @@ describe('getFollowed', () => {
     expect(followsInDatabase[0]).toMatchObject(followLinks[0]);
     expect(followsInDatabase[1]).toMatchObject(followLinks[1]);
 
-    const usersThatAreFollowing = await repository.getFollowed(
+    const usersThatAreFollowing = await repository.getFollowers(
       followLink.followedId
     );
 

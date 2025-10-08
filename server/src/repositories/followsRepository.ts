@@ -10,14 +10,14 @@ const TABLE = 'follows';
 
 export type FollowLink = Insertable<Follows>;
 
-interface FollowsRepository {
+export interface FollowsRepository {
   create: (followLink: FollowLink) => Promise<FollowsPublic>;
   remove: (followLink: FollowLink) => Promise<FollowsPublic>;
   isFollowing: (followLink: FollowLink) => Promise<boolean>;
   totalFollowing: (followerId: string) => Promise<number>;
   totalFollowers: (userId: string) => Promise<number>;
   getFollowing: (followerId: string) => Promise<UsersPublic[]>;
-  getFollowed: (userId: string) => Promise<UsersPublic[]>;
+  getFollowers: (userId: string) => Promise<UsersPublic[]>;
 }
 
 export function followsRepository(database: Database): FollowsRepository {
@@ -81,7 +81,7 @@ export function followsRepository(database: Database): FollowsRepository {
         .execute();
     },
 
-    async getFollowed(userId) {
+    async getFollowers(userId) {
       return database
         .selectFrom(TABLE)
         .innerJoin('users', 'users.id', 'follows.followerId')
