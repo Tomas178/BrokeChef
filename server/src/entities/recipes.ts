@@ -1,12 +1,7 @@
 import * as z from 'zod';
 import type { Recipes } from '@server/database';
 import type { Selectable } from 'kysely';
-import {
-  createdAtSchema,
-  integerIdSchema,
-  oauthUserIdSchema,
-  updatedAtSchema,
-} from './shared';
+import { createdAtSchema, integerIdSchema, oauthUserIdSchema } from './shared';
 import type { UsersPublicWithoutId } from './users';
 import type { IngredientsName } from './ingredients';
 import type { ToolsName } from './tools';
@@ -20,7 +15,6 @@ export const recipesSchema = z.object({
   steps: z.array(z.string().nonempty().trim()),
   imageUrl: z.string().trim().optional(),
   createdAt: createdAtSchema,
-  updatedAt: updatedAtSchema,
 });
 
 export const recipesKeysAll = Object.keys(

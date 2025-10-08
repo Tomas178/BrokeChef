@@ -56,7 +56,6 @@ export const fakeRecipe = <T extends Partial<Insertable<Recipes>>>(
     imageUrl: random.url(),
     ...overrides,
     createdAt: new Date(),
-    updatedAt: new Date(),
   }) satisfies Insertable<Recipes>;
 
 export const fakeRecipeWithAuthor = <
