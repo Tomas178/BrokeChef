@@ -7,6 +7,7 @@ import { recipesToolsRepository } from './recipesToolsRepository';
 import { savedRecipesRepository } from './savedRecipesRepository';
 import { usersRepository } from './usersRepository';
 import { ratingsRepository } from './ratingsRepository';
+import { followsRepository } from './followsRepository';
 
 export type RepositoryFactory = <T>(database: Database) => T;
 
@@ -19,6 +20,7 @@ const repositories = {
   savedRecipesRepository,
   usersRepository,
   ratingsRepository,
+  followsRepository,
 };
 
 export type RepositoriesFactories = typeof repositories;
