@@ -1,4 +1,4 @@
-import type { ObjectValues } from './routeNames';
+import type { ObjectValues } from '@server/shared/types';
 
 export const ROUTE_PATHS = {
   HOME: '',
