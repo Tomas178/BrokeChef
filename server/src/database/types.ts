@@ -28,6 +28,12 @@ export interface Accounts {
   userId: string;
 }
 
+export interface Follows {
+  createdAt: Generated<Timestamp>;
+  followedId: string;
+  followerId: string;
+}
+
 export interface Ingredients {
   createdAt: Generated<Timestamp>;
   id: Generated<number>;
@@ -49,7 +55,6 @@ export interface Recipes {
   imageUrl: string;
   steps: string;
   title: string;
-  updatedAt: Generated<Timestamp>;
   userId: string;
 }
 
@@ -107,6 +112,7 @@ export interface Verifications {
 
 export interface DB {
   accounts: Accounts;
+  follows: Follows;
   ingredients: Ingredients;
   ratings: Ratings;
   recipes: Recipes;
