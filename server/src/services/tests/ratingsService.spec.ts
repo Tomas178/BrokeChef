@@ -172,7 +172,6 @@ describe('update', () => {
 
   it('Should update the rating', async () => {
     const updatedRating = await ratingsService.update(fakeRecipeToUpdate);
-    console.log(updatedRating);
 
     expect(updatedRating).toBe(fakeRecipeToUpdate.rating);
   });
