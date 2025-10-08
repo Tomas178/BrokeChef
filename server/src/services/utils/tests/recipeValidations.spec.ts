@@ -27,7 +27,7 @@ const mockRecipeRepository = {
   findById: mockFindById,
 } as unknown as RecipesRepository;
 
-describe('validateRecipeExists', async () => {
+describe('validateRecipeExists', () => {
   it('Should return recipe when recipe exists', async () => {
     const recipe = await validateRecipeExists(mockRecipeRepository, recipeId);
 
@@ -46,7 +46,7 @@ describe('validateRecipeExists', async () => {
   });
 });
 
-describe('validateRecipeAndUserIsNotAuthor', async () => {
+describe('validateRecipeAndUserIsNotAuthor', () => {
   it('Should return recipe', async () => {
     const recipe = await validateRecipeAndUserIsNotAuthor(
       mockRecipeRepository,
