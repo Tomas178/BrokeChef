@@ -4,7 +4,7 @@ import UserNotFound from '@server/utils/errors/users/UserNotFound';
 
 const TABLE = 'users';
 
-interface UsersRepository {
+export interface UsersRepository {
   findById: (id: string) => Promise<UsersPublic>;
   updateImage: (id: string, image: string) => Promise<string>;
 }
