@@ -10,7 +10,7 @@ const IDX_FOLLOWS_FOLLOWED_ID = 'idx_follows_followed_id';
 export async function up(database: Kysely<any>) {
   await addCreatedAtColumn(
     database.schema
-      .createTable('TABLES.FOLLOWS')
+      .createTable(TABLES.FOLLOWS)
       .addColumn(FOLLOWER_ID, 'text', c =>
         c.notNull().references(`${TABLES.USERS}.id`).onDelete('cascade')
       )

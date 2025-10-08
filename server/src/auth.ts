@@ -1,5 +1,6 @@
 import { betterAuth } from 'better-auth';
 import pg from 'pg';
+import { CREATED_AT, UPDATED_AT } from '@server/database/timestamps';
 import config from './config';
 import { sendMail } from './utils/sendMail/sendMail';
 import { transporter } from './utils/sendMail/client';
@@ -8,15 +9,16 @@ import { formEmailTemplate } from './utils/sendMail/formEmailTemplate';
 import { getTemplate } from './utils/AWSS3Client/getTemplate';
 import { EmailTemplate } from './enums/EmailTemplate';
 import logger from './logger';
+import { TABLES } from './database/tables';
 
 const createdAndUpdated = {
-  createdAt: 'created_at',
-  updatedAt: 'updated_at',
+  createdAt: CREATED_AT,
+  updatedAt: UPDATED_AT,
 };
 
 export const auth = betterAuth({
   user: {
-    modelName: 'users',
+    modelName: TABLES.USERS,
     fields: {
       emailVerified: 'email_verified',
       ...createdAndUpdated,
@@ -45,19 +47,8 @@ export const auth = betterAuth({
     },
   },
 
-  session: {
-    modelName: 'sessions',
-    fields: {
-      userId: 'user_id',
-      expiresAt: 'expires_at',
-      ipAddress: 'ip_address',
-      userAgent: 'user_agent',
-      ...createdAndUpdated,
-    },
-  },
-
   account: {
-    modelName: 'accounts',
+    modelName: TABLES.ACCOUNTS,
     fields: {
       userId: 'user_id',
       accountId: 'account_id',
@@ -71,8 +62,19 @@ export const auth = betterAuth({
     },
   },
 
+  session: {
+    modelName: TABLES.SESSIONS,
+    fields: {
+      userId: 'user_id',
+      expiresAt: 'expires_at',
+      ipAddress: 'ip_address',
+      userAgent: 'user_agent',
+      ...createdAndUpdated,
+    },
+  },
+
   verification: {
-    modelName: 'verifications',
+    modelName: TABLES.VERIFICATIONS,
     fields: {
       expiresAt: 'expires_at',
       ...createdAndUpdated,

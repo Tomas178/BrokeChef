@@ -1,12 +1,14 @@
 import { sql, type Kysely } from 'kysely';
+import { TABLES } from '../tables';
+import { UPDATED_AT } from '../timestamps';
 
 const TABLES_WITH_UPDATED_AT = [
-  'users',
-  'accounts',
-  'verifications',
-  'sessions',
-  'recipes',
-  'ratings',
+  TABLES.USERS,
+  TABLES.ACCOUNTS,
+  TABLES.VERIFICATIONS,
+  TABLES.SESSIONS,
+  TABLES.RECIPES,
+  TABLES.RATINGS,
 ];
 
 export async function up(database: Kysely<any>) {
@@ -15,7 +17,7 @@ export async function up(database: Kysely<any>) {
   for (const table of TABLES_WITH_UPDATED_AT) {
     await sql`
         CREATE OR REPLACE TRIGGER tg_update_timestamp BEFORE UPDATE ON ${sql.table(table)}
-        FOR EACH ROW EXECUTE FUNCTION moddatetime('updated_at');
+        FOR EACH ROW EXECUTE FUNCTION moddatetime(${sql.raw(UPDATED_AT)});
     `.execute(database);
   }
 }

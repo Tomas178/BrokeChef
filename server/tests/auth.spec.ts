@@ -15,6 +15,7 @@ import { getTemplate } from '@server/utils/AWSS3Client/getTemplate';
 import { formEmailTemplate } from '@server/utils/sendMail/formEmailTemplate';
 import type { S3Client } from '@aws-sdk/client-s3';
 import { EmailTemplate } from '@server/enums/EmailTemplate';
+import { CREATED_AT, UPDATED_AT } from '@server/database/timestamps';
 
 describe('Better-auth configuration', () => {
   it('Should be initialized with the correct model names', () => {
@@ -27,8 +28,8 @@ describe('Better-auth configuration', () => {
   describe('Table columns shoud have snake_case naming', () => {
     it('Users', () => {
       expect(auth.options.user.fields.emailVerified).toBe('email_verified');
-      expect(auth.options.user.fields.createdAt).toBe('created_at');
-      expect(auth.options.user.fields.updatedAt).toBe('updated_at');
+      expect(auth.options.user.fields.createdAt).toBe(CREATED_AT);
+      expect(auth.options.user.fields.updatedAt).toBe(UPDATED_AT);
     });
 
     it('Accounts', () => {
@@ -44,8 +45,8 @@ describe('Better-auth configuration', () => {
       expect(auth.options.account.fields.refreshTokenExpiresAt).toBe(
         'refresh_token_expires_at'
       );
-      expect(auth.options.account.fields.createdAt).toBe('created_at');
-      expect(auth.options.account.fields.updatedAt).toBe('updated_at');
+      expect(auth.options.account.fields.createdAt).toBe(CREATED_AT);
+      expect(auth.options.account.fields.updatedAt).toBe(UPDATED_AT);
     });
 
     it('Sessions', () => {
@@ -53,14 +54,14 @@ describe('Better-auth configuration', () => {
       expect(auth.options.session.fields.ipAddress).toBe('ip_address');
       expect(auth.options.session.fields.userAgent).toBe('user_agent');
       expect(auth.options.session.fields.expiresAt).toBe('expires_at');
-      expect(auth.options.session.fields.createdAt).toBe('created_at');
-      expect(auth.options.session.fields.updatedAt).toBe('updated_at');
+      expect(auth.options.session.fields.createdAt).toBe(CREATED_AT);
+      expect(auth.options.session.fields.updatedAt).toBe(UPDATED_AT);
     });
 
     it('Verifications', () => {
       expect(auth.options.verification.fields.expiresAt).toBe('expires_at');
-      expect(auth.options.verification.fields.createdAt).toBe('created_at');
-      expect(auth.options.verification.fields.updatedAt).toBe('updated_at');
+      expect(auth.options.verification.fields.createdAt).toBe(CREATED_AT);
+      expect(auth.options.verification.fields.updatedAt).toBe(UPDATED_AT);
     });
   });
 });
