@@ -11,7 +11,7 @@ import { NoResultError } from 'kysely';
 import FollowLinkNotFound from '@server/utils/errors/follows/FollowLinkNotFound';
 import { validateUserExists } from './utils/userValidations';
 
-interface FollowsService {
+export interface FollowsService {
   create: (followLink: FollowLink) => Promise<FollowsPublic>;
   remove: (followLink: FollowLink) => Promise<FollowsPublic>;
   isFollowing: (followLink: FollowLink) => Promise<boolean>;
