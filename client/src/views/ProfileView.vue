@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { FwbButton, FwbFileInput } from 'flowbite-vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import type { UsersPublic } from '@server/shared/types';
 import { onMounted, ref, watch } from 'vue';
 import { trpc } from '@/trpc';
@@ -13,25 +13,58 @@ import useToast from '@/composables/useToast';
 import RecipesList from '@/components/RecipesList/RecipesList.vue';
 import { RECIPE_TYPE } from '@/components/RecipesList/types';
 import { navigateToUserEditProfile } from '@/router/utils';
+import { useUserStore } from '@/stores/user';
+import { computed } from 'vue';
 
 const { showLoading, updateToast } = useToast();
-
+const userStore = useUserStore();
 const router = useRouter();
+const route = useRoute();
 
 const props = defineProps<{
   id?: string;
 }>();
 
+const isLoadingProfile = ref(true);
+const user = ref<UsersPublic>();
+const isFollowing = ref(false);
+const totalFollowing = ref<number>(0);
+const totalFollowers = ref<number>(0);
+
+const isOwnProfile = computed(() => {
+  return userStore.id === user.value?.id;
+});
+
 const profileImageFile = ref<File | undefined>(undefined);
 const fullEndpoint = `${apiOrigin}/api/upload/profile`;
 
-const user = ref<UsersPublic>();
-
 const isLoadingImage = ref(true);
 
+const getUserIdFromRoute = (): string | undefined => {
+  if (props.id) {
+    return Array.isArray(props.id) ? props.id[0] : props.id;
+  }
+
+  const routeId = route.params.id;
+  if (routeId) {
+    return Array.isArray(routeId) ? routeId[0] : routeId;
+  }
+
+  return undefined;
+};
+
 const [getUser] = useErrorMessage(async () => {
-  user.value = await trpc.users.findById.query(props.id);
+  const userId = getUserIdFromRoute();
+
+  user.value = await trpc.users.findById.query(userId);
 });
+
+watch(
+  () => [props.id, route.params.id],
+  async () => {
+    await fetchProfileData();
+  }
+);
 
 const goBack = async () => {
   router.go(-1);
@@ -84,11 +117,71 @@ watch(profileImageFile, async (newFile) => {
   profileImageFile.value = undefined;
 });
 
-onMounted(async () => await getUser());
+const [follow, followErrorMessage] = useErrorMessage(async () => {
+  if (!user.value) throw new Error('User not found');
+  return trpc.follows.follow.mutate(user.value.id);
+}, true);
+
+async function handleFollow() {
+  const id = showLoading('Following...');
+
+  try {
+    await follow();
+    isFollowing.value = true;
+    totalFollowers.value += 1;
+
+    updateToast(id, 'success', 'User followed successfully');
+  } catch {
+    updateToast(id, 'error', followErrorMessage.value || DEFAULT_SERVER_ERROR);
+  }
+}
+
+const [unfollow, unfollowErrorMessage] = useErrorMessage(async () => {
+  if (!user.value) throw new Error('User not found');
+  return trpc.follows.unfollow.mutate(user.value.id);
+}, true);
+
+async function handleUnfollow() {
+  const id = showLoading('Unfollowing...');
+
+  try {
+    await unfollow();
+    isFollowing.value = false;
+    totalFollowing.value -= 1;
+
+    updateToast(id, 'success', 'User unfollowed successfully');
+  } catch {
+    updateToast(
+      id,
+      'error',
+      unfollowErrorMessage.value || DEFAULT_SERVER_ERROR
+    );
+  }
+}
+
+async function fetchProfileData() {
+  isLoadingProfile.value = true;
+  await getUser();
+
+  if (user.value) {
+    [totalFollowing.value, totalFollowers.value, isFollowing.value] =
+      await Promise.all([
+        trpc.follows.totalFollowing.query(user.value.id),
+        trpc.follows.totalFollowers.query(user.value.id),
+        trpc.follows.isFollowing.query(user.value.id),
+      ]);
+  }
+
+  isLoadingProfile.value = false;
+}
+
+onMounted(async () => {
+  await fetchProfileData();
+});
 </script>
 
 <template>
-  <div v-if="user">
+  <div v-if="!isLoadingProfile && user">
     <div
       class="bg-primary-green relative flex h-20 w-full items-start justify-start sm:h-32 xl:h-52"
     >
@@ -156,20 +249,31 @@ onMounted(async () => await getUser());
 
         <template v-else>
           <div
-            class="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-gray-300 hover:scale-105"
+            class="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-gray-300"
+            :class="[isOwnProfile ? 'hover:scale-105' : '']"
           >
-            <FwbFileInput
-              v-model="profileImageFile"
-              dropzone
-              accept="image/*"
-              class="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
-            />
+            <template v-if="isOwnProfile">
+              <FwbFileInput
+                v-model="profileImageFile"
+                dropzone
+                accept="image/*"
+                class="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+              />
 
-            <span
-              class="text-header pointer-events-none z-20 text-center text-sm"
-            >
-              Upload Image
-            </span>
+              <span
+                class="text-header pointer-events-none z-20 text-center text-sm"
+              >
+                Upload Image
+              </span>
+            </template>
+
+            <template v-else>
+              <span
+                class="text-header pointer-events-none z-20 text-center text-sm"
+              >
+                No Profile Picture
+              </span>
+            </template>
           </div>
         </template>
       </div>
@@ -179,17 +283,48 @@ onMounted(async () => await getUser());
       <div
         class="flex flex-col-reverse justify-between gap-3 sm:flex-row sm:gap-0"
       >
-        <span class="text-xl lg:text-2xl">{{ user.name }}</span>
+        <div class="flex flex-col gap-3">
+          <div class="flex gap-1 text-xs md:text-base">
+            <span>Following: {{ totalFollowing }}</span>
+            <span>Followers: {{ totalFollowers }}</span>
+          </div>
+          <span class="text-xl lg:text-2xl">{{ user.name }}</span>
+        </div>
 
-        <FwbButton
-          @click="navigateToUserEditProfile({ id: user.id })"
-          class="text-primary-green inline-flex cursor-pointer self-start rounded-3xl bg-white px-2 py-1 text-lg font-bold shadow-md hover:bg-white hover:outline-2 lg:px-6 lg:py-2 lg:text-3xl"
-          pill
-          square
-        >
-          Change Credentials
-        </FwbButton>
+        <template v-if="isOwnProfile">
+          <FwbButton
+            @click="navigateToUserEditProfile({ id: user.id })"
+            class="text-primary-green inline-flex cursor-pointer self-start rounded-3xl bg-white px-2 py-1 text-lg font-bold shadow-md hover:bg-white hover:outline-2 lg:px-6 lg:py-2 lg:text-3xl"
+            pill
+            square
+          >
+            Change Credentials
+          </FwbButton>
+        </template>
+
+        <template v-else>
+          <FwbButton
+            v-if="!isFollowing"
+            @click="handleFollow"
+            class="text-primary-green inline-flex cursor-pointer self-start rounded-3xl bg-white px-2 py-1 text-lg font-bold shadow-md hover:bg-white hover:outline-2 lg:px-6 lg:py-2 lg:text-3xl"
+            pill
+            square
+          >
+            Follow
+          </FwbButton>
+
+          <FwbButton
+            v-else
+            @click="handleUnfollow"
+            class="text-primary-green inline-flex cursor-pointer self-start rounded-3xl bg-white px-2 py-1 text-lg font-bold shadow-md hover:bg-white hover:outline-2 lg:px-6 lg:py-2 lg:text-3xl"
+            pill
+            square
+          >
+            Unfollow
+          </FwbButton>
+        </template>
       </div>
+
       <div>
         <div class="flex flex-col gap-10">
           <RecipesList
