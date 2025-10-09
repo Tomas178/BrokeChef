@@ -1,4 +1,4 @@
-import type { ObjectValues } from '@/router/consts/routeNames';
+import type { ObjectValues } from '@server/shared/types';
 
 export const RECIPE_TYPE = {
   CREATED: 'created',
