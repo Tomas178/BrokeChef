@@ -40,19 +40,39 @@ describe('Authenticated tests', () => {
 
   afterEach(() => expect(mockTotalFollowing).toHaveBeenCalledOnce());
 
-  it('Should return 0 if user is not following anyone', async () => {
-    const zero = 0;
+  describe('Checking currently logged in user', () => {
+    it('Should return 0 if user is not following anyone', async () => {
+      const zero = 0;
 
-    mockTotalFollowing.mockResolvedValueOnce(zero);
+      mockTotalFollowing.mockResolvedValueOnce(zero);
 
-    await expect(totalFollowing(userFollower.id)).resolves.toBe(zero);
+      await expect(totalFollowing()).resolves.toBe(zero);
+    });
+
+    it('Should return 2 if user is following 2 other users', async () => {
+      const two = 2;
+
+      mockTotalFollowing.mockResolvedValueOnce(two);
+
+      await expect(totalFollowing()).resolves.toBe(two);
+    });
   });
 
-  it('Should return 2 if user is following 2 other users', async () => {
-    const two = 2;
+  describe('Checking other user (not by cookies)', () => {
+    it('Should return 0 if user is not following anyone', async () => {
+      const zero = 0;
 
-    mockTotalFollowing.mockResolvedValueOnce(two);
+      mockTotalFollowing.mockResolvedValueOnce(zero);
 
-    await expect(totalFollowing(userFollower.id)).resolves.toBe(two);
+      await expect(totalFollowing(userFollower.id)).resolves.toBe(zero);
+    });
+
+    it('Should return 2 if user is following 2 other users', async () => {
+      const two = 2;
+
+      mockTotalFollowing.mockResolvedValueOnce(two);
+
+      await expect(totalFollowing(userFollower.id)).resolves.toBe(two);
+    });
   });
 });

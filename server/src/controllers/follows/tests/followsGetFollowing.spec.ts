@@ -18,7 +18,7 @@ vi.mock('@server/services/followsService', () => ({
 const createCaller = createCallerFactory(followsRouter);
 const database = {} as Database;
 
-const [userFollowerOne, userFollowerTwo, userFollowed] = [
+const [userFollower, userFollowedOne, userFollowedTwo] = [
   fakeUser(),
   fakeUser(),
   fakeUser(),
@@ -30,7 +30,7 @@ describe('Unauthenticated tests', () => {
   const { getFollowing } = createCaller(requestContext({ database }));
 
   it('Should thrown an error if user is not authenticated', async () => {
-    await expect(getFollowing(userFollowerOne.id)).rejects.toThrow(
+    await expect(getFollowing(userFollower.id)).rejects.toThrow(
       /unauthenticated/i
     );
   });
@@ -38,22 +38,40 @@ describe('Unauthenticated tests', () => {
 
 describe('Authenticated tests', () => {
   const { getFollowing } = createCaller(
-    authContext({ database }, userFollowed)
+    authContext({ database }, userFollower)
   );
 
-  it('Should return an empty array if user is not following anyone', async () => {
-    mockGetFollowing.mockResolvedValueOnce([]);
+  describe('Checking currently logged in user', () => {
+    it('Should return an empty array if user is not following anyone', async () => {
+      mockGetFollowing.mockResolvedValueOnce([]);
 
-    await expect(getFollowing(userFollowerOne.id)).resolves.toEqual([]);
+      await expect(getFollowing()).resolves.toEqual([]);
+    });
+
+    it('Should return an array of 2 users if user is following 2 other users', async () => {
+      const followedUsers = [userFollowedOne, userFollowedTwo];
+
+      mockGetFollowing.mockResolvedValueOnce(followedUsers);
+
+      await expect(getFollowing()).resolves.toEqual(followedUsers);
+    });
   });
 
-  it('Should return an array of 2 users if user is following 2 other users', async () => {
-    const followingUsers = [userFollowerOne, userFollowerTwo];
+  describe('Checking other user (not by cookies)', () => {
+    it('Should return an empty array if user is not following anyone', async () => {
+      mockGetFollowing.mockResolvedValueOnce([]);
 
-    mockGetFollowing.mockResolvedValueOnce(followingUsers);
+      await expect(getFollowing(userFollower.id)).resolves.toEqual([]);
+    });
 
-    await expect(getFollowing(userFollowerOne.id)).resolves.toEqual(
-      followingUsers
-    );
+    it('Should return an array of 2 users if user is following 2 other users', async () => {
+      const followedUsers = [userFollowedOne, userFollowedTwo];
+
+      mockGetFollowing.mockResolvedValueOnce(followedUsers);
+
+      await expect(getFollowing(userFollower.id)).resolves.toEqual(
+        followedUsers
+      );
+    });
   });
 });
