@@ -51,25 +51,25 @@ export function followsRepository(database: Database): FollowsRepository {
     },
 
     async totalFollowing(followerId) {
-      const { totalFollowing } = await database
+      const result = await database
         .selectFrom(TABLE)
-        .select(({ fn }) => fn.count('followerId').as('totalFollowing'))
+        .select(({ fn }) => fn.countAll().as('totalFollowing'))
         .where('followerId', '=', followerId)
-        .groupBy('followerId')
-        .executeTakeFirstOrThrow();
+        .executeTakeFirst();
 
-      return Number(totalFollowing);
+      /* v8 ignore next */
+      return Number(result?.totalFollowing ?? 0);
     },
 
     async totalFollowers(userId) {
-      const { totalFollowers } = await database
+      const result = await database
         .selectFrom(TABLE)
-        .select(({ fn }) => fn.count('followedId').as('totalFollowers'))
+        .select(({ fn }) => fn.countAll().as('totalFollowers'))
         .where('followedId', '=', userId)
-        .groupBy('followedId')
-        .executeTakeFirstOrThrow();
+        .executeTakeFirst();
 
-      return Number(totalFollowers);
+      /* v8 ignore next */
+      return Number(result?.totalFollowers ?? 0);
     },
 
     async getFollowing(followerId) {

@@ -77,10 +77,10 @@ describe('isFollowing', () => {
 });
 
 describe('totalFollowing', () => {
-  it('Should throw an error if user is not following anyone', async () => {
+  it('Should return 0 if user is not following anyone', async () => {
     await expect(
       repository.totalFollowing(followLink.followerId)
-    ).rejects.toThrowError(NoResultError);
+    ).resolves.toBe(0);
   });
 
   it('Should return total following count by the given follower ID', async () => {
@@ -101,10 +101,10 @@ describe('totalFollowing', () => {
 });
 
 describe('totalFollowed', () => {
-  it('Should throw an error if user has no followers', async () => {
+  it('Should return 0 if user is not being followed by anyone', async () => {
     await expect(
       repository.totalFollowers(followLink.followedId)
-    ).rejects.toThrowError(NoResultError);
+    ).resolves.toBe(0);
   });
 
   it('Should return total followers count by the given followed ID', async () => {
