@@ -16,6 +16,21 @@ vi.mock('@server/utils/errors', () => ({
   assertError: vi.fn(),
 }));
 
+const fakeImageUrl = vi.hoisted(() => 'fake-url');
+
+const mockSignImages = vi.hoisted(() =>
+  vi.fn((images: string | string[]) => {
+    if (Array.isArray(images)) {
+      return images.map(() => fakeImageUrl);
+    }
+    return fakeImageUrl;
+  })
+);
+
+vi.mock('@server/utils/signImages', () => ({
+  signImages: mockSignImages,
+}));
+
 const mockValidateUserExists = vi.hoisted(() => vi.fn());
 const [totalFollowingCount, totalFollowersCount] = vi.hoisted(() => [5, 10]);
 
@@ -28,6 +43,7 @@ const users = {
   followerTwo: fakeUser(),
   followedOne: fakeUser(),
   followedTwo: fakeUser(),
+  withoutImage: fakeUser({ image: null }),
 };
 
 const mockFollowsRepoCreate: Mock<FollowsRepository['create']> = vi.fn(
@@ -234,8 +250,43 @@ describe('getFollowing', () => {
   it('Should return an array of users of which the user is following', async () => {
     const usersFollowing = await followsService.getFollowing(followerId);
 
-    expect(usersFollowing[0]).toEqual(users.followedOne);
-    expect(usersFollowing[1]).toEqual(users.followedTwo);
+    expect(usersFollowing[0]).toEqual({
+      ...users.followedOne,
+      image: fakeImageUrl,
+    });
+    expect(usersFollowing[1]).toEqual({
+      ...users.followedTwo,
+      image: fakeImageUrl,
+    });
+  });
+
+  it('Should return null for users with no image', async () => {
+    mockFollowsRepoGetFollowing.mockResolvedValueOnce([
+      users.withoutImage,
+      users.followedOne,
+    ]);
+
+    const usersFollowing = await followsService.getFollowing(followerId);
+
+    expect(mockSignImages).toHaveBeenCalledWith([users.followedOne.image]);
+
+    expect(usersFollowing[0].image).toBeNull();
+    expect(usersFollowing[1].image).toBe(fakeImageUrl);
+  });
+
+  it('Should return null for users that had image url but signedImages for some reason are missing signed url', async () => {
+    mockFollowsRepoGetFollowing.mockResolvedValueOnce([
+      users.withoutImage,
+      users.followedOne,
+    ]);
+    mockSignImages.mockResolvedValueOnce([]);
+
+    const usersFollowing = await followsService.getFollowing(followerId);
+
+    expect(mockSignImages).toHaveBeenCalledWith([users.followedOne.image]);
+
+    expect(usersFollowing[0].image).toBeNull();
+    expect(usersFollowing[1].image).toBeNull();
   });
 });
 
@@ -249,7 +300,36 @@ describe('getFollowers', () => {
   it('Should return an array of users followers by the given userId', async () => {
     const followers = await followsService.getFollowers(followedId);
 
-    expect(followers[0]).toEqual(users.followerOne);
-    expect(followers[1]).toEqual(users.followerTwo);
+    expect(followers[0]).toEqual({ ...users.followerOne, image: fakeImageUrl });
+    expect(followers[1]).toEqual({ ...users.followerTwo, image: fakeImageUrl });
+  });
+
+  it('Should return null for users with no image', async () => {
+    mockFollowsRepoGetFollowers.mockResolvedValueOnce([
+      users.withoutImage,
+      users.followerOne,
+    ]);
+
+    const followers = await followsService.getFollowers(followerId);
+
+    expect(mockSignImages).toHaveBeenCalledWith([users.followerOne.image]);
+
+    expect(followers[0].image).toBeNull();
+    expect(followers[1].image).toBe(fakeImageUrl);
+  });
+
+  it('Should return null for users that had image url but signedImages for some reason are missing signed url', async () => {
+    mockFollowsRepoGetFollowers.mockResolvedValueOnce([
+      users.withoutImage,
+      users.followerOne,
+    ]);
+    mockSignImages.mockResolvedValueOnce([]);
+
+    const followers = await followsService.getFollowers(followerId);
+
+    expect(mockSignImages).toHaveBeenCalledWith([users.followerOne.image]);
+
+    expect(followers[0].image).toBeNull();
+    expect(followers[1].image).toBeNull();
   });
 });

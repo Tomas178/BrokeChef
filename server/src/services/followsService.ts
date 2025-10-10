@@ -9,6 +9,7 @@ import { PostgresError } from 'pg-error-enum';
 import UserAlreadyFollowed from '@server/utils/errors/follows/UserAlreadyFollowed';
 import { NoResultError } from 'kysely';
 import FollowLinkNotFound from '@server/utils/errors/follows/FollowLinkNotFound';
+import { signImages } from '@server/utils/signImages';
 import { validateUserExists } from './utils/userValidations';
 
 export interface FollowsService {
@@ -78,13 +79,44 @@ export function followsService(database: Database): FollowsService {
     },
 
     async getFollowing(followerId) {
-      const followingUsers = await followsRepository.getFollowing(followerId);
+      const followingUsersFromRepo =
+        await followsRepository.getFollowing(followerId);
+
+      const followingUsers = followingUsersFromRepo.map(user => ({ ...user }));
+
+      const imageUrls = followingUsers
+        .map(user => user.image)
+        .filter((url): url is string => !!url);
+
+      const signedImageUrls = await signImages(imageUrls);
+
+      for (const [, user] of followingUsers.entries()) {
+        if (user.image) {
+          // eslint-disable-next-line unicorn/no-null
+          user.image = signedImageUrls.shift() ?? null;
+        }
+      }
 
       return followingUsers;
     },
 
     async getFollowers(userId) {
-      const followers = await followsRepository.getFollowers(userId);
+      const followersFromRepo = await followsRepository.getFollowers(userId);
+
+      const followers = followersFromRepo.map(user => ({ ...user }));
+
+      const imageUrls = followers
+        .map(user => user.image)
+        .filter((url): url is string => !!url);
+
+      const signedImageUrls = await signImages(imageUrls);
+
+      for (const [, user] of followers.entries()) {
+        if (user.image) {
+          // eslint-disable-next-line unicorn/no-null
+          user.image = signedImageUrls.shift() ?? null;
+        }
+      }
 
       return followers;
     },
