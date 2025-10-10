@@ -15,9 +15,10 @@ export const usersSchema = z.object({
 
 export const usersKeysAll = Object.keys(usersSchema.shape) as (keyof Users)[];
 
-export const usersKeysPublic = ['id', 'name', 'email', 'image'] as const;
-
-export const usersKeysPublicWithoutId = ['name', 'email', 'image'] as const;
+export const usersKeysPublic = ['id', 'name', 'image'] as const;
+export const usersKeysPublicWithoutId = usersKeysPublic.filter(
+  key => key !== 'id'
+);
 
 export type UsersPublic = Pick<
   Selectable<Users>,
