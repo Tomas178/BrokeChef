@@ -18,8 +18,7 @@ import {
 } from '@/router/utils';
 import { useUserStore } from '@/stores/user';
 import { computed } from 'vue';
-
-type ModalType = 'following' | 'followers';
+import { MODAL_TYPES, type ModalType } from '@/types/profile';
 
 const { showLoading, updateToast } = useToast();
 const userStore = useUserStore();
@@ -37,7 +36,7 @@ const totalFollowing = ref<number>(0);
 const totalFollowers = ref<number>(0);
 
 const showModal = ref(false);
-const modalType = ref<ModalType>('following');
+const modalType = ref<ModalType>(MODAL_TYPES.FOLLOWING);
 const modalUsers = ref<UsersPublic[]>([]);
 const isLoadingModalUsers = ref(true);
 
@@ -195,7 +194,7 @@ const [getFollowers] = useErrorMessage(async () => {
   return trpc.follows.getFollowers.query(user.value.id);
 }, true);
 
-async function openFollowModal(type: 'following' | 'followers') {
+async function openFollowModal(type: ModalType) {
   if (!user.value) return;
 
   modalType.value = type;
@@ -203,7 +202,7 @@ async function openFollowModal(type: 'following' | 'followers') {
   isLoadingModalUsers.value = true;
 
   try {
-    if (modalType.value === 'following') {
+    if (modalType.value === MODAL_TYPES.FOLLOWING) {
       modalUsers.value = await getFollowing();
     } else {
       modalUsers.value = await getFollowers();
@@ -254,6 +253,7 @@ onMounted(async () => {
             <Spinner v-show="isLoadingImage" />
 
             <img
+              data-testid="profile-picture"
               v-show="!isLoadingImage"
               :src="user.image"
               alt="Profile"
@@ -290,11 +290,13 @@ onMounted(async () => {
 
         <template v-else>
           <div
+            data-testid="profile-picture-fallback"
             class="relative flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-gray-300"
             :class="[isOwnProfile ? 'hover:scale-105' : '']"
           >
             <template v-if="isOwnProfile">
               <FwbFileInput
+                data-testid="upload-profile-picture"
                 v-model="profileImageFile"
                 dropzone
                 accept="image/*"
@@ -324,26 +326,31 @@ onMounted(async () => {
       <div
         class="flex flex-col-reverse justify-between gap-3 sm:flex-row sm:gap-0"
       >
-        <div class="flex flex-col gap-3">
+        <div data-testid="user-information" class="flex flex-col gap-3">
           <div class="flex gap-1 text-xs md:text-base">
             <span
-              @click="openFollowModal('following')"
+              data-testid="following"
+              @click="openFollowModal(MODAL_TYPES.FOLLOWING)"
               class="cursor-pointer hover:underline"
             >
               Following: {{ totalFollowing }}
             </span>
             <span
-              @click="openFollowModal('followers')"
+              data-testid="followers"
+              @click="openFollowModal(MODAL_TYPES.FOLLOWERS)"
               class="cursor-pointer hover:underline"
             >
               Followers: {{ totalFollowers }}
             </span>
           </div>
-          <span class="text-xl lg:text-2xl">{{ user.name }}</span>
+          <span data-testid="username" class="text-xl lg:text-2xl">
+            {{ user.name }}
+          </span>
         </div>
 
         <template v-if="isOwnProfile">
           <FwbButton
+            data-testid="change-credentials"
             @click="navigateToUserEditProfile({ id: user.id })"
             class="text-primary-green inline-flex cursor-pointer self-start rounded-3xl bg-white px-2 py-1 text-lg font-bold shadow-md hover:bg-white hover:outline-2 lg:px-6 lg:py-2 lg:text-3xl"
             pill
@@ -356,6 +363,7 @@ onMounted(async () => {
         <template v-else>
           <FwbButton
             v-if="!isFollowing"
+            data-testid="follow"
             @click="handleFollow"
             class="text-primary-green inline-flex cursor-pointer self-start rounded-3xl bg-white px-2 py-1 text-lg font-bold shadow-md hover:bg-white hover:outline-2 lg:px-6 lg:py-2 lg:text-3xl"
             pill
@@ -366,6 +374,7 @@ onMounted(async () => {
 
           <FwbButton
             v-else
+            data-testid="unfollow"
             @click="handleUnfollow"
             class="text-primary-green inline-flex cursor-pointer self-start rounded-3xl bg-white px-2 py-1 text-lg font-bold shadow-md hover:bg-white hover:outline-2 lg:px-6 lg:py-2 lg:text-3xl"
             pill
@@ -379,12 +388,14 @@ onMounted(async () => {
       <div>
         <div class="flex flex-col gap-10">
           <RecipesList
+            data-testid="saved-recipes"
             title="Saved Recipes"
             :recipeType="RECIPE_TYPE.SAVED"
             :user-id="user.id"
           />
 
           <RecipesList
+            data-testid="created-recipes"
             title="Created Recipes"
             :recipeType="RECIPE_TYPE.CREATED"
             :user-id="user.id"
@@ -392,25 +403,54 @@ onMounted(async () => {
         </div>
       </div>
 
-      <FwbModal v-if="showModal" @close="showModal = false" focus-trap>
+      <FwbModal
+        v-if="showModal"
+        data-testid="follow-modal"
+        @close="showModal = false"
+        focus-trap
+      >
         <template #header>
-          <div class="flex items-center gap-2">
+          <div
+            data-testid="follow-modal-header"
+            class="flex items-center gap-2"
+          >
             <h3 class="text-xl font-semibold">
-              {{ modalType === 'following' ? 'Following' : 'Followers' }}
+              {{
+                modalType === MODAL_TYPES.FOLLOWING
+                  ? MODAL_TYPES.FOLLOWING
+                  : MODAL_TYPES.FOLLOWERS
+              }}
             </h3>
           </div>
         </template>
         <template #body>
-          <div v-if="isLoadingModalUsers" class="flex justify-center py-8">
+          <div
+            v-if="isLoadingModalUsers"
+            data-testid="follow-modal-loading-state"
+            class="flex justify-center py-8"
+          >
             <Spinner />
           </div>
+
           <div
             v-else-if="modalUsers.length === 0"
+            data-testid="follow-modal-empty-state"
             class="py-8 text-center text-gray-500"
           >
-            No {{ modalType === 'following' ? 'following' : 'followers' }} yet
+            No
+            {{
+              modalType === MODAL_TYPES.FOLLOWING
+                ? MODAL_TYPES.FOLLOWING
+                : MODAL_TYPES.FOLLOWERS
+            }}
+            yet
           </div>
-          <div v-else class="flex max-h-96 flex-col gap-3 overflow-y-auto pr-2">
+
+          <div
+            v-else
+            data-testid="follow-modal-loaded-state"
+            class="flex max-h-96 flex-col gap-3 overflow-y-auto pr-2"
+          >
             <div
               v-for="modalUser in modalUsers"
               :key="modalUser.id"
@@ -423,22 +463,29 @@ onMounted(async () => {
               class="flex cursor-pointer items-center gap-3 rounded-lg p-3 transition-colors hover:bg-gray-100"
             >
               <div
+                :data-testid="`follow-modal-user-${modalUser.id}`"
                 class="h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-gray-300"
               >
                 <img
                   v-if="modalUser.image"
+                  data-testid="follow-modal-user-image"
                   :src="modalUser.image"
                   :alt="modalUser.name"
                   class="h-full w-full object-cover"
                 />
                 <div
                   v-else
+                  data-testid="follow-modal-user-image-fallback"
                   class="flex h-full w-full items-center justify-center text-xs text-gray-600"
                 >
                   {{ modalUser.name.charAt(0).toUpperCase() }}
                 </div>
               </div>
-              <span class="text-base font-medium">{{ modalUser.name }}</span>
+              <span
+                data-testid="follow-modal-user-username"
+                class="text-base font-medium"
+                >{{ modalUser.name }}</span
+              >
             </div>
           </div>
         </template>

@@ -78,6 +78,7 @@ export default defineConfigWithVueTs(
             'checkIfRedirects',
             'checkRecipeMainInfo',
             'checkActionButton',
+            'checkFollowsModalHeader',
           ],
         },
       ],

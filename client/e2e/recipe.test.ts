@@ -11,6 +11,7 @@ import {
 } from './utils/recipe';
 import { checkLocator, getToastContainer } from './utils/toast';
 import { ROUTE_PATHS } from '@/router/consts/routePaths';
+import { TestId } from '@/components/Forms/CreateForm.vue';
 
 const CREATE_RECIPE_PATH = ROUTE_PATHS.CREATE_RECIPE;
 const LOADING_MESSAGE = /creating/i;
@@ -27,7 +28,7 @@ test.describe.serial('Create recipe without image and delete it', () => {
       const { page, user } = auth;
       creator = user;
 
-      const ingredientsTestId = 'ingredients';
+      const ingredientsTestId: TestId = 'ingredients';
 
       await page.goto(CREATE_RECIPE_PATH);
 
