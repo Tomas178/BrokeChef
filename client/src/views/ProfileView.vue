@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FwbButton, FwbFileInput } from 'flowbite-vue';
+import { FwbButton, FwbFileInput, FwbModal } from 'flowbite-vue';
 import { useRoute, useRouter } from 'vue-router';
 import type { UsersPublic } from '@server/shared/types';
 import { onMounted, ref, watch } from 'vue';
@@ -12,9 +12,14 @@ import { DEFAULT_SERVER_ERROR } from '../consts';
 import useToast from '@/composables/useToast';
 import RecipesList from '@/components/RecipesList/RecipesList.vue';
 import { RECIPE_TYPE } from '@/components/RecipesList/types';
-import { navigateToUserEditProfile } from '@/router/utils';
+import {
+  navigateToUserEditProfile,
+  navigateToUserProfile,
+} from '@/router/utils';
 import { useUserStore } from '@/stores/user';
 import { computed } from 'vue';
+
+type ModalType = 'following' | 'followers';
 
 const { showLoading, updateToast } = useToast();
 const userStore = useUserStore();
@@ -30,6 +35,11 @@ const user = ref<UsersPublic>();
 const isFollowing = ref(false);
 const totalFollowing = ref<number>(0);
 const totalFollowers = ref<number>(0);
+
+const showModal = ref(false);
+const modalType = ref<ModalType>('following');
+const modalUsers = ref<UsersPublic[]>([]);
+const isLoadingModalUsers = ref(true);
 
 const isOwnProfile = computed(() => {
   return userStore.id === user.value?.id;
@@ -175,6 +185,37 @@ async function fetchProfileData() {
   isLoadingProfile.value = false;
 }
 
+const [getFollowing] = useErrorMessage(async () => {
+  if (!user.value) throw new Error('User not found');
+  return trpc.follows.getFollowing.query(user.value.id);
+}, true);
+
+const [getFollowers] = useErrorMessage(async () => {
+  if (!user.value) throw new Error('User not found');
+  return trpc.follows.getFollowers.query(user.value.id);
+}, true);
+
+async function openFollowModal(type: 'following' | 'followers') {
+  if (!user.value) return;
+
+  modalType.value = type;
+  showModal.value = true;
+  isLoadingModalUsers.value = true;
+
+  try {
+    if (modalType.value === 'following') {
+      modalUsers.value = await getFollowing();
+    } else {
+      modalUsers.value = await getFollowers();
+    }
+  } catch (error) {
+    console.error('Error loading users:', error);
+    modalUsers.value = [];
+  } finally {
+    isLoadingModalUsers.value = false;
+  }
+}
+
 onMounted(async () => {
   await fetchProfileData();
 });
@@ -285,8 +326,18 @@ onMounted(async () => {
       >
         <div class="flex flex-col gap-3">
           <div class="flex gap-1 text-xs md:text-base">
-            <span>Following: {{ totalFollowing }}</span>
-            <span>Followers: {{ totalFollowers }}</span>
+            <span
+              @click="openFollowModal('following')"
+              class="cursor-pointer hover:underline"
+            >
+              Following: {{ totalFollowing }}
+            </span>
+            <span
+              @click="openFollowModal('followers')"
+              class="cursor-pointer hover:underline"
+            >
+              Followers: {{ totalFollowers }}
+            </span>
           </div>
           <span class="text-xl lg:text-2xl">{{ user.name }}</span>
         </div>
@@ -340,6 +391,58 @@ onMounted(async () => {
           />
         </div>
       </div>
+
+      <FwbModal v-if="showModal" @close="showModal = false" focus-trap>
+        <template #header>
+          <div class="flex items-center gap-2">
+            <h3 class="text-xl font-semibold">
+              {{ modalType === 'following' ? 'Following' : 'Followers' }}
+            </h3>
+          </div>
+        </template>
+        <template #body>
+          <div v-if="isLoadingModalUsers" class="flex justify-center py-8">
+            <Spinner />
+          </div>
+          <div
+            v-else-if="modalUsers.length === 0"
+            class="py-8 text-center text-gray-500"
+          >
+            No {{ modalType === 'following' ? 'following' : 'followers' }} yet
+          </div>
+          <div v-else class="flex max-h-96 flex-col gap-3 overflow-y-auto pr-2">
+            <div
+              v-for="modalUser in modalUsers"
+              :key="modalUser.id"
+              @click="
+                {
+                  (navigateToUserProfile({ id: modalUser.id }),
+                    (showModal = false));
+                }
+              "
+              class="flex cursor-pointer items-center gap-3 rounded-lg p-3 transition-colors hover:bg-gray-100"
+            >
+              <div
+                class="h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-gray-300"
+              >
+                <img
+                  v-if="modalUser.image"
+                  :src="modalUser.image"
+                  :alt="modalUser.name"
+                  class="h-full w-full object-cover"
+                />
+                <div
+                  v-else
+                  class="flex h-full w-full items-center justify-center text-xs text-gray-600"
+                >
+                  {{ modalUser.name.charAt(0).toUpperCase() }}
+                </div>
+              </div>
+              <span class="text-base font-medium">{{ modalUser.name }}</span>
+            </div>
+          </div>
+        </template>
+      </FwbModal>
     </div>
   </div>
 </template>
