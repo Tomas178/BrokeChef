@@ -16,7 +16,7 @@ const [user] = await insertAll(database, 'users', fakeUser());
 const [recipe] = await insertAll(
   database,
   'recipes',
-  fakeRecipe({ userId: user.id, rating: undefined })
+  fakeRecipe({ userId: user.id })
 );
 
 const nonExistantUserId = user.id + 1;

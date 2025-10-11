@@ -2,6 +2,7 @@ import type {
   Follows,
   Ingredients,
   Ratings,
+  Recipes,
   SavedRecipes,
   Tools,
   Users,
@@ -46,7 +47,19 @@ export const fakeAuthUser = <T extends Partial<AuthUser>>(
   ...overrides,
 });
 
-export const fakeRecipe = <T extends Partial<RecipesPublic>>(
+export const fakeRecipe = <T extends Partial<Insertable<Recipes>>>(
+  overrides: T = {} as T
+) => ({
+  userId: randomOAuthId(),
+  title: random.string(),
+  duration: randomDuration(),
+  steps: random.paragraph(),
+  imageUrl: random.url(),
+  ...overrides,
+  createdAt: new Date(),
+});
+
+export const fakeRecipeWithRating = <T extends Partial<RecipesPublic>>(
   overrides: T = {} as T
 ) => ({
   userId: randomOAuthId(),

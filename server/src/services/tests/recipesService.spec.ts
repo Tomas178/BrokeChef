@@ -3,6 +3,7 @@ import {
   fakeCreateRecipeData,
   fakeRecipe,
   fakeRecipeAllInfo,
+  fakeRecipeWithRating,
 } from '@server/entities/tests/fakes';
 import { initialPageWithSort } from '@server/entities/shared';
 import { type RecipesRepository } from '@server/repositories/recipesRepository';
@@ -310,8 +311,8 @@ describe('findAll', () => {
 
   it('Should return recipes with ratings included as undefined when no ratings exist', async () => {
     const fakeRecipes = [
-      fakeRecipe({ rating: undefined }),
-      fakeRecipe({ rating: undefined }),
+      fakeRecipeWithRating({ rating: undefined }),
+      fakeRecipeWithRating({ rating: undefined }),
     ];
     mockRecipesRepoFindAll.mockResolvedValueOnce(fakeRecipes);
 
@@ -324,7 +325,7 @@ describe('findAll', () => {
   });
 
   it('Should return recipes with ratings included as real ratings when ratings exist', async () => {
-    const fakeRecipes = [fakeRecipe(), fakeRecipe()];
+    const fakeRecipes = [fakeRecipeWithRating(), fakeRecipeWithRating()];
     mockRecipesRepoFindAll.mockResolvedValueOnce(fakeRecipes);
 
     const recipes = await service.findAll(initialPageWithSort);
