@@ -1,35 +1,46 @@
-import { createTestDatabase } from '@tests/utils/database';
-import { wrapInRollbacks } from '@tests/utils/transactions';
-import { clearTables, insertAll, selectAll } from '@tests/utils/record';
 import {
   fakeUser,
   fakeCreateRecipeData,
   fakeRecipe,
-  fakeRating,
+  fakeRecipeAllInfo,
 } from '@server/entities/tests/fakes';
-import { pick } from 'lodash-es';
-import { recipesKeysPublic } from '@server/entities/recipes';
-import { usersKeysPublicWithoutId } from '@server/entities/users';
 import { initialPageWithSort } from '@server/entities/shared';
-import { joinStepsToSingleString } from '../utils/joinStepsToSingleString';
+import { type RecipesRepository } from '@server/repositories/recipesRepository';
+import type { IngredientsRepository } from '@server/repositories/ingredientsRepository';
+import type { ToolsRepository } from '@server/repositories/toolsRepository';
+import type { RecipesIngredientsRepository } from '@server/repositories/recipesIngredientsRepository';
+import type { RecipesToolsRepository } from '@server/repositories/recipesToolsRepository';
+import type { Database } from '@server/database';
+import { PostgresError } from 'pg-error-enum';
 import { recipesService } from '../recipesService';
 
 const fakeImageKey = 'fakeKey';
 const fakeSteps = ['Step 1', 'Step 2'];
 const fakeImageUrl = 'https://signed-url.com/folder/image.png';
 
-const { mockDeleteFile, mockLoggerError } = vi.hoisted(() => ({
+const {
+  mockDeleteFile,
+  mockGenerateRecipeImage,
+  mockSignImages,
+  mockLoggerError,
+  mockInsertIngredients,
+  mockInsertTools,
+} = vi.hoisted(() => ({
   mockDeleteFile: vi.fn(),
-  mockLoggerError: vi.fn(),
-}));
-
-vi.mock('@server/utils/signImages', () => ({
-  signImages: vi.fn((images: string | string[]) => {
+  mockGenerateRecipeImage: vi.fn(() => Buffer.from('image')),
+  mockSignImages: vi.fn((images: string | string[]) => {
     if (Array.isArray(images)) {
       return images.map(() => fakeImageUrl);
     }
     return fakeImageUrl;
   }),
+  mockLoggerError: vi.fn(),
+  mockInsertIngredients: vi.fn(),
+  mockInsertTools: vi.fn(),
+}));
+
+vi.mock('@server/utils/signImages', () => ({
+  signImages: mockSignImages,
 }));
 
 vi.mock('@server/logger', () => ({
@@ -39,8 +50,13 @@ vi.mock('@server/logger', () => ({
   },
 }));
 
+vi.mock('@server/utils/errors', () => ({
+  assertPostgresError: vi.fn(),
+  assertError: vi.fn(),
+}));
+
 vi.mock('@server/utils/GoogleGenAiClient/generateRecipeImage', () => ({
-  generateRecipeImage: vi.fn(() => Buffer.from('image')),
+  generateRecipeImage: mockGenerateRecipeImage,
 }));
 
 vi.mock('@server/utils/AWSS3Client/uploadImage', () => ({
@@ -55,106 +71,174 @@ vi.mock('@server/repositories/utils/joinStepsToArray', () => ({
   joinStepsToArray: vi.fn(() => fakeSteps),
 }));
 
-const database = await wrapInRollbacks(createTestDatabase());
+vi.mock('@server/services/utils/inserts', () => ({
+  insertIngredients: mockInsertIngredients,
+  insertTools: mockInsertTools,
+}));
+
+const mockRecipesRepoCreate = vi.fn();
+const mockRecipesRepoFindById = vi.fn();
+const mockRecipesRepoFindAll = vi.fn();
+
+const mockRecipesRepository = {
+  create: mockRecipesRepoCreate,
+  findById: mockRecipesRepoFindById,
+  findAll: mockRecipesRepoFindAll,
+} as Partial<RecipesRepository>;
+
+vi.mock('@server/repositories/recipesRepository', () => ({
+  recipesRepository: () => mockRecipesRepository,
+}));
+
+const mockIngredientsRepository = {} as IngredientsRepository;
+const mockRecipesIngredientsRepository = {} as RecipesIngredientsRepository;
+const mockToolsRepository = {} as ToolsRepository;
+const mockRecipesToolsRepository = {} as RecipesToolsRepository;
+
+vi.mock('@server/repositories/ingredientsRepository', () => ({
+  ingredientsRepository: () => mockIngredientsRepository,
+}));
+
+vi.mock('@server/repositories/recipesIngredientsRepository', () => ({
+  recipesIngredientsRepository: () => mockRecipesIngredientsRepository,
+}));
+
+vi.mock('@server/repositories/toolsRepository', () => ({
+  toolsRepository: () => mockToolsRepository,
+}));
+
+vi.mock('@server/repositories/recipesToolsRepository', () => ({
+  recipesToolsRepository: () => mockRecipesToolsRepository,
+}));
+
+const database = {
+  transaction: vi.fn(() => ({
+    execute: vi.fn(async callback => {
+      return await callback();
+    }),
+  })),
+} as unknown as Database;
 const service = recipesService(database);
 
-const [author, rater] = await insertAll(database, 'users', [
-  fakeUser(),
-  fakeUser(),
-]);
+const author = fakeUser();
 
 beforeEach(async () => {
-  await clearTables(database, ['recipes', 'ingredients', 'tools', 'ratings']);
   vi.resetAllMocks();
 });
 
 describe('createRecipe', () => {
   it('Should create a new recipe with user given image', async () => {
-    const recipeData = fakeCreateRecipeData();
+    const recipeData = fakeRecipe({ userId: author.id });
+    mockRecipesRepoCreate.mockResolvedValueOnce(recipeData);
 
-    const stepsInASingleString = joinStepsToSingleString(recipeData.steps);
+    const createdRecipe = await service.createRecipe(
+      fakeCreateRecipeData(),
+      author.id
+    );
 
-    const createdRecipe = await service.createRecipe(recipeData, author.id);
-
-    expect(createdRecipe).toMatchObject({
-      id: expect.any(Number),
-      ...pick(recipeData, recipesKeysPublic),
-      steps: stepsInASingleString,
-      author: pick(author, usersKeysPublicWithoutId),
-    });
+    expect(mockInsertIngredients).toHaveBeenCalledOnce();
+    expect(mockInsertTools).toHaveBeenCalledOnce();
+    expect(mockGenerateRecipeImage).not.toHaveBeenCalled();
+    expect(createdRecipe).toEqual(recipeData);
   });
 
   it('Should create a new recipe with generated image when user did not provide an image', async () => {
-    const recipeData = fakeCreateRecipeData({ imageUrl: '' });
+    const recipeData = fakeRecipe({ userId: author.id });
+    mockRecipesRepoCreate.mockResolvedValueOnce(recipeData);
 
-    const stepsInASingleString = joinStepsToSingleString(recipeData.steps);
+    const createdRecipe = await service.createRecipe(
+      fakeCreateRecipeData({ imageUrl: undefined }),
+      author.id
+    );
 
-    const createdRecipe = await service.createRecipe(recipeData, author.id);
-
-    expect(createdRecipe).toMatchObject({
-      id: expect.any(Number),
-      ...pick(recipeData, recipesKeysPublic),
-      steps: stepsInASingleString,
-      author: pick(author, usersKeysPublicWithoutId),
-      imageUrl: fakeImageKey,
-    });
+    expect(mockInsertIngredients).toHaveBeenCalledOnce();
+    expect(mockInsertTools).toHaveBeenCalledOnce();
+    expect(mockGenerateRecipeImage).toHaveBeenCalledOnce();
+    expect(createdRecipe).toEqual(recipeData);
   });
 
   it('Should throw an error if user is not found', async () => {
-    const recipeData = fakeCreateRecipeData();
-    const nonExistantUserId = author.id + 'a';
+    mockRecipesRepoCreate.mockRejectedValueOnce({
+      code: PostgresError.FOREIGN_KEY_VIOLATION,
+    });
 
     await expect(
-      service.createRecipe(recipeData, nonExistantUserId)
+      service.createRecipe(fakeCreateRecipeData(), author.id + 'a')
     ).rejects.toThrow(/not found/i);
+
+    expect(mockInsertIngredients).not.toHaveBeenCalled();
+    expect(mockInsertTools).not.toHaveBeenCalled();
   });
 
   it('Should throw an error if recipe is already created by the user', async () => {
-    const [insertedRecipe] = await insertAll(
-      database,
-      'recipes',
-      fakeRecipe({ userId: author.id })
-    );
-
-    const recipeDataForCreate = fakeCreateRecipeData({
-      title: insertedRecipe.title,
+    mockRecipesRepoCreate.mockRejectedValueOnce({
+      code: PostgresError.UNIQUE_VIOLATION,
     });
 
-    console.log({ insertedRecipe });
-    console.log({ recipeDataForCreate });
+    await expect(
+      service.createRecipe(fakeCreateRecipeData(), author.id)
+    ).rejects.toThrow(/already|created/i);
+
+    expect(mockInsertIngredients).not.toHaveBeenCalled();
+    expect(mockInsertTools).not.toHaveBeenCalled();
+  });
+
+  it('Should rollback if an error occurs when image was provided', async () => {
+    mockRecipesRepoCreate.mockRejectedValueOnce({
+      code: PostgresError.UNIQUE_VIOLATION,
+    });
 
     await expect(
-      service.createRecipe(recipeDataForCreate, insertedRecipe.userId)
+      service.createRecipe(fakeCreateRecipeData(), author.id)
     ).rejects.toThrow(/already|created/i);
+
+    expect(mockInsertIngredients).not.toHaveBeenCalled();
+    expect(mockInsertTools).not.toHaveBeenCalled();
+    expect(mockDeleteFile).not.toHaveBeenCalled();
+
+    expect(mockLoggerError).toHaveBeenCalledOnce();
   });
 
-  it('Should rollback if an error occurs', async () => {
-    const recipeData = fakeCreateRecipeData();
-    recipeData.ingredients.push('');
+  it('Should rollback if an error occurs when image was not provided', async () => {
+    mockRecipesRepoCreate.mockRejectedValueOnce({
+      code: PostgresError.UNIQUE_VIOLATION,
+    });
 
-    await expect(service.createRecipe(recipeData, author.id)).rejects.toThrow();
+    await expect(
+      service.createRecipe(
+        fakeCreateRecipeData({ imageUrl: undefined }),
+        author.id
+      )
+    ).rejects.toThrow();
 
-    await expect(selectAll(database, 'recipes')).resolves.toHaveLength(0);
-    await expect(selectAll(database, 'ingredients')).resolves.toHaveLength(0);
-    await expect(selectAll(database, 'tools')).resolves.toHaveLength(0);
+    expect(mockInsertIngredients).not.toHaveBeenCalled();
+    expect(mockInsertTools).not.toHaveBeenCalled();
+
+    expect(mockDeleteFile).toHaveBeenCalledOnce();
+    expect(mockLoggerError).toHaveBeenCalledOnce();
   });
 
-  it('Should delete an image from the S3 storage on insertion failure', async () => {
-    const recipeData = fakeCreateRecipeData();
-    const nonExistantUserId = author.id + 'a';
-
+  it('Should log an error message if deletion of image on rollback failed', async () => {
+    mockRecipesRepoCreate.mockRejectedValueOnce({
+      code: PostgresError.FOREIGN_KEY_VIOLATION,
+    });
     mockDeleteFile.mockRejectedValueOnce(new Error('Failed to delete from S3'));
 
     await expect(
-      service.createRecipe(recipeData, nonExistantUserId)
+      service.createRecipe(
+        fakeCreateRecipeData({ imageUrl: undefined }),
+        author.id
+      )
     ).rejects.toThrow(/not found/i);
 
-    expect(mockDeleteFile).toHaveBeenCalledOnce();
+    expect(mockInsertIngredients).not.toHaveBeenCalled();
+    expect(mockInsertTools).not.toHaveBeenCalled();
 
+    expect(mockDeleteFile).toHaveBeenCalledOnce();
     expect(mockDeleteFile).toHaveBeenCalledWith(
       expect.any(Object),
       expect.any(String),
-      recipeData.imageUrl
+      fakeImageKey
     );
 
     expect(mockLoggerError).toHaveBeenCalledWith(
@@ -162,108 +246,91 @@ describe('createRecipe', () => {
       expect.any(Error)
     );
   });
+
+  it('Should log an error message if image generation threw an error', async () => {
+    const errorMessage = 'AI Failed';
+    mockGenerateRecipeImage.mockRejectedValueOnce(new Error(errorMessage));
+
+    await expect(
+      service.createRecipe(
+        fakeCreateRecipeData({ imageUrl: undefined }),
+        author.id
+      )
+    ).rejects.toThrow(errorMessage);
+
+    expect(mockInsertIngredients).not.toHaveBeenCalled();
+    expect(mockInsertTools).not.toHaveBeenCalled();
+    expect(mockDeleteFile).not.toHaveBeenCalled();
+
+    expect(mockLoggerError).toHaveBeenCalledOnce();
+    expect(mockLoggerError).toHaveBeenCalledWith(
+      'Failed to resolve recipe image:',
+      expect.any(Error)
+    );
+  });
 });
 
 describe('findById', () => {
   it('Should return the recipe', async () => {
-    const [insertedRecipe] = await insertAll(
-      database,
-      'recipes',
-      fakeRecipe({ userId: author.id })
-    );
+    const recipeData = fakeRecipeAllInfo({ userId: author.id });
+    mockRecipesRepoFindById.mockResolvedValueOnce(recipeData);
 
-    const retrievedRecipe = await service.findById(insertedRecipe.id);
+    const retrievedRecipe = await service.findById(recipeData.id);
 
-    expect(retrievedRecipe).toEqual({
-      ...insertedRecipe,
-      author: pick(author, usersKeysPublicWithoutId),
-      imageUrl: fakeImageUrl,
-      ingredients: [],
-      tools: [],
-      steps: fakeSteps,
-      rating: null,
-    });
-  });
-
-  it('Should return a recipe with a rating when rating exists', async () => {
-    const [insertedRecipe] = await insertAll(
-      database,
-      'recipes',
-      fakeRecipe({ userId: author.id })
-    );
-
-    const [ratingForRecipe] = await insertAll(
-      database,
-      'ratings',
-      fakeRating({ userId: rater.id, recipeId: insertedRecipe.id })
-    );
-
-    const retrievedRecipe = await service.findById(insertedRecipe.id);
-
-    expect(retrievedRecipe).toHaveProperty('rating', ratingForRecipe.rating);
+    expect(mockSignImages).toHaveBeenCalledOnce();
+    expect(retrievedRecipe).toHaveProperty('rating', recipeData.rating);
   });
 
   it('Should throw an error if recipe is not found', async () => {
+    mockRecipesRepoFindById.mockResolvedValueOnce(undefined);
+
+    expect(mockSignImages).not.toHaveBeenCalledOnce();
     await expect(service.findById(999)).rejects.toThrow(/not found/i);
   });
 });
 
 describe('findAll', () => {
-  it('Should return an empty list when no recipeIds are given', async () => {
+  it('Should return an empty list if no recipes found', async () => {
+    mockRecipesRepoFindAll.mockResolvedValueOnce([]);
+
     await expect(service.findAll(initialPageWithSort)).resolves.toEqual([]);
+    expect(mockSignImages).not.toHaveBeenCalled();
   });
 
   it('Should return recipes with signed images', async () => {
-    const [recipeOne, recipeTwo] = await insertAll(database, 'recipes', [
-      fakeRecipe({ userId: author.id }),
-      fakeRecipe({ userId: author.id }),
-    ]);
+    const fakeRecipes = [fakeRecipe(), fakeRecipe()];
+    mockRecipesRepoFindAll.mockResolvedValueOnce(fakeRecipes);
 
     const recipes = await service.findAll(initialPageWithSort);
-    expect(recipes).toHaveLength(2);
+    expect(recipes).toHaveLength(fakeRecipes.length);
+    expect(recipes).toEqual(fakeRecipes);
 
-    expect(recipes[0]).toMatchObject({
-      id: recipeTwo.id,
-      imageUrl: fakeImageUrl,
-    });
-    expect(recipes[1]).toMatchObject({
-      id: recipeOne.id,
-      imageUrl: fakeImageUrl,
-    });
+    expect(mockSignImages).toHaveBeenCalledOnce();
   });
 
   it('Should return recipes with ratings included as undefined when no ratings exist', async () => {
-    const insertedRecipes = await insertAll(database, 'recipes', [
-      fakeRecipe({ userId: author.id }),
-      fakeRecipe({ userId: author.id }),
-    ]);
+    const fakeRecipes = [
+      fakeRecipe({ rating: undefined }),
+      fakeRecipe({ rating: undefined }),
+    ];
+    mockRecipesRepoFindAll.mockResolvedValueOnce(fakeRecipes);
 
     const recipes = await service.findAll(initialPageWithSort);
-    expect(recipes).toHaveLength(insertedRecipes.length);
+    expect(recipes).toHaveLength(fakeRecipes.length);
+    expect(recipes).toEqual(fakeRecipes);
 
     expect(recipes[0]).toHaveProperty('rating', undefined);
     expect(recipes[1]).toHaveProperty('rating', undefined);
   });
 
   it('Should return recipes with ratings included as real ratings when ratings exist', async () => {
-    const [recipeOne, recipeTwo] = await insertAll(database, 'recipes', [
-      fakeRecipe({ userId: author.id }),
-      fakeRecipe({ userId: author.id }),
-    ]);
-
-    const [ratedRecipeOne, ratedRecipeTwo] = await insertAll(
-      database,
-      'ratings',
-      [
-        fakeRating({ userId: rater.id, recipeId: recipeOne.id }),
-        fakeRating({ userId: rater.id, recipeId: recipeTwo.id }),
-      ]
-    );
+    const fakeRecipes = [fakeRecipe(), fakeRecipe()];
+    mockRecipesRepoFindAll.mockResolvedValueOnce(fakeRecipes);
 
     const recipes = await service.findAll(initialPageWithSort);
-    expect(recipes).toHaveLength(2);
+    expect(recipes).toHaveLength(fakeRecipes.length);
 
-    expect(recipes[0]).toHaveProperty('rating', ratedRecipeTwo.rating);
-    expect(recipes[1]).toHaveProperty('rating', ratedRecipeOne.rating);
+    expect(recipes[0]).toHaveProperty('rating', fakeRecipes[0].rating);
+    expect(recipes[1]).toHaveProperty('rating', fakeRecipes[1].rating);
   });
 });

@@ -37,6 +37,36 @@ export interface RecipesService {
   findAll: (pagination: PaginationWithSort) => Promise<RecipesPublic[]>;
 }
 
+async function resolveRecipeImage(
+  userProvidedUrl: string | undefined,
+  recipeTitle: string,
+  ingredients: CreateRecipeInput['ingredients']
+): Promise<string> {
+  if (userProvidedUrl) {
+    return userProvidedUrl;
+  }
+
+  const generatedImage = await generateRecipeImage(ai, {
+    title: recipeTitle,
+    ingredients,
+  });
+
+  return await uploadImage(
+    s3Client,
+    ImageFolder.RECIPES,
+    generatedImage,
+    AllowedMimeType.JPEG
+  );
+}
+
+async function rollbackImageUpload(imageUrl: string): Promise<void> {
+  try {
+    await deleteFile(s3Client, config.auth.aws.s3.buckets.images, imageUrl);
+  } catch (error) {
+    logger.error('Failed to rollback S3 Object:', error);
+  }
+}
+
 export function recipesService(database: Database): RecipesService {
   const recipesRepository = buildRecipesRepository(database);
 
@@ -45,22 +75,29 @@ export function recipesService(database: Database): RecipesService {
       const { ingredients, tools, ...recipeData } = recipe;
 
       let imageUrl: string;
+      let isImageGenerated = false;
 
-      if (recipeData.imageUrl) {
-        imageUrl = recipeData.imageUrl; // user provided
-      } else {
-        const generatedImage = await generateRecipeImage(ai, {
-          title: recipeData.title,
-          ingredients,
-        });
-
-        imageUrl = await uploadImage(
-          s3Client,
-          ImageFolder.RECIPES,
-          generatedImage,
-          AllowedMimeType.JPEG
+      try {
+        imageUrl = await resolveRecipeImage(
+          recipeData.imageUrl,
+          recipeData.title,
+          ingredients
         );
+
+        isImageGenerated = !recipeData.imageUrl;
+      } catch (error) {
+        logger.error('Failed to resolve recipe image:', error);
+        throw error;
       }
+
+      const stepsAsSingleString = joinStepsToSingleString(recipeData.steps);
+
+      const recipeToInsert = {
+        ...recipeData,
+        steps: stepsAsSingleString,
+        userId,
+        imageUrl,
+      };
 
       return await database.transaction().execute(async tx => {
         const recipesRepositoryForTx = buildRecipesRepository(tx);
@@ -69,15 +106,6 @@ export function recipesService(database: Database): RecipesService {
           buildRecipesIngredientsRepository(tx);
         const toolsRepositoryForTx = buildToolsRepository(tx);
         const recipesToolsRepositoryForTx = buildRecipesToolsRepository(tx);
-
-        const stepsAsSingleString = joinStepsToSingleString(recipeData.steps);
-
-        const recipeToInsert = {
-          ...recipeData,
-          steps: stepsAsSingleString,
-          userId,
-          imageUrl,
-        };
 
         try {
           const createdRecipe =
@@ -102,14 +130,10 @@ export function recipesService(database: Database): RecipesService {
 
           return createdRecipe;
         } catch (error) {
-          try {
-            await deleteFile(
-              s3Client,
-              config.auth.aws.s3.buckets.images,
-              recipeToInsert.imageUrl
-            );
-          } catch (S3Error) {
-            logger.error('Failed to rollback S3 Object:', S3Error);
+          logger.error('Failed to create recipe');
+
+          if (isImageGenerated) {
+            await rollbackImageUpload(imageUrl);
           }
 
           assertPostgresError(error);
@@ -140,14 +164,16 @@ export function recipesService(database: Database): RecipesService {
     async findAll(pagination) {
       const recipes = await recipesRepository.findAll(pagination);
 
-      const imageUrls = recipes.map(recipe => recipe.imageUrl);
-      const signedUrls = await signImages(imageUrls);
+      if (recipes.length > 0) {
+        const imageUrls = recipes.map(recipe => recipe.imageUrl);
+        const signedUrls = await signImages(imageUrls);
 
-      for (const [index, recipe] of recipes.entries()) {
-        recipe.imageUrl = signedUrls[index];
+        for (const [index, recipe] of recipes.entries()) {
+          recipe.imageUrl = signedUrls[index];
 
-        if (recipe.rating === null) {
-          recipe.rating = undefined;
+          if (!recipe.rating) {
+            recipe.rating = undefined;
+          }
         }
       }
 
