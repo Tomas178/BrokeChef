@@ -140,7 +140,7 @@ test.describe('Profile page actions', () => {
     });
 
     test.describe('Action button', () => {
-      test('Should contain "change creadentials" text and on click redirect to the page', async ({
+      test('Should contain "change credentials" text and on click redirect to the page', async ({
         page,
       }) => {
         const actionButton = page.getByTestId('change-credentials');
