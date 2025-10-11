@@ -79,6 +79,7 @@ export default defineConfigWithVueTs(
             'checkRecipeMainInfo',
             'checkActionButton',
             'checkFollowsModalHeader',
+            'checkRecipesSectionTitle',
           ],
         },
       ],

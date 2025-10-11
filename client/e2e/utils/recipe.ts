@@ -5,6 +5,7 @@ import { RecipeCardTitle } from '@/components/RecipeDetailsCard.vue';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ImageData } from './consts';
 
 export async function fillInRecipeInfo(
   form: Locator,
@@ -21,11 +22,6 @@ export async function fillInRecipeInfo(
     }
   }
 }
-
-export type ImageData = {
-  filePath: string;
-  mimeType: string;
-};
 
 export async function fillAllRecipeInfo(
   form: Locator,

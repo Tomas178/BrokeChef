@@ -77,6 +77,7 @@ onMounted(async () => {
 <template>
   <div class="flex flex-col gap-5 lg:gap-7">
     <span
+      data-testid="title"
       class="text-primary-green inline-flex self-start rounded-3xl px-2 py-1 text-lg font-bold shadow-md lg:px-6 lg:py-2 lg:text-3xl"
     >
       {{ title }}
@@ -102,7 +103,7 @@ onMounted(async () => {
       </div>
 
       <div v-else>
-        <NoRecipes :recipe-type="recipeType" />
+        <NoRecipes data-testid="no-recipes" :recipe-type="recipeType" />
       </div>
     </template>
   </div>

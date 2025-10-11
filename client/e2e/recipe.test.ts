@@ -7,14 +7,13 @@ import {
   checkRecipeMainInfo,
   deleteInput,
   fillAllRecipeInfo,
-  ImageData,
 } from './utils/recipe';
 import { checkLocator, getToastContainer } from './utils/toast';
 import { ROUTE_PATHS } from '@/router/consts/routePaths';
 import { TestId } from '@/components/Forms/CreateForm.vue';
+import { ImageData, TEXT_PATTERNS } from './utils/consts';
 
 const CREATE_RECIPE_PATH = ROUTE_PATHS.CREATE_RECIPE;
-const LOADING_MESSAGE = /creating/i;
 
 test.describe.serial('Create recipe without image and delete it', () => {
   const recipe = fakeRecipe();
@@ -56,7 +55,11 @@ test.describe.serial('Create recipe without image and delete it', () => {
 
       await form.getByRole('button', { name: /publish|create/i }).click();
 
-      await checkLocator(toastContainer, /created/i, /creating/i);
+      await checkLocator(
+        toastContainer,
+        TEXT_PATTERNS.CREATED,
+        TEXT_PATTERNS.LOADING
+      );
 
       await page.waitForURL(/recipe\/\d+/i);
       await expect(page).toHaveURL(/recipe\/\d+/i);
@@ -101,7 +104,7 @@ test.describe.serial('Create recipe without image and delete it', () => {
       const saveButton = await checkActionButton(page, 'save');
       await saveButton.click();
 
-      await checkLocator(toastContainer, /saved|success/i);
+      await checkLocator(toastContainer, TEXT_PATTERNS.SAVED);
 
       await checkActionButton(page, 'unsave');
 
@@ -113,7 +116,7 @@ test.describe.serial('Create recipe without image and delete it', () => {
       const unsaveButton = await checkActionButton(page, 'unsave');
       await unsaveButton.click();
 
-      await checkLocator(toastContainer, /unsaved|success/i);
+      await checkLocator(toastContainer, TEXT_PATTERNS.UNSAVED);
 
       await checkActionButton(page, 'save');
 
@@ -155,7 +158,7 @@ test.describe.serial('Create recipe without image and delete it', () => {
       await confirmButton.click();
 
       await expect(dialog).toBeHidden();
-      await checkLocator(toastContainer, /deleted|removed/i);
+      await checkLocator(toastContainer, TEXT_PATTERNS.REMOVED);
 
       await expect(page).toHaveURL(HOME_PAGE_URL);
     });
@@ -187,7 +190,7 @@ test.describe.serial('Create recipe with image', () => {
 
     await form.getByRole('button', { name: /publish|create/i }).click();
 
-    await checkLocator(toastContainer, /supported|types|format/i);
+    await checkLocator(toastContainer, TEXT_PATTERNS.INCORRECT_IMAGE_TYPE);
 
     await expect(page).toHaveURL(CREATE_RECIPE_PATH);
   });
@@ -208,7 +211,11 @@ test.describe.serial('Create recipe with image', () => {
 
     await form.getByRole('button', { name: /publish|create/i }).click();
 
-    await checkLocator(toastContainer, /created/i, LOADING_MESSAGE);
+    await checkLocator(
+      toastContainer,
+      TEXT_PATTERNS.CREATED,
+      TEXT_PATTERNS.LOADING
+    );
 
     await page.waitForURL(/recipe\/\d+/i);
     await expect(page).toHaveURL(/recipe\/\d+/i);

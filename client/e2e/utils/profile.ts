@@ -41,7 +41,25 @@ export async function goToFollowModal(page: Page, following: boolean) {
     .click();
 
   const followModal = page.getByTestId('follow-modal');
-  //   await expect(followModal).toBeVisible();
 
   return followModal;
+}
+
+export async function checkRecipesSectionTitle(
+  section: Locator,
+  titleMessage: string | RegExp
+) {
+  const title = section.getByTestId('title');
+  await expect(title).toBeVisible();
+  await expect(title).toContainText(titleMessage);
+}
+
+export async function checkNoRecipesState(
+  section: Locator,
+  message: string | RegExp
+) {
+  const noRecipesLocator = section.getByTestId('no-recipes');
+
+  await expect(noRecipesLocator).toBeVisible();
+  await expect(noRecipesLocator).toContainText(message);
 }
