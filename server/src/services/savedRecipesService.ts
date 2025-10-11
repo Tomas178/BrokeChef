@@ -1,5 +1,8 @@
 import type { Database } from '@server/database';
-import { savedRecipesRepository as buildSavedRecipesRepository } from '@server/repositories/savedRecipesRepository';
+import {
+  savedRecipesRepository as buildSavedRecipesRepository,
+  type SavedRecipesLink,
+} from '@server/repositories/savedRecipesRepository';
 import { recipesRepository as buildRecipesRepository } from '@server/repositories/recipesRepository';
 import { assertError, assertPostgresError } from '@server/utils/errors';
 import RecipeAlreadySaved from '@server/utils/errors/recipes/RecipeAlreadySaved';
@@ -14,14 +17,8 @@ import {
 } from './utils/recipeValidations';
 
 interface SavedRecipesService {
-  create: (
-    userId: string,
-    recipeId: number
-  ) => Promise<savedRecipesPublic | undefined>;
-  remove: (
-    recipeId: number,
-    userId: string
-  ) => Promise<savedRecipesPublic | undefined>;
+  create: (link: SavedRecipesLink) => Promise<savedRecipesPublic | undefined>;
+  remove: (link: SavedRecipesLink) => Promise<savedRecipesPublic | undefined>;
 }
 
 export function savedRecipesService(database: Database): SavedRecipesService {
@@ -29,19 +26,16 @@ export function savedRecipesService(database: Database): SavedRecipesService {
   const recipesRepository = buildRecipesRepository(database);
 
   return {
-    async create(userId, recipeId) {
+    async create(link) {
       await validateRecipeAndUserIsNotAuthor(
         recipesRepository,
-        recipeId,
-        userId,
+        link.recipeId,
+        link.userId,
         CannotSaveOwnRecipe
       );
 
       try {
-        const createdRecipe = await savedRecipesRepository.create({
-          userId,
-          recipeId,
-        });
+        const createdRecipe = await savedRecipesRepository.create(link);
 
         return createdRecipe;
       } catch (error) {
@@ -53,14 +47,11 @@ export function savedRecipesService(database: Database): SavedRecipesService {
       }
     },
 
-    async remove(recipeId, userId) {
-      await validateRecipeExists(recipesRepository, recipeId);
+    async remove(link) {
+      await validateRecipeExists(recipesRepository, link.recipeId);
 
       try {
-        const unsavedRecipe = await savedRecipesRepository.remove(
-          recipeId,
-          userId
-        );
+        const unsavedRecipe = await savedRecipesRepository.remove(link);
 
         return unsavedRecipe;
       } catch (error) {

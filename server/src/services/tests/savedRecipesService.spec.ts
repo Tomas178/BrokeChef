@@ -1,97 +1,110 @@
-import { createTestDatabase } from '@tests/utils/database';
-import { wrapInRollbacks } from '@tests/utils/transactions';
-import { insertAll } from '@tests/utils/record';
-import {
-  fakeRecipe,
-  fakeSavedRecipe,
-  fakeUser,
-} from '@server/entities/tests/fakes';
+import { fakeSavedRecipe } from '@server/entities/tests/fakes';
+import type { Database } from '@server/database';
+import type {
+  SavedRecipesLink,
+  SavedRecipesRepository,
+} from '@server/repositories/savedRecipesRepository';
+import { PostgresError } from 'pg-error-enum';
+import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
+import CannotSaveOwnRecipe from '@server/utils/errors/recipes/CannotSaveOwnRecipe';
+import { NoResultError } from 'kysely';
 import { savedRecipesService } from '../savedRecipesService';
 
-const database = await wrapInRollbacks(createTestDatabase());
+vi.mock('@server/utils/errors', () => ({
+  assertPostgresError: vi.fn(),
+  assertError: vi.fn(),
+}));
+
+const mockSavedRecipesRepoCreate = vi.fn();
+const mockSavedRecipesRepoRemove = vi.fn();
+
+const mockSavedRecipesRepository = {
+  create: mockSavedRecipesRepoCreate,
+  remove: mockSavedRecipesRepoRemove,
+} as Partial<SavedRecipesRepository>;
+
+vi.mock('@server/repositories/savedRecipesRepository', () => ({
+  savedRecipesRepository: () => mockSavedRecipesRepository,
+}));
+
+const [mockValidateRecipesAndUserIsNotAuthor, mockValidateRecipeExists] =
+  vi.hoisted(() => [vi.fn(), vi.fn()]);
+
+vi.mock('@server/services/utils/recipeValidations', () => ({
+  validateRecipeAndUserIsNotAuthor: mockValidateRecipesAndUserIsNotAuthor,
+  validateRecipeExists: mockValidateRecipeExists,
+}));
+
+const database = {} as Database;
 const service = savedRecipesService(database);
 
-const [userCreator, userSaver] = await insertAll(database, 'users', [
-  fakeUser(),
-  fakeUser(),
-]);
+const userId = 'a'.repeat(32);
+const recipeId = 123;
+const link: SavedRecipesLink = { userId, recipeId };
+const savedRecipeLink = fakeSavedRecipe(link);
 
-const [recipe] = await insertAll(
-  database,
-  'recipes',
-  fakeRecipe({ userId: userCreator.id })
-);
-
-const nonExistantRecipeId = recipe.id + 1;
+beforeEach(() => vi.resetAllMocks());
 
 describe('create', () => {
   it('Should create a new saved recipe', async () => {
-    const savedRecipe = await service.create(userSaver.id, recipe.id);
+    mockSavedRecipesRepoCreate.mockResolvedValueOnce(savedRecipeLink);
+    const savedRecipe = await service.create(link);
 
-    expect(savedRecipe).toMatchObject({
-      userId: userSaver.id,
-      recipeId: recipe.id,
-    });
+    expect(mockSavedRecipesRepoCreate).toHaveBeenCalledOnce();
+    expect(savedRecipe).toEqual(savedRecipeLink);
   });
 
   it('Should throw an error of duplicate', async () => {
-    const [savedRecipe] = await insertAll(
-      database,
-      'savedRecipes',
-      fakeSavedRecipe({ userId: userSaver.id, recipeId: recipe.id })
-    );
+    mockSavedRecipesRepoCreate.mockRejectedValueOnce({
+      code: PostgresError.UNIQUE_VIOLATION,
+    });
 
-    await expect(
-      service.create(savedRecipe.userId, savedRecipe.recipeId)
-    ).rejects.toThrow(/saved/i);
+    await expect(service.create(link)).rejects.toThrow(/saved/i);
   });
 
   it('Should throw an error that recipe does not exist', async () => {
-    await expect(
-      service.create(userSaver.id, nonExistantRecipeId)
-    ).rejects.toThrow(/recipe.*not found|not found.* recipe/i);
+    mockValidateRecipesAndUserIsNotAuthor.mockRejectedValueOnce(
+      new RecipeNotFound()
+    );
+
+    await expect(service.create(link)).rejects.toThrow(
+      /recipe.*not found|not found.* recipe/i
+    );
   });
 
   it('Should throw an error because user tries to save his own recipe', async () => {
-    await expect(service.create(userCreator.id, recipe.id)).rejects.toThrow(
-      /own.*save|save.*own/i
+    mockValidateRecipesAndUserIsNotAuthor.mockRejectedValueOnce(
+      new CannotSaveOwnRecipe()
     );
+
+    await expect(service.create(link)).rejects.toThrow(/own.*save|save.*own/i);
   });
 });
 
 describe('remove', () => {
   it('Should unsave a recipe', async () => {
-    const [savedRecipe] = await insertAll(
-      database,
-      'savedRecipes',
-      fakeSavedRecipe({ userId: userSaver.id, recipeId: recipe.id })
-    );
+    mockSavedRecipesRepoRemove.mockResolvedValueOnce(savedRecipeLink);
 
-    const unsavedRecipe = await service.remove(
-      savedRecipe.recipeId,
-      savedRecipe.userId
-    );
+    const unsavedRecipe = await service.remove(link);
 
-    expect(unsavedRecipe).toEqual(savedRecipe);
+    expect(mockSavedRecipesRepoRemove).toHaveBeenCalledOnce();
+    expect(unsavedRecipe).toEqual(savedRecipeLink);
   });
 
   it('Should throw an error that recipe does not exist', async () => {
-    await expect(
-      service.remove(nonExistantRecipeId, userSaver.id)
-    ).rejects.toThrow(/recipe.*not found|not found.*recipe/i);
+    mockValidateRecipeExists.mockRejectedValueOnce(new RecipeNotFound());
+
+    expect(mockSavedRecipesRepoRemove).not.toHaveBeenCalled();
+    await expect(service.remove(link)).rejects.toThrow(
+      /recipe.*not found|not found.*recipe/i
+    );
   });
 
   it('Should throw an error that saved recipe with given data does not exist', async () => {
-    const [savedRecipe] = await insertAll(
-      database,
-      'savedRecipes',
-      fakeSavedRecipe({ userId: userSaver.id, recipeId: recipe.id })
+    mockSavedRecipesRepoRemove.mockRejectedValueOnce(
+      new NoResultError({} as any)
     );
 
-    const nonExistantUserId = userSaver.id + 'a';
-
-    await expect(
-      service.remove(savedRecipe.recipeId, nonExistantUserId)
-    ).rejects.toThrow(/not found/i);
+    await expect(service.remove(link)).rejects.toThrow(/not found/i);
   });
 });

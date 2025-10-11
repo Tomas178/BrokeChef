@@ -7,12 +7,12 @@ import type { Insertable } from 'kysely';
 
 const TABLE = 'savedRecipes';
 
-export type SavedRecipeLink = Insertable<SavedRecipes>;
+export type SavedRecipesLink = Insertable<SavedRecipes>;
 
 export interface SavedRecipesRepository {
-  create: (link: SavedRecipeLink) => Promise<savedRecipesPublic>;
-  remove: (link: SavedRecipeLink) => Promise<savedRecipesPublic>;
-  isSaved: (link: SavedRecipeLink) => Promise<boolean>;
+  create: (link: SavedRecipesLink) => Promise<savedRecipesPublic>;
+  remove: (link: SavedRecipesLink) => Promise<savedRecipesPublic>;
+  isSaved: (link: SavedRecipesLink) => Promise<boolean>;
 }
 
 export function savedRecipesRepository(
