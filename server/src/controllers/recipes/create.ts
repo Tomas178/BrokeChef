@@ -6,6 +6,7 @@ import * as z from 'zod';
 import { recipesService } from '@server/services/recipesService';
 import { TRPCError } from '@trpc/server';
 import UserNotFound from '@server/utils/errors/users/UserNotFound';
+import RecipeAlreadyCreated from '@server/utils/errors/recipes/RecipeAlreadyCreated';
 
 const createRecipeInputSchema = recipesSchema
   .pick({
@@ -36,6 +37,13 @@ export default authenticatedProcedure
       if (error instanceof UserNotFound) {
         throw new TRPCError({
           code: 'NOT_FOUND',
+          message: error.message,
+        });
+      }
+
+      if (error instanceof RecipeAlreadyCreated) {
+        throw new TRPCError({
+          code: 'CONFLICT',
           message: error.message,
         });
       }

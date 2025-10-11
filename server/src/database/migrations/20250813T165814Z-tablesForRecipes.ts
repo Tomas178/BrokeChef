@@ -20,6 +20,10 @@ export async function up(database: Kysely<any>) {
       .addColumn('title', 'text', c => c.notNull())
       .addColumn('duration', 'integer', c => c.notNull())
       .addColumn('steps', 'text', c => c.notNull())
+      .addUniqueConstraint('recipes_user_title_unique', [
+        COLUMN_USER_ID,
+        'title',
+      ])
   ).execute();
 
   await addCreatedAtColumn(

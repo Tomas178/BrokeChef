@@ -109,6 +109,25 @@ describe('createRecipe', () => {
     ).rejects.toThrow(/not found/i);
   });
 
+  it('Should throw an error if recipe is already created by the user', async () => {
+    const [insertedRecipe] = await insertAll(
+      database,
+      'recipes',
+      fakeRecipe({ userId: author.id })
+    );
+
+    const recipeDataForCreate = fakeCreateRecipeData({
+      title: insertedRecipe.title,
+    });
+
+    console.log({ insertedRecipe });
+    console.log({ recipeDataForCreate });
+
+    await expect(
+      service.createRecipe(recipeDataForCreate, insertedRecipe.userId)
+    ).rejects.toThrow(/already|created/i);
+  });
+
   it('Should rollback if an error occurs', async () => {
     const recipeData = fakeCreateRecipeData();
     recipeData.ingredients.push('');

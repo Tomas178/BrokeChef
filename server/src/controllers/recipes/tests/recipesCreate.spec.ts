@@ -9,6 +9,7 @@ import { recipesKeysPublic } from '@server/entities/recipes';
 import { joinStepsToSingleString } from '@server/services/utils/joinStepsToSingleString';
 import UserNotFound from '@server/utils/errors/users/UserNotFound';
 import type { Database } from '@server/database';
+import RecipeAlreadyCreated from '@server/utils/errors/recipes/RecipeAlreadyCreated';
 import recipesRouter from '..';
 
 const mockCreateRecipe = vi.fn();
@@ -92,4 +93,14 @@ it('Should throw a general error when insertion to database fails', async () => 
   );
 
   await expect(create(fakeCreateRecipeData())).rejects.toThrow(/failed/i);
+});
+
+it('Should throw an error if recipe with the given title is already created by the user', async () => {
+  mockCreateRecipe.mockRejectedValueOnce(new RecipeAlreadyCreated());
+
+  const { create } = createCaller(authContext({ database }, user));
+
+  await expect(create(fakeCreateRecipeData())).rejects.toThrow(
+    /already|created/i
+  );
 });

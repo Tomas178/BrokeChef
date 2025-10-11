@@ -24,6 +24,7 @@ import logger from '@server/logger';
 import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import { signImages } from '@server/utils/signImages';
 import type { PaginationWithSort } from '@server/shared/pagination';
+import RecipeAlreadyCreated from '@server/utils/errors/recipes/RecipeAlreadyCreated';
 import { joinStepsToSingleString } from './utils/joinStepsToSingleString';
 import { insertIngredients, insertTools } from './utils/inserts';
 
@@ -41,6 +42,26 @@ export function recipesService(database: Database): RecipesService {
 
   return {
     async createRecipe(recipe, userId) {
+      const { ingredients, tools, ...recipeData } = recipe;
+
+      let imageUrl: string;
+
+      if (recipeData.imageUrl) {
+        imageUrl = recipeData.imageUrl; // user provided
+      } else {
+        const generatedImage = await generateRecipeImage(ai, {
+          title: recipeData.title,
+          ingredients,
+        });
+
+        imageUrl = await uploadImage(
+          s3Client,
+          ImageFolder.RECIPES,
+          generatedImage,
+          AllowedMimeType.JPEG
+        );
+      }
+
       return await database.transaction().execute(async tx => {
         const recipesRepositoryForTx = buildRecipesRepository(tx);
         const ingredientsRepositoryForTx = buildIngredientsRepository(tx);
@@ -48,26 +69,6 @@ export function recipesService(database: Database): RecipesService {
           buildRecipesIngredientsRepository(tx);
         const toolsRepositoryForTx = buildToolsRepository(tx);
         const recipesToolsRepositoryForTx = buildRecipesToolsRepository(tx);
-
-        const { ingredients, tools, ...recipeData } = recipe;
-
-        let imageUrl: string;
-
-        if (recipeData.imageUrl) {
-          imageUrl = recipeData.imageUrl; // user provided
-        } else {
-          const generatedImage = await generateRecipeImage(ai, {
-            title: recipeData.title,
-            ingredients,
-          });
-
-          imageUrl = await uploadImage(
-            s3Client,
-            ImageFolder.RECIPES,
-            generatedImage,
-            AllowedMimeType.JPEG
-          );
-        }
 
         const stepsAsSingleString = joinStepsToSingleString(recipeData.steps);
 
@@ -115,6 +116,10 @@ export function recipesService(database: Database): RecipesService {
 
           if (error.code === PostgresError.FOREIGN_KEY_VIOLATION) {
             throw new UserNotFound();
+          }
+
+          if (error.code === PostgresError.UNIQUE_VIOLATION) {
+            throw new RecipeAlreadyCreated();
           }
         }
       });
