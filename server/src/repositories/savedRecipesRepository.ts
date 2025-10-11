@@ -7,12 +7,12 @@ import type { Insertable } from 'kysely';
 
 const TABLE = 'savedRecipes';
 
-interface SavedRecipesRepository {
-  create: (
-    recipeToSave: Insertable<SavedRecipes>
-  ) => Promise<savedRecipesPublic>;
-  remove: (recipeId: number, userId: string) => Promise<savedRecipesPublic>;
-  isSaved: (recipeId: number, userId: string) => Promise<boolean>;
+export type SavedRecipeLink = Insertable<SavedRecipes>;
+
+export interface SavedRecipesRepository {
+  create: (link: SavedRecipeLink) => Promise<savedRecipesPublic>;
+  remove: (link: SavedRecipeLink) => Promise<savedRecipesPublic>;
+  isSaved: (link: SavedRecipeLink) => Promise<boolean>;
 }
 
 export function savedRecipesRepository(
@@ -27,21 +27,21 @@ export function savedRecipesRepository(
         .executeTakeFirstOrThrow();
     },
 
-    async remove(recipeId, userId) {
+    async remove(link) {
       return database
         .deleteFrom(TABLE)
-        .where('recipeId', '=', recipeId)
-        .where('userId', '=', userId)
+        .where('recipeId', '=', link.recipeId)
+        .where('userId', '=', link.userId)
         .returning(savedRecipesKeysPublic)
         .executeTakeFirstOrThrow();
     },
 
-    async isSaved(recipeId, userId) {
+    async isSaved(link) {
       const exists = await database
         .selectFrom(TABLE)
         .select('userId')
-        .where('recipeId', '=', recipeId)
-        .where('userId', '=', userId)
+        .where('recipeId', '=', link.recipeId)
+        .where('userId', '=', link.userId)
         .executeTakeFirst();
 
       return !!exists;

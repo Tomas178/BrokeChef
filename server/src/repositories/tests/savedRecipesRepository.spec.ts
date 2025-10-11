@@ -16,7 +16,7 @@ const [user] = await insertAll(database, 'users', fakeUser());
 const [recipe] = await insertAll(
   database,
   'recipes',
-  fakeRecipe({ userId: user.id })
+  fakeRecipe({ userId: user.id, rating: undefined })
 );
 
 const nonExistantUserId = user.id + 1;
@@ -56,17 +56,17 @@ describe('remove', async () => {
       fakeSavedRecipe({ userId: user.id, recipeId: recipe.id })
     );
 
-    const removedSavedRecipe = await repository.remove(
-      createdSavedRecipe.recipeId,
-      createdSavedRecipe.userId
-    );
+    const removedSavedRecipe = await repository.remove({
+      recipeId: createdSavedRecipe.recipeId,
+      userId: createdSavedRecipe.userId,
+    });
 
     expect(removedSavedRecipe).toEqual(createdSavedRecipe);
   });
 
   it('Should throw an error if saved recipe record does not exist', async () => {
     await expect(
-      repository.remove(nonExistantRecipeId, user.id)
+      repository.remove({ recipeId: nonExistantRecipeId, userId: user.id })
     ).rejects.toThrow();
   });
 });
@@ -79,16 +79,19 @@ describe('isSaved', () => {
       fakeSavedRecipe({ userId: user.id, recipeId: recipe.id })
     );
 
-    const isSaved = await repository.isSaved(
-      createdSavedRecipe.recipeId,
-      createdSavedRecipe.userId
-    );
+    const isSaved = await repository.isSaved({
+      recipeId: createdSavedRecipe.recipeId,
+      userId: createdSavedRecipe.userId,
+    });
 
     expect(isSaved).toBeTruthy();
   });
 
   it('Should return false', async () => {
-    const isSaved = await repository.isSaved(nonExistantRecipeId, user.id);
+    const isSaved = await repository.isSaved({
+      recipeId: nonExistantRecipeId,
+      userId: user.id,
+    });
 
     expect(isSaved).toBeFalsy();
   });
