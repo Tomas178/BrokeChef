@@ -5,16 +5,20 @@ import provideServices from '@server/trpc/provideServices';
 import { TRPCError } from '@trpc/server';
 import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import SavedRecipeNotFound from '@server/utils/errors/recipes/SavedRecipeNotFound';
+import type { SavedRecipesLink } from '@server/repositories/savedRecipesRepository';
 
 export default authenticatedProcedure
   .use(provideServices({ savedRecipesService }))
   .input(integerIdSchema)
   .mutation(async ({ input: recipeId, ctx: { authUser, services } }) => {
     try {
-      const unsavedRecipe = await services.savedRecipesService.remove(
+      const unsaveRecipeLink: SavedRecipesLink = {
+        userId: authUser.id,
         recipeId,
-        authUser.id
-      );
+      };
+
+      const unsavedRecipe =
+        await services.savedRecipesService.remove(unsaveRecipeLink);
 
       return unsavedRecipe;
     } catch (error) {
