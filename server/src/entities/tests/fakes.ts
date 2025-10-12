@@ -16,6 +16,8 @@ import type {
   RecipesPublicAllInfo,
   RecipesPublic,
 } from '../recipes';
+import type { ToolsPublic } from '../tools';
+import type { IngredientsPublic } from '../ingredients';
 
 const randomOAuthId = () => random.string({ length: 32 });
 
@@ -122,9 +124,27 @@ export const fakeIngredient = <T extends Partial<Insertable<Ingredients>>>(
   createdAt: new Date(),
 });
 
+export const fakeFullIngredient = <T extends Partial<IngredientsPublic>>(
+  overrides: T = {} as T
+) => ({
+  id: randomRecipeId(),
+  name: random.string(),
+  ...overrides,
+  createdAt: new Date(),
+});
+
 export const fakeTool = <T extends Partial<Insertable<Tools>>>(
   overrides: T = {} as T
 ) => ({
+  name: random.string(),
+  ...overrides,
+  createdAt: new Date(),
+});
+
+export const fakeFullTool = <T extends Partial<ToolsPublic>>(
+  overrides: T = {} as T
+) => ({
+  id: randomRecipeId(),
   name: random.string(),
   ...overrides,
   createdAt: new Date(),

@@ -1,13 +1,22 @@
-import type { IngredientsPublic } from '@server/entities/ingredients';
-import type { ToolsPublic } from '@server/entities/tools';
+import type {
+  IngredientsName,
+  IngredientsPublic,
+} from '@server/entities/ingredients';
+import type { ToolsName, ToolsPublic } from '@server/entities/tools';
 import type { IngredientsRepository } from '@server/repositories/ingredientsRepository';
-import type { RecipesIngredientsRepository } from '@server/repositories/recipesIngredientsRepository';
-import type { RecipesToolsRepository } from '@server/repositories/recipesToolsRepository';
+import type {
+  RecipesIngredientsLink,
+  RecipesIngredientsRepository,
+} from '@server/repositories/recipesIngredientsRepository';
+import type {
+  RecipesToolsLink,
+  RecipesToolsRepository,
+} from '@server/repositories/recipesToolsRepository';
 import type { ToolsRepository } from '@server/repositories/toolsRepository';
 
 export async function insertIngredients(
   recipeId: number,
-  ingredients: string[],
+  ingredients: IngredientsName[],
   repo: IngredientsRepository,
   linkRepo: RecipesIngredientsRepository
 ): Promise<void> {
@@ -30,9 +39,9 @@ export async function insertIngredients(
 
     createdIngredients = await repo.create(newInsertableIngredientsArray);
   }
-  const allIngredients = [...existingIngredients, ...createdIngredients];
+  const allIngredients = [...createdIngredients, ...existingIngredients];
 
-  const links = allIngredients.map(ingredient => ({
+  const links: RecipesIngredientsLink[] = allIngredients.map(ingredient => ({
     recipeId,
     ingredientId: ingredient.id,
   }));
@@ -42,7 +51,7 @@ export async function insertIngredients(
 
 export async function insertTools(
   recipeId: number,
-  tools: string[],
+  tools: ToolsName[],
   repo: ToolsRepository,
   linkRepo: RecipesToolsRepository
 ): Promise<void> {
@@ -62,9 +71,12 @@ export async function insertTools(
     createdTools = await repo.create(newInsertableToolsArray);
   }
 
-  const allTools = [...existingTools, ...createdTools];
+  const allTools = [...createdTools, ...existingTools];
 
-  const links = allTools.map(tool => ({ recipeId, toolId: tool.id }));
+  const links: RecipesToolsLink[] = allTools.map(tool => ({
+    recipeId,
+    toolId: tool.id,
+  }));
 
   await linkRepo.create(links);
 }

@@ -7,9 +7,11 @@ import type { Insertable } from 'kysely';
 
 const TABLE = 'recipesIngredients';
 
+export type RecipesIngredientsLink = Insertable<RecipesIngredients>;
+
 export interface RecipesIngredientsRepository {
   create: (
-    links: Insertable<RecipesIngredients>[]
+    links: RecipesIngredientsLink[]
   ) => Promise<recipesIngredientsPublic[]>;
   findByRecipeId: (
     recipeId: number

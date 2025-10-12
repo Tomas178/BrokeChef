@@ -7,8 +7,10 @@ import type { Insertable } from 'kysely';
 
 const TABLE = 'recipesTools';
 
+export type RecipesToolsLink = Insertable<RecipesTools>;
+
 export interface RecipesToolsRepository {
-  create: (links: Insertable<RecipesTools>[]) => Promise<recipesToolsPublic[]>;
+  create: (links: RecipesToolsLink[]) => Promise<recipesToolsPublic[]>;
   findByRecipeId: (recipeId: number) => Promise<recipesToolsPublic | undefined>;
 }
 

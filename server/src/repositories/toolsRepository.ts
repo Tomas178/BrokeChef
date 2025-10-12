@@ -1,5 +1,9 @@
 import type { Database, Tools } from '@server/database';
-import { toolsKeysPublic, type ToolsPublic } from '@server/entities/tools';
+import {
+  toolsKeysPublic,
+  type ToolsName,
+  type ToolsPublic,
+} from '@server/entities/tools';
 import type { Insertable } from 'kysely';
 
 const TABLE = 'tools';
@@ -7,7 +11,7 @@ const TABLE = 'tools';
 export interface ToolsRepository {
   create: (tools: Insertable<Tools>[]) => Promise<ToolsPublic[]>;
   findById: (id: number) => Promise<ToolsPublic | undefined>;
-  findByNames: (names: string[]) => Promise<ToolsPublic[]>;
+  findByNames: (names: ToolsName[]) => Promise<ToolsPublic[]>;
 }
 
 export function toolsRepository(database: Database): ToolsRepository {

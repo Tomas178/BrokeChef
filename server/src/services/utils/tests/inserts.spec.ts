@@ -1,320 +1,426 @@
-import {
-  fakeIngredient,
-  fakeRecipe,
-  fakeTool,
-  fakeUser,
-} from '@server/entities/tests/fakes';
-import { clearTables, insertAll, selectAll } from '@tests/utils/record';
-import { createTestDatabase } from '@tests/utils/database';
-import { wrapInRollbacks } from '@tests/utils/transactions';
-import { toolsRepository as buildToolsRepository } from '@server/repositories/toolsRepository';
-import { recipesToolsRepository as buildRecipesToolsRepository } from '@server/repositories/recipesToolsRepository';
-import { ingredientsRepository as buildIngredientsRepository } from '@server/repositories/ingredientsRepository';
-import { recipesIngredientsRepository as buildRecipesIngredientsRepository } from '@server/repositories/recipesIngredientsRepository';
+import { fakeFullIngredient, fakeFullTool } from '@server/entities/tests/fakes';
+import type { IngredientsRepository } from '@server/repositories/ingredientsRepository';
+import type { ToolsRepository } from '@server/repositories/toolsRepository';
+import type {
+  RecipesIngredientsLink,
+  RecipesIngredientsRepository,
+} from '@server/repositories/recipesIngredientsRepository';
+import type {
+  RecipesToolsLink,
+  RecipesToolsRepository,
+} from '@server/repositories/recipesToolsRepository';
+import type { ToolsName } from '@server/entities/tools';
+import type { IngredientsName } from '@server/entities/ingredients';
 import { insertIngredients, insertTools } from '../inserts';
 
-const database = await wrapInRollbacks(createTestDatabase());
+const mockIngredientsRepoFindByNames = vi.fn();
+const mockIngredientsRepoCreate = vi.fn();
 
-const toolsRepository = buildToolsRepository(database);
-const recipesToolsRepository = buildRecipesToolsRepository(database);
+const mockIngredientsRepository = {
+  findByNames: mockIngredientsRepoFindByNames,
+  create: mockIngredientsRepoCreate,
+} as unknown as IngredientsRepository;
 
-const ingredientsRepository = buildIngredientsRepository(database);
-const recipesIngredientsRepository =
-  buildRecipesIngredientsRepository(database);
+vi.mock('@server/repositories/ingredientsRepository', () => ({
+  ingredientsRepository: () => mockIngredientsRepository,
+}));
 
-const [user] = await insertAll(database, 'users', [fakeUser()]);
+const mockRecipesIngredientsRepoCreate = vi.fn();
 
-beforeAll(
-  async () =>
-    await clearTables(database, [
-      'recipes',
-      'tools',
-      'recipesTools',
-      'ingredients',
-      'recipesIngredients',
-    ])
-);
+const mockRecipesIngredientsRepository = {
+  create: mockRecipesIngredientsRepoCreate,
+} as unknown as RecipesIngredientsRepository;
+
+vi.mock('@server/repositories/recipesIngredientsRepository', () => ({
+  recipesIngredientsRepository: () => mockRecipesIngredientsRepository,
+}));
+
+const mockToolsRepoFindByNames = vi.fn();
+const mockToolsRepoCreate = vi.fn();
+
+const mockToolsRepository = {
+  findByNames: mockToolsRepoFindByNames,
+  create: mockToolsRepoCreate,
+} as unknown as ToolsRepository;
+
+vi.mock('@server/repositories/toolsRepository', () => ({
+  toolsRepository: () => mockToolsRepository,
+}));
+
+const mockRecipesToolsRepoCreate = vi.fn();
+
+const mockRecipesToolsRepository = {
+  create: mockRecipesToolsRepoCreate,
+} as unknown as RecipesToolsRepository;
+
+vi.mock('@server/repositories/recipesToolsRepository', () => ({
+  recipesToolsRepository: () => mockRecipesToolsRepository,
+}));
+
+const recipeId = 123;
+
+beforeEach(() => vi.resetAllMocks());
 
 describe('insertTools', () => {
   it('Should not add any tools when given empty array', async () => {
-    const [createdRecipe] = await insertAll(
-      database,
-      'recipes',
-      fakeRecipe({ userId: user.id })
-    );
-
-    const tools: string[] = [];
+    const tools: ToolsName[] = [];
 
     await insertTools(
-      createdRecipe.id,
+      recipeId,
       tools,
-      toolsRepository,
-      recipesToolsRepository
+      mockToolsRepository,
+      mockRecipesToolsRepository
     );
 
-    await expect(selectAll(database, 'tools')).resolves.toHaveLength(0);
+    expect(mockToolsRepoFindByNames).not.toHaveBeenCalled();
   });
 
-  it('Should add tools', async () => {
-    const [createdRecipe] = await insertAll(
-      database,
-      'recipes',
-      fakeRecipe({ userId: user.id })
-    );
+  it('Should add all tools when there are no duplicates and no existing ones', async () => {
+    const tools = [
+      fakeFullTool({ name: 'toolOne' }),
+      fakeFullTool({ name: 'toolTwo' }),
+    ];
+    const toolsNames: ToolsName[] = tools.map(tool => tool.name);
+    const toolsNamesAsObjects = toolsNames.map(name => ({ name }));
+    const recipesToolsLinks: RecipesToolsLink[] = tools.map(tool => ({
+      toolId: tool.id,
+      recipeId,
+    }));
 
-    const tools = ['toolOne', 'toolTwo'];
+    mockToolsRepoFindByNames.mockResolvedValueOnce([]);
+    mockToolsRepoCreate.mockResolvedValueOnce(tools);
 
     await insertTools(
-      createdRecipe.id,
-      tools,
-      toolsRepository,
-      recipesToolsRepository
+      recipeId,
+      toolsNames,
+      mockToolsRepository,
+      mockRecipesToolsRepository
     );
 
-    await expect(selectAll(database, 'tools')).resolves.toHaveLength(
-      tools.length
-    );
+    expect(mockToolsRepoFindByNames).toHaveBeenCalledOnce();
+    expect(mockToolsRepoFindByNames).toHaveBeenCalledWith(toolsNames);
+
+    expect(mockToolsRepoCreate).toHaveBeenCalledOnce();
+    expect(mockToolsRepoCreate).toHaveBeenCalledWith(toolsNamesAsObjects);
+
+    expect(mockRecipesToolsRepoCreate).toHaveBeenCalledOnce();
+    expect(mockRecipesToolsRepoCreate).toHaveBeenCalledWith(recipesToolsLinks);
   });
 
   it('Should not add tools that are already in the database', async () => {
-    const [createdRecipe] = await insertAll(
-      database,
-      'recipes',
-      fakeRecipe({ userId: user.id })
-    );
+    const tools = [
+      fakeFullTool({ name: 'toolOne' }),
+      fakeFullTool({ name: 'toolTwo' }),
+      fakeFullTool({ name: 'toolThree' }),
+    ];
 
-    const tools = [fakeTool(), fakeTool()];
+    const toolsNames: ToolsName[] = tools.map(tool => tool.name);
+    const recipesToolsLinks: RecipesToolsLink[] = tools.map(tool => ({
+      toolId: tool.id,
+      recipeId,
+    }));
 
-    const [insertedToolOne, insertedToolTwo] = await insertAll(
-      database,
-      'tools',
-      tools
-    );
+    const existingTool = tools.pop();
+    toolsNames.pop();
 
-    const existingTools = [insertedToolOne.name, insertedToolTwo.name];
+    const toolsNamesAsObjects = toolsNames.map(name => ({ name }));
+
+    mockToolsRepoFindByNames.mockResolvedValueOnce([existingTool]);
+    mockToolsRepoCreate.mockResolvedValueOnce(tools);
 
     await insertTools(
-      createdRecipe.id,
-      existingTools,
-      toolsRepository,
-      recipesToolsRepository
+      recipeId,
+      toolsNames,
+      mockToolsRepository,
+      mockRecipesToolsRepository
     );
 
-    const toolsInDatabase = await selectAll(database, 'tools');
+    expect(mockToolsRepoFindByNames).toHaveBeenCalledOnce();
+    expect(mockToolsRepoFindByNames).toHaveBeenCalledWith(toolsNames);
 
-    expect(toolsInDatabase).toHaveLength(tools.length);
-    expect(toolsInDatabase).toEqual([insertedToolOne, insertedToolTwo]);
+    expect(mockToolsRepoCreate).toHaveBeenCalledOnce();
+    expect(mockToolsRepoCreate).toHaveBeenCalledWith(toolsNamesAsObjects);
+
+    expect(mockRecipesToolsRepoCreate).toHaveBeenCalledOnce();
+    expect(mockRecipesToolsRepoCreate).toHaveBeenCalledWith(recipesToolsLinks);
   });
 
   it('Should handle insertion with single duplicate without throwing', async () => {
-    const [createdRecipe] = await insertAll(
-      database,
-      'recipes',
-      fakeRecipe({ userId: user.id })
-    );
-
-    const [toolOne, toolTwo] = [fakeTool(), fakeTool()];
-
-    const toolsWithDuplicates: string[] = [
-      toolOne.name,
-      toolTwo.name,
-      toolOne.name, // duplicate
+    const tools = [
+      fakeFullTool({ name: 'toolOne' }),
+      fakeFullTool({ name: 'toolTwo' }),
+      fakeFullTool({ name: 'toolTwo' }),
     ];
 
+    const toolsNames: ToolsName[] = tools.map(tool => tool.name);
+
+    mockToolsRepoFindByNames.mockResolvedValueOnce([]);
+    mockToolsRepoCreate.mockResolvedValueOnce(tools);
+
     await insertTools(
-      createdRecipe.id,
-      toolsWithDuplicates,
-      toolsRepository,
-      recipesToolsRepository
+      recipeId,
+      toolsNames,
+      mockToolsRepository,
+      mockRecipesToolsRepository
     );
 
-    const toolsInDatabase = await selectAll(database, 'tools');
+    toolsNames.pop();
 
-    expect(toolsInDatabase).toHaveLength(toolsWithDuplicates.length - 1);
+    const toolsNamesAsObjects = toolsNames.map(name => ({ name }));
+    const recipesToolsLinks: RecipesToolsLink[] = tools.map(tool => ({
+      toolId: tool.id,
+      recipeId,
+    }));
 
-    expect(toolsInDatabase[0]).toMatchObject({ name: toolOne.name });
-    expect(toolsInDatabase[1]).toMatchObject({ name: toolTwo.name });
+    expect(mockToolsRepoFindByNames).toHaveBeenCalledOnce();
+    expect(mockToolsRepoFindByNames).toHaveBeenCalledWith(toolsNames);
+
+    expect(mockToolsRepoCreate).toHaveBeenCalledOnce();
+    expect(mockToolsRepoCreate).toHaveBeenCalledWith(toolsNamesAsObjects);
+
+    expect(mockRecipesToolsRepoCreate).toHaveBeenCalledOnce();
+    expect(mockRecipesToolsRepoCreate).toHaveBeenCalledWith(recipesToolsLinks);
   });
 
   it('Should handle insertion with multiple duplicate without throwing', async () => {
-    const [createdRecipe] = await insertAll(
-      database,
-      'recipes',
-      fakeRecipe({ userId: user.id })
-    );
-
-    const [toolOne, toolTwo] = [fakeTool(), fakeTool()];
-
-    const toolsWithDuplicates: string[] = [
-      toolOne.name,
-      toolTwo.name,
-      toolOne.name, // first duplicate
-      toolTwo.name, // second duplicate
+    const tools = [
+      fakeFullTool({ name: 'toolOne' }),
+      fakeFullTool({ name: 'toolTwo' }),
+      fakeFullTool({ name: 'toolOne' }),
+      fakeFullTool({ name: 'toolTwo' }),
     ];
 
+    const toolsNames: ToolsName[] = tools.map(tool => tool.name);
+
+    mockToolsRepoFindByNames.mockResolvedValueOnce([]);
+    mockToolsRepoCreate.mockResolvedValueOnce(tools);
+
     await insertTools(
-      createdRecipe.id,
-      toolsWithDuplicates,
-      toolsRepository,
-      recipesToolsRepository
+      recipeId,
+      toolsNames,
+      mockToolsRepository,
+      mockRecipesToolsRepository
     );
 
-    const toolsInDatabase = await selectAll(database, 'tools');
+    toolsNames.pop();
+    toolsNames.pop();
 
-    expect(toolsInDatabase).toHaveLength(toolsWithDuplicates.length - 2);
+    const toolsNamesAsObjects = toolsNames.map(name => ({ name }));
+    const recipesToolsLinks: RecipesToolsLink[] = tools.map(tool => ({
+      toolId: tool.id,
+      recipeId,
+    }));
 
-    expect(toolsInDatabase[0]).toMatchObject({ name: toolOne.name });
-    expect(toolsInDatabase[1]).toMatchObject({ name: toolTwo.name });
+    expect(mockToolsRepoFindByNames).toHaveBeenCalledOnce();
+    expect(mockToolsRepoFindByNames).toHaveBeenCalledWith(toolsNames);
+
+    expect(mockToolsRepoCreate).toHaveBeenCalledOnce();
+    expect(mockToolsRepoCreate).toHaveBeenCalledWith(toolsNamesAsObjects);
+
+    expect(mockRecipesToolsRepoCreate).toHaveBeenCalledOnce();
+    expect(mockRecipesToolsRepoCreate).toHaveBeenCalledWith(recipesToolsLinks);
   });
 });
 
 describe('insertIngredients', () => {
   it('Should not add any ingredients when given empty array', async () => {
-    const [createdRecipe] = await insertAll(
-      database,
-      'recipes',
-      fakeRecipe({ userId: user.id })
-    );
-
-    const ingredients: string[] = [];
+    const ingredients: IngredientsName[] = [];
 
     await insertIngredients(
-      createdRecipe.id,
+      recipeId,
       ingredients,
-      ingredientsRepository,
-      recipesIngredientsRepository
+      mockToolsRepository,
+      mockRecipesIngredientsRepository
     );
 
-    await expect(selectAll(database, 'ingredients')).resolves.toHaveLength(0);
+    expect(mockIngredientsRepoFindByNames).not.toHaveBeenCalled();
   });
 
-  it('Should add ingredients', async () => {
-    const [createdRecipe] = await insertAll(
-      database,
-      'recipes',
-      fakeRecipe({ userId: user.id })
+  it('Should add all ingredients when there are no duplicates and no existing ones', async () => {
+    const ingredients = [
+      fakeFullIngredient({ name: 'ingredientOne' }),
+      fakeFullIngredient({ name: 'ingredientTwo' }),
+    ];
+    const ingredientsNames: IngredientsName[] = ingredients.map(
+      ingredient => ingredient.name
+    );
+    const ingredientsNamesAsObjects = ingredientsNames.map(name => ({ name }));
+    const recipesToolsLinks: RecipesIngredientsLink[] = ingredients.map(
+      ingredient => ({
+        ingredientId: ingredient.id,
+        recipeId,
+      })
     );
 
-    const ingredients = ['ingredientOne', 'ingredientTwo'];
+    mockIngredientsRepoFindByNames.mockResolvedValueOnce([]);
+    mockIngredientsRepoCreate.mockResolvedValueOnce(ingredients);
 
     await insertIngredients(
-      createdRecipe.id,
-      ingredients,
-      ingredientsRepository,
-      recipesIngredientsRepository
+      recipeId,
+      ingredientsNames,
+      mockIngredientsRepository,
+      mockRecipesIngredientsRepository
     );
 
-    await expect(selectAll(database, 'ingredients')).resolves.toHaveLength(
-      ingredients.length
+    expect(mockIngredientsRepoFindByNames).toHaveBeenCalledOnce();
+    expect(mockIngredientsRepoFindByNames).toHaveBeenCalledWith(
+      ingredientsNames
+    );
+
+    expect(mockIngredientsRepoCreate).toHaveBeenCalledOnce();
+    expect(mockIngredientsRepoCreate).toHaveBeenCalledWith(
+      ingredientsNamesAsObjects
+    );
+
+    expect(mockRecipesIngredientsRepoCreate).toHaveBeenCalledOnce();
+    expect(mockRecipesIngredientsRepoCreate).toHaveBeenCalledWith(
+      recipesToolsLinks
     );
   });
 
   it('Should not add ingredients that are already in the database', async () => {
-    const [createdRecipe] = await insertAll(
-      database,
-      'recipes',
-      fakeRecipe({ userId: user.id })
-    );
-
-    const ingredients = [fakeIngredient(), fakeIngredient()];
-
-    const [insertedIngredientOne, insertedIngredientTwo] = await insertAll(
-      database,
-      'ingredients',
-      ingredients
-    );
-
-    const existingIngredients = [
-      insertedIngredientOne.name,
-      insertedIngredientTwo.name,
+    const ingredients = [
+      fakeFullIngredient({ name: 'ingredientOne' }),
+      fakeFullIngredient({ name: 'ingredientTwo' }),
+      fakeFullIngredient({ name: 'ingredientThree' }),
     ];
 
-    await insertIngredients(
-      createdRecipe.id,
-      existingIngredients,
-      ingredientsRepository,
-      recipesIngredientsRepository
+    const ingredientsNames: IngredientsName[] = ingredients.map(
+      ingredient => ingredient.name
+    );
+    const recipesIngredientsLinks: RecipesIngredientsLink[] = ingredients.map(
+      ingredient => ({
+        ingredientId: ingredient.id,
+        recipeId,
+      })
     );
 
-    const ingredientsInDatabase = await selectAll(database, 'ingredients');
+    const existingIngredient = ingredients.pop();
+    ingredientsNames.pop();
 
-    expect(ingredientsInDatabase).toHaveLength(ingredients.length);
-    expect(ingredientsInDatabase).toEqual([
-      insertedIngredientOne,
-      insertedIngredientTwo,
-    ]);
+    const ingredientsNamesAsObjects = ingredientsNames.map(name => ({ name }));
+
+    mockIngredientsRepoFindByNames.mockResolvedValueOnce([existingIngredient]);
+    mockIngredientsRepoCreate.mockResolvedValueOnce(ingredients);
+
+    await insertIngredients(
+      recipeId,
+      ingredientsNames,
+      mockIngredientsRepository,
+      mockRecipesIngredientsRepository
+    );
+
+    expect(mockIngredientsRepoFindByNames).toHaveBeenCalledOnce();
+    expect(mockIngredientsRepoFindByNames).toHaveBeenCalledWith(
+      ingredientsNames
+    );
+
+    expect(mockIngredientsRepoCreate).toHaveBeenCalledOnce();
+    expect(mockIngredientsRepoCreate).toHaveBeenCalledWith(
+      ingredientsNamesAsObjects
+    );
+
+    expect(mockRecipesIngredientsRepoCreate).toHaveBeenCalledOnce();
+    expect(mockRecipesIngredientsRepoCreate).toHaveBeenCalledWith(
+      recipesIngredientsLinks
+    );
   });
 
   it('Should handle insertion with single duplicate without throwing', async () => {
-    const [createdRecipe] = await insertAll(
-      database,
-      'recipes',
-      fakeRecipe({ userId: user.id })
-    );
-
-    const [ingredientOne, ingredientTwo] = [fakeIngredient(), fakeIngredient()];
-
-    const ingredientsWithDuplicates: string[] = [
-      ingredientOne.name,
-      ingredientTwo.name,
-      ingredientOne.name, // duplicate
+    const ingredients = [
+      fakeFullIngredient({ name: 'ingredientOne' }),
+      fakeFullIngredient({ name: 'ingredientTwo' }),
+      fakeFullIngredient({ name: 'ingredientOne' }),
+      fakeFullIngredient({ name: 'ingredientTwo' }),
     ];
 
+    const ingredientsNames: IngredientsName[] = ingredients.map(
+      ingredient => ingredient.name
+    );
+
+    mockIngredientsRepoFindByNames.mockResolvedValueOnce([]);
+    mockIngredientsRepoCreate.mockResolvedValueOnce(ingredients);
+
     await insertIngredients(
-      createdRecipe.id,
-      ingredientsWithDuplicates,
-      ingredientsRepository,
-      recipesIngredientsRepository
+      recipeId,
+      ingredientsNames,
+      mockIngredientsRepository,
+      mockRecipesIngredientsRepository
     );
 
-    const ingredientsInDatabase = await selectAll(database, 'ingredients');
+    ingredientsNames.pop();
+    ingredientsNames.pop();
 
-    expect(ingredientsInDatabase).toHaveLength(
-      ingredientsWithDuplicates.length - 1
+    const ingredientsNamesAsObjects = ingredientsNames.map(name => ({ name }));
+    const recipesIngredientsLink: RecipesIngredientsLink[] = ingredients.map(
+      ingredient => ({
+        ingredientId: ingredient.id,
+        recipeId,
+      })
     );
 
-    expect(ingredientsInDatabase[0]).toMatchObject({
-      name: ingredientOne.name,
-    });
-    expect(ingredientsInDatabase[1]).toMatchObject({
-      name: ingredientTwo.name,
-    });
+    expect(mockIngredientsRepoFindByNames).toHaveBeenCalledOnce();
+    expect(mockIngredientsRepoFindByNames).toHaveBeenCalledWith(
+      ingredientsNames
+    );
+
+    expect(mockIngredientsRepoCreate).toHaveBeenCalledOnce();
+    expect(mockIngredientsRepoCreate).toHaveBeenCalledWith(
+      ingredientsNamesAsObjects
+    );
+
+    expect(mockRecipesIngredientsRepoCreate).toHaveBeenCalledOnce();
+    expect(mockRecipesIngredientsRepoCreate).toHaveBeenCalledWith(
+      recipesIngredientsLink
+    );
   });
 
   it('Should handle insertion with multiple duplicate without throwing', async () => {
-    const [createdRecipe] = await insertAll(
-      database,
-      'recipes',
-      fakeRecipe({ userId: user.id })
-    );
-
-    const [ingredientOne, ingredientTwo] = [fakeIngredient(), fakeIngredient()];
-
-    const ingredientsWithDuplicates: string[] = [
-      ingredientOne.name,
-      ingredientTwo.name,
-      ingredientOne.name, // first duplicate
-      ingredientTwo.name, // second duplicate
+    const ingredients = [
+      fakeFullIngredient({ name: 'ingredientOne' }),
+      fakeFullIngredient({ name: 'ingredientTwo' }),
+      fakeFullIngredient({ name: 'ingredientOne' }),
+      fakeFullIngredient({ name: 'ingredientTwo' }),
     ];
 
+    const ingredientsNames: IngredientsName[] = ingredients.map(
+      ingredient => ingredient.name
+    );
+
+    mockIngredientsRepoFindByNames.mockResolvedValueOnce([]);
+    mockIngredientsRepoCreate.mockResolvedValueOnce(ingredients);
+
     await insertIngredients(
-      createdRecipe.id,
-      ingredientsWithDuplicates,
-      ingredientsRepository,
-      recipesIngredientsRepository
+      recipeId,
+      ingredientsNames,
+      mockIngredientsRepository,
+      mockRecipesIngredientsRepository
     );
 
-    const ingredientsInDatabase = await selectAll(database, 'ingredients');
+    ingredientsNames.pop();
+    ingredientsNames.pop();
 
-    expect(ingredientsInDatabase).toHaveLength(
-      ingredientsWithDuplicates.length - 2
+    const ingredientsNamesAsObjects = ingredientsNames.map(name => ({ name }));
+    const recipesIngredientsLinks: RecipesIngredientsLink[] = ingredients.map(
+      ingredient => ({
+        ingredientId: ingredient.id,
+        recipeId,
+      })
     );
 
-    expect(ingredientsInDatabase[0]).toMatchObject({
-      name: ingredientOne.name,
-    });
-    expect(ingredientsInDatabase[1]).toMatchObject({
-      name: ingredientTwo.name,
-    });
+    expect(mockIngredientsRepoFindByNames).toHaveBeenCalledOnce();
+    expect(mockIngredientsRepoFindByNames).toHaveBeenCalledWith(
+      ingredientsNames
+    );
+
+    expect(mockIngredientsRepoCreate).toHaveBeenCalledOnce();
+    expect(mockIngredientsRepoCreate).toHaveBeenCalledWith(
+      ingredientsNamesAsObjects
+    );
+
+    expect(mockRecipesIngredientsRepoCreate).toHaveBeenCalledOnce();
+    expect(mockRecipesIngredientsRepoCreate).toHaveBeenCalledWith(
+      recipesIngredientsLinks
+    );
   });
 });
