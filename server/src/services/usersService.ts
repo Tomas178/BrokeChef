@@ -112,11 +112,11 @@ export function usersService(database: Database): UsersService {
 
     async updateImage(userId, image) {
       try {
-        let updated = await usersRepository.updateImage(userId, image);
+        const updatedUrl = await usersRepository.updateImage(userId, image);
 
-        updated = await signImages(updated);
+        const signedUrl = await signImages(updatedUrl);
 
-        return updated;
+        return signedUrl;
       } catch (error) {
         try {
           await deleteFile(s3Client, config.auth.aws.s3.buckets.images, image);

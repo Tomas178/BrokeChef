@@ -1,6 +1,27 @@
-const { mockDeleteFile, mockUpdateImage, mockLoggerError } = vi.hoisted(() => ({
+import { fakeRecipeWithRating, fakeUser } from '@server/entities/tests/fakes';
+import { initialPage } from '@server/entities/shared';
+import type { RecipesRepository } from '@server/repositories/recipesRepository';
+import type { UsersRepository } from '@server/repositories/usersRepository';
+import type { Database } from '@server/database';
+import { usersService } from '../usersService';
+
+const fakeImageUrl = vi.hoisted(() => 'fake-url');
+
+const mockSignImages = vi.hoisted(() =>
+  vi.fn((images: string | string[]) => {
+    if (Array.isArray(images)) {
+      return images.map(() => fakeImageUrl);
+    }
+    return fakeImageUrl;
+  })
+);
+
+vi.mock('@server/utils/signImages', () => ({
+  signImages: mockSignImages,
+}));
+
+const { mockDeleteFile, mockLoggerError } = vi.hoisted(() => ({
   mockDeleteFile: vi.fn(),
-  mockUpdateImage: vi.fn(),
   mockLoggerError: vi.fn(),
 }));
 
@@ -15,178 +36,124 @@ vi.mock('@server/logger', () => ({
   },
 }));
 
-import { createTestDatabase } from '@tests/utils/database';
-import { wrapInRollbacks } from '@tests/utils/transactions';
-import { insertAll } from '@tests/utils/record';
-import {
-  fakeRecipe,
-  fakeSavedRecipe,
-  fakeUser,
-} from '@server/entities/tests/fakes';
-import { initialPage } from '@server/entities/shared';
-import { pick } from 'lodash-es';
-import { recipesKeysPublic } from '@server/entities/recipes';
-import {
-  usersKeysPublic,
-  usersKeysPublicWithoutId,
-} from '@server/entities/users';
-import { usersService } from '../usersService';
+const mockRecipesRepoFindCreatedByUser = vi.fn();
+const mockRecipesRepoFindSavedByUser = vi.fn();
 
-const fakeImageUrl = 'https://signed-url.com/folder/image.png';
+const mockRecipesRepository = {
+  findCreatedByUser: mockRecipesRepoFindCreatedByUser,
+  findSavedByUser: mockRecipesRepoFindSavedByUser,
+} as Partial<RecipesRepository>;
 
-vi.mock('@server/repositories/usersRepository', async () => {
-  const actual: any = await vi.importActual(
-    '@server/repositories/usersRepository'
-  );
-  return {
-    ...actual,
-    usersRepository: (database_: any) => ({
-      ...actual.usersRepository(database_),
-      updateImage: mockUpdateImage,
-    }),
-  };
-});
-
-vi.mock('@aws-sdk/s3-request-presigner', () => ({
-  getSignedUrl: vi.fn(() => fakeImageUrl),
+vi.mock('@server/repositories/recipesRepository', () => ({
+  recipesRepository: () => mockRecipesRepository,
 }));
 
-const database = await wrapInRollbacks(createTestDatabase());
+const mockUsersRepoFindById = vi.fn();
+const mockUsersRepoUpdateImage = vi.fn();
+
+const mockUsersRepository = {
+  findById: mockUsersRepoFindById,
+  updateImage: mockUsersRepoUpdateImage,
+} as UsersRepository;
+
+vi.mock('@server/repositories/usersRepository', () => ({
+  usersRepository: () => mockUsersRepository,
+}));
+
+const database = {} as Database;
 const service = usersService(database);
 
-const [user] = await insertAll(database, 'users', fakeUser());
+const user = fakeUser();
 
-const [createdRecipeOne, createdRecipeTwo] = await insertAll(
-  database,
-  'recipes',
-  [fakeRecipe({ userId: user.id }), fakeRecipe({ userId: user.id })]
-);
+const createdRecipes = [
+  fakeRecipeWithRating({ userId: user.id }),
+  fakeRecipeWithRating({ userId: user.id }),
+];
+
+const savedRecipes = [
+  fakeRecipeWithRating({ userId: user.id }),
+  fakeRecipeWithRating({ userId: user.id }),
+];
+
+beforeEach(() => vi.resetAllMocks());
 
 describe('getRecipes', () => {
   it('Should return created and saved recipes by user', async () => {
-    await insertAll(database, 'savedRecipes', [
-      fakeSavedRecipe({ userId: user.id, recipeId: createdRecipeOne.id }),
-      fakeSavedRecipe({ userId: user.id, recipeId: createdRecipeTwo.id }),
-    ]);
+    mockRecipesRepoFindCreatedByUser.mockResolvedValueOnce(createdRecipes);
+    mockRecipesRepoFindSavedByUser.mockResolvedValueOnce(savedRecipes);
 
     const { saved, created } = await service.getRecipes(user.id, initialPage);
 
-    const [createdNew, createdOld] = created;
-    const [savedNew, savedOld] = saved;
+    expect(mockRecipesRepoFindCreatedByUser).toHaveBeenCalledOnce();
+    expect(mockRecipesRepoFindSavedByUser).toHaveBeenCalledOnce();
+    expect(mockSignImages).toBeCalledTimes(2);
 
-    // Check created recipes ordered descendingly by id
-    expect(createdOld).toEqual({
-      ...pick(createdRecipeOne, recipesKeysPublic),
-      author: pick(user, usersKeysPublicWithoutId),
-      imageUrl: fakeImageUrl,
-      rating: null,
-    });
-
-    expect(createdNew).toEqual({
-      ...pick(createdRecipeTwo, recipesKeysPublic),
-      author: pick(user, usersKeysPublicWithoutId),
-      imageUrl: fakeImageUrl,
-      rating: null,
-    });
-
-    // Check saved recipes ordered descendingly by id
-    expect(savedOld).toEqual({
-      ...pick(createdRecipeOne, recipesKeysPublic),
-      author: pick(user, usersKeysPublicWithoutId),
-      imageUrl: fakeImageUrl,
-      rating: null,
-    });
-
-    expect(savedNew).toEqual({
-      ...pick(createdRecipeTwo, recipesKeysPublic),
-      author: pick(user, usersKeysPublicWithoutId),
-      imageUrl: fakeImageUrl,
-      rating: null,
-    });
+    expect(created).toEqual(createdRecipes);
+    expect(saved).toEqual(savedRecipes);
   });
 });
 
 describe('getCreatedRecipes', () => {
   it('Should return created recipes by user', async () => {
-    const createdRecipes = await service.getCreatedRecipes(
+    mockRecipesRepoFindCreatedByUser.mockResolvedValueOnce(createdRecipes);
+
+    const createdRecipesFromService = await service.getCreatedRecipes(
       user.id,
       initialPage
     );
 
-    const [createdNew, createdOld] = createdRecipes;
-
-    expect(createdOld).toEqual({
-      ...pick(createdRecipeOne, recipesKeysPublic),
-      author: pick(user, usersKeysPublicWithoutId),
-      imageUrl: fakeImageUrl,
-      rating: null,
-    });
-
-    expect(createdNew).toEqual({
-      ...pick(createdRecipeTwo, recipesKeysPublic),
-      author: pick(user, usersKeysPublicWithoutId),
-      imageUrl: fakeImageUrl,
-      rating: null,
-    });
+    expect(mockRecipesRepoFindCreatedByUser).toHaveBeenCalledOnce();
+    expect(mockSignImages).toHaveBeenCalledOnce();
+    expect(createdRecipesFromService).toEqual(createdRecipes);
   });
 });
 
 describe('getSavedRecipes', () => {
   it('Should return saved recipes by user', async () => {
-    await insertAll(database, 'savedRecipes', [
-      fakeSavedRecipe({ userId: user.id, recipeId: createdRecipeOne.id }),
-      fakeSavedRecipe({ userId: user.id, recipeId: createdRecipeTwo.id }),
-    ]);
+    mockRecipesRepoFindSavedByUser.mockResolvedValueOnce(savedRecipes);
 
-    const savedRecipes = await service.getSavedRecipes(user.id, initialPage);
+    const savedRecipesFromRepo = await service.getSavedRecipes(
+      user.id,
+      initialPage
+    );
 
-    const [savedNew, savedOld] = savedRecipes;
-
-    expect(savedOld).toEqual({
-      ...pick(createdRecipeOne, recipesKeysPublic),
-      author: pick(user, usersKeysPublicWithoutId),
-      imageUrl: fakeImageUrl,
-      rating: null,
-    });
-
-    expect(savedNew).toEqual({
-      ...pick(createdRecipeTwo, recipesKeysPublic),
-      author: pick(user, usersKeysPublicWithoutId),
-      imageUrl: fakeImageUrl,
-      rating: null,
-    });
+    expect(mockRecipesRepoFindSavedByUser).toHaveBeenCalledOnce();
+    expect(mockSignImages).toHaveBeenCalledOnce();
+    expect(savedRecipesFromRepo).toEqual(savedRecipes);
   });
 });
 
 describe('findById', () => {
   it('Should return user by id when image url is undefined', async () => {
-    const [userWithUndefined] = await insertAll(
-      database,
-      'users',
-      fakeUser({ image: undefined })
-    );
+    const userWithUndefined = fakeUser({ image: undefined });
+    mockUsersRepoFindById.mockResolvedValueOnce(userWithUndefined);
 
     const userById = await service.findById(userWithUndefined.id);
 
-    expect(userById).toEqual(pick(userWithUndefined, usersKeysPublic));
+    expect(mockUsersRepoFindById).toHaveBeenCalledOnce();
+    expect(mockSignImages).not.toHaveBeenCalled();
+    expect(userById).toEqual(userWithUndefined);
   });
 
   it('Should return user by id with not signed url when image is from oauth provider', async () => {
+    mockUsersRepoFindById.mockResolvedValueOnce(user);
+
     const userById = await service.findById(user.id);
 
-    expect(userById).toEqual(pick(user, usersKeysPublic));
+    expect(mockUsersRepoFindById).toHaveBeenCalledOnce();
+    expect(mockSignImages).not.toHaveBeenCalled();
+    expect(userById).toEqual(user);
   });
 
   it('Should return user with signed url when url is from S3 storage', async () => {
-    const [userWithS3] = await insertAll(
-      database,
-      'users',
-      fakeUser({ image: 'image' })
-    );
+    const userWithImageFromS3 = fakeUser({ image: 'image' });
+    mockUsersRepoFindById.mockResolvedValueOnce(userWithImageFromS3);
 
-    const userById = await service.findById(userWithS3.id);
+    const userById = await service.findById(userWithImageFromS3.id);
 
-    expect(userById).toEqual(pick(userById, usersKeysPublic));
+    expect(mockUsersRepoFindById).toHaveBeenCalledOnce();
+    expect(mockSignImages).toHaveBeenCalledOnce();
+    expect(userById).toEqual(userWithImageFromS3);
   });
 });
 
@@ -194,18 +161,24 @@ describe('updateImage', () => {
   const fakeImage = 'fake-image';
 
   it('Should update the image', async () => {
+    mockUsersRepoUpdateImage.mockResolvedValueOnce(fakeImageUrl);
+
     const updatedImage = await service.updateImage(user.id, fakeImage);
 
+    expect(mockUsersRepoUpdateImage).toHaveBeenCalledOnce();
+    expect(mockSignImages).toHaveBeenCalledOnce();
     expect(updatedImage).toBe(fakeImageUrl);
   });
 
   it('Should delete the image from S3 storage on failure', async () => {
-    mockUpdateImage.mockRejectedValueOnce(new Error('DB Failed'));
+    const errorMessage = 'DB Failed';
+    mockUsersRepoUpdateImage.mockRejectedValueOnce(new Error(errorMessage));
 
     await expect(service.updateImage(user.id, fakeImage)).rejects.toThrow(
-      /db failed/i
+      errorMessage
     );
 
+    expect(mockSignImages).not.toHaveBeenCalled();
     expect(mockDeleteFile).toHaveBeenCalledWith(
       expect.any(Object),
       expect.any(String),
@@ -214,13 +187,15 @@ describe('updateImage', () => {
   });
 
   it('Should fail to delete the image on failure to insert to db and do console.error', async () => {
-    mockUpdateImage.mockRejectedValueOnce(new Error('DB Failed'));
+    const errorMessage = 'DB Failed';
+    mockUsersRepoUpdateImage.mockRejectedValueOnce(new Error(errorMessage));
     mockDeleteFile.mockRejectedValueOnce(new Error('Failed to delete from S3'));
 
     await expect(service.updateImage(user.id, fakeImage)).rejects.toThrow(
-      /db failed/i
+      errorMessage
     );
 
+    expect(mockSignImages).not.toHaveBeenCalled();
     expect(mockDeleteFile).toHaveBeenCalledWith(
       expect.any(Object),
       expect.any(String),

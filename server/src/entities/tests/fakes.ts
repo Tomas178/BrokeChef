@@ -5,12 +5,11 @@ import type {
   Recipes,
   SavedRecipes,
   Tools,
-  Users,
 } from '@server/database';
 import { random } from '@tests/utils/random';
 import type { Insertable } from 'kysely';
 import type { CreateRecipeInput } from '@server/controllers/recipes/create';
-import type { AuthUser } from '../users';
+import type { AuthUser, UsersPublic } from '../users';
 import type {
   RecipesPublicWithoutRating,
   RecipesPublicAllInfo,
@@ -27,19 +26,20 @@ const randomRecipeId = () => random.integer({ min: 1, max: 10_000_000 });
 
 const randomRating = () => random.integer({ min: 1, max: 5 });
 
-export const fakeUser = <T extends Partial<Insertable<Users>>>(
+export const fakeUser = <T extends Partial<UsersPublic>>(
   overrides: T = {} as T
-) =>
-  ({
-    id: randomOAuthId(),
-    name: random.name(),
-    email: random.email(),
-    emailVerified: random.bool(),
-    image: random.url({ domain: 'avatars.githubusercontent.com' }),
-    ...overrides,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  }) satisfies Insertable<Users>;
+) => ({
+  id: randomOAuthId(),
+  name: random.name(),
+  email: random.email(),
+  emailVerified: random.bool(),
+  image:
+    (random.url({ domain: 'avatars.githubusercontent.com' }) as string) ||
+    undefined,
+  ...overrides,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+});
 
 export const fakeAuthUser = <T extends Partial<AuthUser>>(
   overrides: T = {} as T
