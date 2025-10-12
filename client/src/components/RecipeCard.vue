@@ -7,12 +7,31 @@ import { RouterLink } from 'vue-router';
 import Spinner from './Spinner.vue';
 import { formatRecipeRating } from '@/utils/formatRecipeRating';
 import { ROUTE_NAMES } from '@/router/consts/routeNames';
+import {
+  RECIPE_CARD_VARIANT,
+  type RecipeCardVariant,
+} from '@/types/recipeCard';
 
-defineProps<{
+const { recipe, variant } = defineProps<{
   recipe: RecipesPublic;
+  variant: RecipeCardVariant;
 }>();
 
 const isLoading = ref(true);
+
+const infoRowClasses = [
+  'flex gap-2 text-xs leading-loose sm:text-base',
+  variant === RECIPE_CARD_VARIANT.RECIPES_LIST
+    ? 'flex-col md:flex-row md:gap-1'
+    : '',
+].join(' ');
+
+const ratingClasses = [
+  'font-semibold lg:text-2xl',
+  variant === RECIPE_CARD_VARIANT.RECIPES_LIST
+    ? 'md:mt-0 md:ml-auto'
+    : 'ml-auto',
+].join(' ');
 </script>
 
 <template>
@@ -36,20 +55,19 @@ const isLoading = ref(true);
     <div
       class="flex w-full flex-1 flex-col rounded-md bg-black/10 p-2 lg:px-5 lg:py-3"
     >
-      <div class="flex items-center gap-2 text-xs leading-loose sm:text-base">
+      <div :class="infoRowClasses">
         <span>{{ recipe.author.name }}</span>
         <span> • {{ format(recipe.createdAt, 'd MMM yyyy') }}</span>
-        <span
-          v-if="recipe.rating"
-          class="text-rating font-semibold md:ml-auto lg:text-2xl"
-        >
-          ★ {{ formatRecipeRating(recipe.rating) }}/5
-        </span>
-        <span v-else class="font-semibold text-red-500 md:ml-auto lg:text-xl">
-          Rate it!
-        </span>
+        <div :class="ratingClasses">
+          <span v-if="recipe.rating" class="text-rating">
+            ★ {{ formatRecipeRating(recipe.rating) }}/5
+          </span>
+          <span v-else class="text-red-500"> Rate it! </span>
+        </div>
       </div>
-      <span class="mt-2 inline-flex font-bold text-slate-700 lg:text-2xl">
+      <span
+        class="mt-2 block overflow-hidden font-bold break-words text-slate-700 lg:text-2xl"
+      >
         {{ titleCase(recipe.title.toLowerCase()) }}
       </span>
     </div>

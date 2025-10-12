@@ -20,7 +20,7 @@ const text = isRecipeTypeSaved
 <template>
   <RouterLink
     :to="route"
-    class="text-primary-green hover:text-secondary-green text-xl lg:text-3xl"
+    class="text-primary-green hover:text-secondary-green text-center text-xl lg:text-3xl"
   >
     {{ text }}
   </RouterLink>

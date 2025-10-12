@@ -8,6 +8,7 @@ import { RECIPE_TYPE, type RecipeTypeValues } from './types';
 import { trpc } from '@/trpc';
 import type { RecipesPublic } from '@server/shared/types';
 import type { Pagination } from '@server/shared/pagination';
+import { RECIPE_CARD_VARIANT } from '@/types/recipeCard';
 
 const { title, recipeType, userId } = defineProps<{
   title: string;
@@ -21,7 +22,7 @@ const totalRecipes = ref(0);
 
 const pagination = reactive<Pagination>({
   offset: 0,
-  limit: 4,
+  limit: 2,
 });
 
 const recipes = ref<RecipesPublic[]>([]);
@@ -91,20 +92,21 @@ onMounted(async () => {
       <div v-if="recipes.length > 0" class="relative">
         <NavButton v-if="hasPrev" @click="prevPage" direction="left" />
 
-        <div class="flex gap-4 overflow-x-auto lg:gap-5">
+        <div class="flex gap-4 overflow-x-auto p-1 lg:gap-5">
           <RecipeCard
             v-for="recipe in recipes"
             :key="recipe.id"
             :recipe="recipe"
+            :variant="RECIPE_CARD_VARIANT.RECIPES_LIST"
           />
         </div>
 
         <NavButton v-if="hasNext" @click="nextPage" direction="right" />
       </div>
 
-      <div v-else>
+      <template v-else>
         <NoRecipes data-testid="no-recipes" :recipe-type="recipeType" />
-      </div>
+      </template>
     </template>
   </div>
 </template>

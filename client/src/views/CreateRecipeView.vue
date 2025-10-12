@@ -10,6 +10,12 @@ import axios from 'axios';
 import { apiOrigin } from '@/config';
 import useToast from '@/composables/useToast';
 import { navigateToRecipe } from '@/router/utils';
+import {
+  MAX_DURATION,
+  MAX_TITLE_LENGTH,
+  MIN_DURATION,
+  MIN_TITLE_LENGTH,
+} from '@server/shared/consts';
 
 const { showLoading, updateToast } = useToast();
 
@@ -147,8 +153,8 @@ async function handleCreateRecipe() {
                 placeholder="eg: Savory Stuffed Bell Peppers"
                 class="bg-white"
                 wrapper-class="flex-1"
-                :minlength="2"
-                :maxlength="64"
+                :minlength="MIN_TITLE_LENGTH"
+                :maxlength="MAX_TITLE_LENGTH"
                 :required="true"
               />
               <FwbInput
@@ -159,8 +165,8 @@ async function handleCreateRecipe() {
                 placeholder="30"
                 class="bg-white"
                 wrapper-class="flex-1"
-                :min="1"
-                :max="1000"
+                :min="MIN_DURATION"
+                :max="MAX_DURATION"
                 :required="true"
               >
                 <template #suffix><span>minutes</span></template>

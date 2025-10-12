@@ -195,10 +195,10 @@ onBeforeMount(async () => {
 <template>
   <div v-if="recipe">
     <div
-      class="flex flex-col gap-8 md:gap-10 lg:mx-4 lg:grid lg:grid-cols-9 lg:gap-2"
+      class="flex flex-col gap-8 md:gap-10 lg:mx-4 lg:grid lg:grid-cols-2 lg:items-stretch lg:gap-2"
     >
-      <div class="relative w-full lg:col-span-5">
-        <div class="flex h-64 w-full items-center justify-center lg:h-104">
+      <div class="w-full lg:col-span-1">
+        <div class="flex h-64 w-full items-center justify-center lg:h-136">
           <Spinner v-show="isLoading" />
           <img
             data-testid="image"
@@ -212,30 +212,27 @@ onBeforeMount(async () => {
       </div>
 
       <div
-        class="mx-4 flex flex-col justify-between gap-4 md:mx-16 lg:col-span-4 lg:mt-4 lg:mr-28 lg:mb-4 lg:ml-4"
+        class="mx-4 flex flex-col justify-between gap-4 md:mx-16 lg:col-span-1 lg:mt-4 lg:mr-28 lg:mb-4 lg:ml-4"
       >
         <div class="flex flex-col">
-          <div class="justify-center">
-            <span
-              class="text-submit-text text-3xl font-bold text-wrap break-words lg:text-6xl"
-              >{{ titleCase(recipe.title.toLowerCase()) }}
-            </span>
-          </div>
+          <span
+            class="text-submit-text justify-center text-3xl font-bold text-wrap break-words lg:text-6xl"
+            >{{ titleCase(recipe.title.toLowerCase()) }}
+          </span>
+
           <div class="flex flex-col md:text-xl lg:text-2xl">
             <div class="justify-center leading-loose text-gray-500">
-              <span
+              <RouterLink
                 data-testid="author"
                 class="text-primary-green hover:text-secondary-green"
+                :to="{
+                  name: ROUTE_NAMES.USER_PROFILE,
+                  params: { id: recipe.userId },
+                }"
               >
-                <RouterLink
-                  :to="{
-                    name: ROUTE_NAMES.USER_PROFILE,
-                    params: { id: recipe.userId },
-                  }"
-                >
-                  {{ recipe.author.name }}
-                </RouterLink>
-              </span>
+                {{ recipe.author.name }}
+              </RouterLink>
+
               <span data-testid="created-at" class="">
                 • {{ format(recipe.createdAt, 'd MMM yyyy') }}
               </span>
@@ -249,7 +246,9 @@ onBeforeMount(async () => {
           </div>
         </div>
 
-        <div class="flex flex-wrap justify-between gap-4 md:gap-6">
+        <div
+          class="flex flex-wrap justify-between gap-4 sm:flex-nowrap md:gap-6"
+        >
           <div class="mt-auto flex flex-col self-start">
             <div class="flex justify-between gap-2 text-gray-500 lg:text-xl">
               <div class="flex items-center justify-between">

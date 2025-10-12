@@ -8,11 +8,12 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { SortingTypes } from '@server/shared/enums';
 import Spinner from '@/components/Spinner.vue';
+import { RECIPE_CARD_VARIANT } from '@/types/recipeCard';
 
 const route = useRoute();
 const router = useRouter();
 
-const RECIPES_PER_PAGE = 3;
+const RECIPES_PER_PAGE = 36;
 
 const recipes = ref<RecipesPublic[]>([]);
 const totalCount = ref(0);
@@ -159,12 +160,13 @@ onMounted(async () => {
       <!-- Non-empty state -->
       <div
         v-else-if="isRecipes"
-        class="grid grid-cols-1 justify-center gap-4 md:grid-cols-2 md:gap-6 xl:gap-10 2xl:grid-cols-4"
+        class="grid grid-cols-1 justify-center gap-4 md:grid-cols-2 md:gap-6 xl:gap-10 2xl:grid-cols-3"
       >
         <RecipeCard
           v-for="recipe in recipes"
           :key="recipe.id"
           :recipe="recipe"
+          :variant="RECIPE_CARD_VARIANT.HOMEPAGE"
         />
       </div>
 
