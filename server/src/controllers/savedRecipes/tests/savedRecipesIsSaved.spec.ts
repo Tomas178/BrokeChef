@@ -1,47 +1,52 @@
 import { createCallerFactory } from '@server/trpc';
-import { wrapInRollbacks } from '@tests/utils/transactions';
-import { createTestDatabase } from '@tests/utils/database';
 import { authContext, requestContext } from '@tests/utils/context';
-import { insertAll } from '@tests/utils/record';
-import {
-  fakeRecipe,
-  fakeSavedRecipe,
-  fakeUser,
-} from '@server/entities/tests/fakes';
+import { fakeUser } from '@server/entities/tests/fakes';
+import type { Database } from '@server/database';
+import type { SavedRecipesRepository } from '@server/repositories/savedRecipesRepository';
 import savedRecipesRouter from '..';
 
+const mockIsSaved = vi.fn();
+
+const mockSavedRecipesRepository: Partial<SavedRecipesRepository> = {
+  isSaved: mockIsSaved,
+};
+
+vi.mock('@server/repositories/savedRecipesRepository', () => ({
+  savedRecipesRepository: () => mockSavedRecipesRepository,
+}));
+
 const createCaller = createCallerFactory(savedRecipesRouter);
-const database = await wrapInRollbacks(createTestDatabase());
+const database = {} as Database;
 
-const [userSaved, userNotSaved] = await insertAll(database, 'users', [
-  fakeUser(),
-  fakeUser(),
-]);
+const user = fakeUser();
 
-const [recipe] = await insertAll(
-  database,
-  'recipes',
-  fakeRecipe({ userId: userSaved.id })
-);
+const recipeId = 123;
 
-it('Should throw an error if user is not authenticated', async () => {
+beforeEach(() => vi.resetAllMocks());
+
+describe('Unauthenticated tests', () => {
   const { isSaved } = createCaller(requestContext({ database }));
 
-  await expect(isSaved(recipe.id)).rejects.toThrow(/unauthenticated/i);
+  it('Should throw an error if user is not authenticated', async () => {
+    await expect(isSaved(recipeId)).rejects.toThrow(/unauthenticated/i);
+    expect(mockIsSaved).not.toHaveBeenCalled();
+  });
 });
 
-it('Should return false if user has not saved the recipe', async () => {
-  const { isSaved } = createCaller(authContext({ database }, userNotSaved));
+describe('Authenticated tests', () => {
+  const { isSaved } = createCaller(authContext({ database }, user));
 
-  await expect(isSaved(recipe.id)).resolves.toBeFalsy();
-});
+  it('Should return false if user has not saved the recipe', async () => {
+    mockIsSaved.mockResolvedValueOnce(false);
 
-it('Should return true if user has saved the recipe', async () => {
-  const [savedRecipes] = await insertAll(database, 'savedRecipes', [
-    fakeSavedRecipe({ userId: userSaved.id, recipeId: recipe.id }),
-  ]);
+    await expect(isSaved(recipeId)).resolves.toBeFalsy();
+    expect(mockIsSaved).toHaveBeenCalledOnce();
+  });
 
-  const { isSaved } = createCaller(authContext({ database }, userSaved));
+  it('Should return true if user has saved the recipe', async () => {
+    mockIsSaved.mockResolvedValueOnce(true);
 
-  await expect(isSaved(savedRecipes.recipeId)).resolves.toBeTruthy();
+    await expect(isSaved(recipeId)).resolves.toBeTruthy();
+    expect(mockIsSaved).toHaveBeenCalledOnce();
+  });
 });

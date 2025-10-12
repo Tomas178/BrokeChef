@@ -16,7 +16,7 @@ import {
   validateRecipeExists,
 } from './utils/recipeValidations';
 
-interface SavedRecipesService {
+export interface SavedRecipesService {
   create: (link: SavedRecipesLink) => Promise<savedRecipesPublic | undefined>;
   remove: (link: SavedRecipesLink) => Promise<savedRecipesPublic | undefined>;
 }

@@ -1,57 +1,68 @@
 import { createCallerFactory } from '@server/trpc';
-import { wrapInRollbacks } from '@tests/utils/transactions';
-import { createTestDatabase } from '@tests/utils/database';
-import { insertAll } from '@tests/utils/record';
 import { authContext, requestContext } from '@tests/utils/context';
-import {
-  fakeRecipe,
-  fakeSavedRecipe,
-  fakeUser,
-} from '@server/entities/tests/fakes';
+import { fakeUser } from '@server/entities/tests/fakes';
+import type { SavedRecipesService } from '@server/services/savedRecipesService';
+import type { Database } from '@server/database';
+import type { SavedRecipesLink } from '@server/repositories/savedRecipesRepository';
+import SavedRecipeNotFound from '@server/utils/errors/recipes/SavedRecipeNotFound';
+import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import savedRecipesRouter from '..';
 
+const mockRemove = vi.fn();
+
+const mockSavedRecipesService: Partial<SavedRecipesService> = {
+  remove: mockRemove,
+};
+
+vi.mock('@server/services/savedRecipesService', () => ({
+  savedRecipesService: () => mockSavedRecipesService,
+}));
+
 const createCaller = createCallerFactory(savedRecipesRouter);
-const database = await wrapInRollbacks(createTestDatabase());
+const database = {} as Database;
 
-const [userCreator, userOneSaver, userTwoSaver] = await insertAll(
-  database,
-  'users',
-  [fakeUser(), fakeUser(), fakeUser()]
-);
+const user = fakeUser();
+const recipeId = 123;
 
-const [recipe] = await insertAll(
-  database,
-  'recipes',
-  fakeRecipe({ userId: userCreator.id })
-);
+const savedRecipeLink: SavedRecipesLink = {
+  userId: user.id,
+  recipeId,
+};
 
-const [savedRecipe] = await insertAll(
-  database,
-  'savedRecipes',
-  fakeSavedRecipe({ userId: userOneSaver.id, recipeId: recipe.id })
-);
+beforeEach(() => vi.resetAllMocks());
 
-const { unsave } = createCaller(authContext({ database }, userOneSaver));
-
-it('Should throw an error if user is not authenticated', async () => {
+describe('Unauthenticated tests', () => {
   const { unsave } = createCaller(requestContext({ database }));
 
-  await expect(unsave(1)).rejects.toThrow(/unauthenticated/i);
+  it('Should throw an error if user is not authenticated', async () => {
+    await expect(unsave(1)).rejects.toThrow(/unauthenticated/i);
+    expect(mockRemove).not.toHaveBeenCalled();
+  });
 });
 
-it('Should throw an error if recipe is not found', async () => {
-  const nonExistantId = recipe.id + 1;
-  await expect(unsave(nonExistantId)).rejects.toThrow(/not found/i);
-});
+describe('Authenticated tests', () => {
+  const { unsave } = createCaller(authContext({ database }, user));
 
-it('Should throw an error if author is saved recipe record is not found', async () => {
-  const { unsave } = createCaller(authContext({ database }, userTwoSaver));
+  it('Should throw an error if recipe is not found', async () => {
+    mockRemove.mockRejectedValueOnce(new RecipeNotFound());
 
-  await expect(unsave(recipe.id)).rejects.toThrow(/not found/i);
-});
+    await expect(unsave(recipeId)).rejects.toThrow(/not found/i);
+    expect(mockRemove).toHaveBeenCalledOnce();
+  });
 
-it('Should unsave a recipe', async () => {
-  const unsavedRecipe = await unsave(savedRecipe.recipeId);
+  it('Should throw an error if saved recipe record is not found', async () => {
+    mockRemove.mockRejectedValueOnce(new SavedRecipeNotFound());
 
-  expect(unsavedRecipe).toEqual(savedRecipe);
+    await expect(unsave(recipeId)).rejects.toThrow(/not found/i);
+    expect(mockRemove).toHaveBeenCalledOnce();
+  });
+
+  it('Should unsave a recipe', async () => {
+    mockRemove.mockResolvedValueOnce(savedRecipeLink);
+
+    const unsavedRecipe = await unsave(recipeId);
+
+    expect(mockRemove).toHaveBeenCalledOnce();
+    expect(unsavedRecipe).toEqual(savedRecipeLink);
+  });
 });
