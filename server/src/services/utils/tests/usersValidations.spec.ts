@@ -1,17 +1,11 @@
 import { fakeUser } from '@server/entities/tests/fakes';
-import type { UsersPublic } from '@server/entities/users';
 import type { UsersRepository } from '@server/repositories/usersRepository';
 import UserNotFound from '@server/utils/errors/users/UserNotFound';
 import { validateUserExists } from '../userValidations';
 
-const userId = 'a'.repeat(32);
+const user = fakeUser();
 
-const mockFindById = vi.fn(
-  async (id): Promise<UsersPublic> =>
-    fakeUser({
-      id,
-    })
-);
+const mockFindById = vi.fn();
 
 const mockUsersRepository = {
   findById: mockFindById,
@@ -19,16 +13,17 @@ const mockUsersRepository = {
 
 describe('validateUserExists', () => {
   it('Should return user when user exists', async () => {
-    const user = await validateUserExists(mockUsersRepository, userId);
+    mockFindById.mockResolvedValueOnce(user);
+    const userFromRepo = await validateUserExists(mockUsersRepository, user.id);
 
-    expect(user.id).toBe(userId);
+    expect(userFromRepo).toBe(user);
   });
 
   it('Should throw an error when user does not exist', async () => {
     mockFindById.mockRejectedValueOnce(new UserNotFound());
 
     await expect(
-      validateUserExists(mockUsersRepository, userId)
+      validateUserExists(mockUsersRepository, user.id)
     ).rejects.toThrow(/not found/i);
   });
 
@@ -38,7 +33,7 @@ describe('validateUserExists', () => {
     mockFindById.mockRejectedValueOnce(new Error(errorMessage));
 
     await expect(
-      validateUserExists(mockUsersRepository, userId)
+      validateUserExists(mockUsersRepository, user.id)
     ).rejects.toThrow(errorMessage);
   });
 });

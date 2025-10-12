@@ -124,15 +124,15 @@ describe('getSavedRecipes', () => {
 });
 
 describe('findById', () => {
-  it('Should return user by id when image url is undefined', async () => {
-    const userWithUndefined = fakeUser({ image: undefined });
-    mockUsersRepoFindById.mockResolvedValueOnce(userWithUndefined);
+  it('Should return user by id when image url is null', async () => {
+    const userWithImageNull = fakeUser({ image: null });
+    mockUsersRepoFindById.mockResolvedValueOnce(userWithImageNull);
 
-    const userById = await service.findById(userWithUndefined.id);
+    const userById = await service.findById(userWithImageNull.id);
 
     expect(mockUsersRepoFindById).toHaveBeenCalledOnce();
     expect(mockSignImages).not.toHaveBeenCalled();
-    expect(userById).toEqual(userWithUndefined);
+    expect(userById).toEqual(userWithImageNull);
   });
 
   it('Should return user by id with not signed url when image is from oauth provider', async () => {

@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-null */
 import type {
   Follows,
   Ingredients,
@@ -34,8 +35,7 @@ export const fakeUser = <T extends Partial<UsersPublic>>(
   email: random.email(),
   emailVerified: random.bool(),
   image:
-    (random.url({ domain: 'avatars.githubusercontent.com' }) as string) ||
-    undefined,
+    (random.url({ domain: 'avatars.githubusercontent.com' }) as string) || null,
   ...overrides,
   createdAt: new Date(),
   updatedAt: new Date(),
