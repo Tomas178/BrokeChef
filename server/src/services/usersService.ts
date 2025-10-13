@@ -9,6 +9,7 @@ import { deleteFile } from '@server/utils/AWSS3Client/deleteFile';
 import { signImages } from '@server/utils/signImages';
 import config from '@server/config';
 import logger from '@server/logger';
+import { isOAuthProviderImage } from './utils/isOAuthProviderImage';
 
 interface UsersService {
   getRecipes: (
@@ -97,20 +98,38 @@ export function usersService(database: Database): UsersService {
     async findById(id) {
       const user = await usersRepository.findById(id);
 
-      if (user.image) {
-        const isOauthImage =
-          user.image.includes('googleusercontent') ||
-          user.image.includes('githubusercontent');
-
-        if (!isOauthImage) {
-          user.image = await signImages(user.image);
-        }
+      if (user.image && !isOAuthProviderImage(user.image)) {
+        user.image = await signImages(user.image);
       }
 
       return user;
     },
 
     async updateImage(userId, image) {
+      let userById: UsersPublic | undefined;
+      let isOAuthImage: boolean;
+      let isCurrentImageUrlDeleted = false;
+
+      try {
+        userById = await usersRepository.findById(userId);
+        isOAuthImage = isOAuthProviderImage(userById?.image);
+
+        if (userById?.image && !isOAuthImage) {
+          await deleteFile(
+            s3Client,
+            config.auth.aws.s3.buckets.images,
+            userById.image
+          );
+          isCurrentImageUrlDeleted = true;
+        }
+      } catch {
+        if (!isCurrentImageUrlDeleted) {
+          logger.error(
+            `Failed to delete old S3 object: ${userById?.image}. Remove it manually from bucket: ${config.auth.aws.s3.buckets.images}`
+          );
+        }
+      }
+
       try {
         const updatedUrl = await usersRepository.updateImage(userId, image);
 

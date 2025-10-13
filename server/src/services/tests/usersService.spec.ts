@@ -3,9 +3,15 @@ import { initialPage } from '@server/entities/shared';
 import type { RecipesRepository } from '@server/repositories/recipesRepository';
 import type { UsersRepository } from '@server/repositories/usersRepository';
 import type { Database } from '@server/database';
+import type { S3Client } from '@aws-sdk/client-s3';
 import { usersService } from '../usersService';
 
-const fakeImageUrl = vi.hoisted(() => 'fake-url');
+const [fakeImageUrl, fakeImageBucket] = vi.hoisted(() => [
+  'fake-url',
+  'fakeImageBucket',
+]);
+
+const mockS3Client = vi.hoisted(() => ({}) as unknown as S3Client);
 
 const mockSignImages = vi.hoisted(() =>
   vi.fn((images: string | string[]) => {
@@ -16,13 +22,35 @@ const mockSignImages = vi.hoisted(() =>
   })
 );
 
-vi.mock('@server/utils/signImages', () => ({
-  signImages: mockSignImages,
+const { mockDeleteFile, mockLoggerError, mockIsOAuthProviderImage } =
+  vi.hoisted(() => ({
+    mockDeleteFile: vi.fn(),
+    mockLoggerError: vi.fn(),
+    mockIsOAuthProviderImage: vi.fn(),
+  }));
+
+const mockConfig = vi.hoisted(() => ({
+  auth: {
+    aws: {
+      s3: {
+        buckets: {
+          images: fakeImageBucket,
+        },
+      },
+    },
+  },
 }));
 
-const { mockDeleteFile, mockLoggerError } = vi.hoisted(() => ({
-  mockDeleteFile: vi.fn(),
-  mockLoggerError: vi.fn(),
+vi.mock('@server/config', () => ({
+  default: mockConfig,
+}));
+
+vi.mock('@server/utils/AWSS3Client/client', () => ({
+  s3Client: mockS3Client,
+}));
+
+vi.mock('@server/utils/signImages', () => ({
+  signImages: mockSignImages,
 }));
 
 vi.mock('@server/utils/AWSS3Client/deleteFile', () => ({
@@ -34,6 +62,10 @@ vi.mock('@server/logger', () => ({
     info: vi.fn(),
     error: mockLoggerError,
   },
+}));
+
+vi.mock('@server/services/utils/isOAuthProviderImage', () => ({
+  isOAuthProviderImage: mockIsOAuthProviderImage,
 }));
 
 const mockRecipesRepoFindCreatedByUser = vi.fn();
@@ -137,6 +169,7 @@ describe('findById', () => {
 
   it('Should return user by id with not signed url when image is from oauth provider', async () => {
     mockUsersRepoFindById.mockResolvedValueOnce(user);
+    mockIsOAuthProviderImage.mockResolvedValueOnce(true);
 
     const userById = await service.findById(user.id);
 
@@ -160,14 +193,88 @@ describe('findById', () => {
 describe('updateImage', () => {
   const fakeImage = 'fake-image';
 
-  it('Should update the image', async () => {
+  it('Should remove the current image and then update with new image', async () => {
+    mockUsersRepoFindById.mockResolvedValueOnce(user);
+    mockIsOAuthProviderImage.mockReturnValueOnce(false);
     mockUsersRepoUpdateImage.mockResolvedValueOnce(fakeImageUrl);
 
     const updatedImage = await service.updateImage(user.id, fakeImage);
 
+    expect(mockUsersRepoFindById).toHaveBeenCalledOnce();
+    expect(mockIsOAuthProviderImage).toHaveBeenCalledExactlyOnceWith(
+      user.image
+    );
+    expect(mockDeleteFile).toHaveBeenCalledExactlyOnceWith(
+      mockS3Client,
+      fakeImageBucket,
+      user.image
+    );
+    expect(mockLoggerError).not.toHaveBeenCalledOnce();
+
     expect(mockUsersRepoUpdateImage).toHaveBeenCalledOnce();
     expect(mockSignImages).toHaveBeenCalledOnce();
     expect(updatedImage).toBe(fakeImageUrl);
+  });
+
+  it('Should fail to remove image from S3, log an error and then update with new image', async () => {
+    mockUsersRepoFindById.mockResolvedValueOnce(user);
+    mockIsOAuthProviderImage.mockReturnValueOnce(false);
+    mockDeleteFile.mockRejectedValueOnce(new Error('Something failed'));
+    mockUsersRepoUpdateImage.mockResolvedValueOnce(fakeImageUrl);
+
+    const updatedImage = await service.updateImage(user.id, fakeImage);
+
+    expect(mockIsOAuthProviderImage).toHaveBeenCalledExactlyOnceWith(
+      user.image
+    );
+
+    expect(mockUsersRepoFindById).toHaveBeenCalledOnce();
+    expect(mockIsOAuthProviderImage).toHaveBeenCalledExactlyOnceWith(
+      user.image
+    );
+    expect(mockDeleteFile).toHaveBeenCalledExactlyOnceWith(
+      mockS3Client,
+      fakeImageBucket,
+      user.image
+    );
+
+    expect(mockLoggerError).toHaveBeenCalledExactlyOnceWith(
+      `Failed to delete old S3 object: ${user.image}. Remove it manually from bucket: ${fakeImageBucket}`
+    );
+
+    expect(mockUsersRepoUpdateImage).toHaveBeenCalledOnce();
+    expect(mockSignImages).toHaveBeenCalledOnce();
+    expect(updatedImage).toBe(fakeImageUrl);
+  });
+
+  it('Should ignore the the current file deletion from S3 if the imageUrl is from OAuth provider', async () => {
+    mockUsersRepoFindById.mockResolvedValueOnce(user);
+    mockIsOAuthProviderImage.mockReturnValueOnce(true);
+
+    await service.updateImage(user.id, fakeImage);
+
+    expect(mockUsersRepoFindById).toHaveBeenCalledExactlyOnceWith(user.id);
+    expect(mockIsOAuthProviderImage).toHaveBeenCalledExactlyOnceWith(
+      user.image
+    );
+
+    expect(mockDeleteFile).not.toHaveBeenCalled();
+    expect(mockLoggerError).not.toHaveBeenCalled();
+  });
+
+  it('Should ignore the the current file deletion from S3 if the imageUrl is from OAuth provider', async () => {
+    mockUsersRepoFindById.mockResolvedValueOnce(user);
+    mockIsOAuthProviderImage.mockReturnValueOnce(true);
+
+    await service.updateImage(user.id, fakeImage);
+
+    expect(mockUsersRepoFindById).toHaveBeenCalledExactlyOnceWith(user.id);
+    expect(mockIsOAuthProviderImage).toHaveBeenCalledExactlyOnceWith(
+      user.image
+    );
+
+    expect(mockDeleteFile).not.toHaveBeenCalled();
+    expect(mockLoggerError).not.toHaveBeenCalled();
   });
 
   it('Should delete the image from S3 storage on failure', async () => {
@@ -186,7 +293,7 @@ describe('updateImage', () => {
     );
   });
 
-  it('Should fail to delete the image on failure to insert to db and do console.error', async () => {
+  it('Should fail to delete the image on failure to insert to db and log an error', async () => {
     const errorMessage = 'DB Failed';
     mockUsersRepoUpdateImage.mockRejectedValueOnce(new Error(errorMessage));
     mockDeleteFile.mockRejectedValueOnce(new Error('Failed to delete from S3'));
