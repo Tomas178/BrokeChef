@@ -156,7 +156,7 @@ async function handleUnfollow() {
   try {
     await unfollow();
     isFollowing.value = false;
-    totalFollowing.value -= 1;
+    totalFollowers.value -= 1;
 
     updateToast(id, 'success', 'User unfollowed successfully');
   } catch {
