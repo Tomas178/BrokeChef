@@ -11,6 +11,7 @@ import CannotSaveOwnRecipe from '@server/utils/errors/recipes/CannotSaveOwnRecip
 import { NoResultError } from 'kysely';
 import SavedRecipeNotFound from '@server/utils/errors/recipes/SavedRecipeNotFound';
 import type { savedRecipesPublic } from '@server/entities/savedRecipes';
+import logger from '@server/logger';
 import {
   validateRecipeAndUserIsNotAuthor,
   validateRecipeExists,
@@ -37,6 +38,7 @@ export function savedRecipesService(database: Database): SavedRecipesService {
       try {
         const createdRecipe = await savedRecipesRepository.create(link);
 
+        logger.info(`user: ${link.userId} saved recipe: ${link.recipeId}`);
         return createdRecipe;
       } catch (error) {
         assertPostgresError(error);
@@ -53,6 +55,7 @@ export function savedRecipesService(database: Database): SavedRecipesService {
       try {
         const unsavedRecipe = await savedRecipesRepository.remove(link);
 
+        logger.info(`user: ${link.userId} unsaved recipe: ${link.recipeId}`);
         return unsavedRecipe;
       } catch (error) {
         assertError(error);

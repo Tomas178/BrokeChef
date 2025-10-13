@@ -10,6 +10,7 @@ import UserAlreadyFollowed from '@server/utils/errors/follows/UserAlreadyFollowe
 import { NoResultError } from 'kysely';
 import FollowLinkNotFound from '@server/utils/errors/follows/FollowLinkNotFound';
 import { signImages } from '@server/utils/signImages';
+import logger from '@server/logger';
 import { validateUserExists } from './utils/userValidations';
 
 export interface FollowsService {
@@ -33,6 +34,9 @@ export function followsService(database: Database): FollowsService {
       try {
         const createdLink = await followsRepository.create(followLink);
 
+        logger.info(
+          `User: ${followLink.followerId} followed user: ${followLink.followedId}`
+        );
         return createdLink;
       } catch (error) {
         assertPostgresError(error);
@@ -50,6 +54,9 @@ export function followsService(database: Database): FollowsService {
       try {
         const unfollowedLink = await followsRepository.remove(followLink);
 
+        logger.info(
+          `User: ${followLink.followerId} unfollowed user: ${followLink.followedId}`
+        );
         return unfollowedLink;
       } catch (error) {
         assertError(error);

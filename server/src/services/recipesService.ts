@@ -37,7 +37,7 @@ export interface RecipesService {
   findAll: (pagination: PaginationWithSort) => Promise<RecipesPublic[]>;
 }
 
-async function resolveRecipeImage(
+async function handleImageGeneration(
   userProvidedUrl: string | undefined,
   recipeTitle: string,
   ingredients: CreateRecipeInput['ingredients']
@@ -78,7 +78,7 @@ export function recipesService(database: Database): RecipesService {
       let isImageGenerated = false;
 
       try {
-        imageUrl = await resolveRecipeImage(
+        imageUrl = await handleImageGeneration(
           recipeData.imageUrl,
           recipeData.title,
           ingredients
@@ -86,7 +86,7 @@ export function recipesService(database: Database): RecipesService {
 
         isImageGenerated = !recipeData.imageUrl;
       } catch (error) {
-        logger.error('Failed to resolve recipe image:', error);
+        logger.error('Failed to generate recipe image:', error);
         throw error;
       }
 
@@ -128,6 +128,9 @@ export function recipesService(database: Database): RecipesService {
             ),
           ]);
 
+          logger.info(
+            `User: ${userId} created recipe with ID: ${createdRecipe.id}`
+          );
           return createdRecipe;
         } catch (error) {
           logger.error('Failed to create recipe');

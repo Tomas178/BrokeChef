@@ -112,15 +112,20 @@ export function usersService(database: Database): UsersService {
 
       try {
         userById = await usersRepository.findById(userId);
+        const currentImageUrl = userById.image;
         isOAuthImage = isOAuthProviderImage(userById?.image);
 
-        if (userById?.image && !isOAuthImage) {
+        if (currentImageUrl && !isOAuthImage) {
           await deleteFile(
             s3Client,
             config.auth.aws.s3.buckets.images,
-            userById.image
+            currentImageUrl
           );
+
           isCurrentImageUrlDeleted = true;
+          logger.info(
+            `Old image url: ${currentImageUrl} deleted from S3 object for user: ${userId}`
+          );
         }
       } catch {
         if (!isCurrentImageUrlDeleted) {
@@ -134,6 +139,8 @@ export function usersService(database: Database): UsersService {
         const updatedUrl = await usersRepository.updateImage(userId, image);
 
         const signedUrl = await signImages(updatedUrl);
+
+        logger.info(`New image url updated for user: ${userId}`);
 
         return signedUrl;
       } catch (error) {

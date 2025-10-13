@@ -8,6 +8,7 @@ import RatingNotFound from '@server/utils/errors/recipes/RatingNotFound';
 import RecipeAlreadyRated from '@server/utils/errors/recipes/RecipeAlreadyRated';
 import { NoResultError } from 'kysely';
 import { PostgresError } from 'pg-error-enum';
+import logger from '@server/logger';
 import {
   validateRecipeAndUserIsNotAuthor,
   validateRecipeExists,
@@ -62,6 +63,9 @@ export function ratingsService(database: Database): RatingsService {
           rating: updatedRecipe?.rating ?? newRating.rating,
         };
 
+        logger.info(
+          `User: ${ratedRecipe.userId} rated recipe: ${ratedRecipe.recipeId} with rating: ${ratedRecipe.rating}`
+        );
         return ratedRecipe;
       } catch (error) {
         assertPostgresError(error);
@@ -81,6 +85,9 @@ export function ratingsService(database: Database): RatingsService {
         updatedRating.recipeId
       );
 
+      logger.info(
+        `User: ${updatedRecipe?.userId} rated recipe: ${updatedRecipe?.id} with rating: ${updatedRecipe?.rating}`
+      );
       return updatedRecipe?.rating ?? updatedRating.rating;
     },
 
@@ -92,6 +99,9 @@ export function ratingsService(database: Database): RatingsService {
           removedRating.recipeId
         );
 
+        logger.info(
+          `User: ${removedRating.userId} removed rating for recipe: ${removedRating.recipeId} with rating: ${removedRating.rating}`
+        );
         return updatedRecipe?.rating;
       } catch (error) {
         if (error instanceof NoResultError) throw new RatingNotFound();
