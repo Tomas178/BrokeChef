@@ -2,9 +2,8 @@
 import { FwbButton, FwbInput } from 'flowbite-vue';
 import useToast from '@/composables/useToast';
 import type { UsersPublic } from '@server/shared/types';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { onMounted } from 'vue';
 import { trpc } from '@/trpc';
 import useErrorMessage from '@/composables/useErrorMessage';
 import { useUserStore } from '@/stores/user';
@@ -113,74 +112,76 @@ onMounted(async () => {
       </FwbButton>
     </div>
 
-    <div
-      class="mx-36 mt-30 flex flex-col justify-around gap-10 md:mx-46 lg:mt-56 lg:flex-row"
-    >
+    <div class="flex min-h-screen items-center justify-center">
       <div
-        class="flex max-h-fit flex-col gap-4 rounded-4xl bg-white p-12 md:gap-10"
+        class="flex w-full flex-col items-center justify-around gap-10 px-4 py-10 sm:px-36 lg:flex-row lg:items-start"
       >
-        <span class="text-xl font-bold">Change Email</span>
-        <div class="flex flex-col gap-4">
-          <FwbInput
-            data-testid="email"
-            label="Email"
-            type="email"
-            placeholder="Enter new email"
-            v-model="email"
-            class="bg-white"
-          />
+        <form
+          class="flex w-full max-w-md flex-col gap-4 rounded-4xl bg-white p-12 md:gap-10"
+          @submit.prevent="handleChangeEmail"
+        >
+          <span class="text-xl font-bold">Change Email</span>
+          <div class="flex flex-col gap-4">
+            <FwbInput
+              data-testid="email"
+              label="Email"
+              type="email"
+              autocomplete="on"
+              placeholder="Enter new email"
+              v-model="email"
+              class="bg-white"
+            />
+            <FwbButton
+              data-testid="save-email"
+              class="text-submit-text gradient-action-button h-full w-full cursor-pointer font-bold hover:outline-1 hover:outline-black"
+              type="submit"
+              pill
+            >
+              Save
+            </FwbButton>
+          </div>
+        </form>
 
-          <FwbButton
-            data-testid="save-email"
-            class="text-submit-text gradient-action-button h-full w-full cursor-pointer font-bold hover:outline-1 hover:outline-black"
-            type="button"
-            pill
-            @click="handleChangeEmail"
-          >
-            Save
-          </FwbButton>
-        </div>
-      </div>
-
-      <div class="flex flex-col gap-4 rounded-4xl bg-white p-12 md:gap-10">
-        <span class="text-xl font-bold">Change Password</span>
-        <div class="flex flex-col gap-4">
-          <FwbInput
-            data-testid="current-password"
-            label="Current Password"
-            type="password"
-            placeholder="Enter current password"
-            v-model="currentPassword"
-            class="bg-white"
-          />
-
-          <FwbInput
-            data-testid="new-password"
-            label="New Password"
-            type="password"
-            placeholder="Enter new password"
-            v-model="newPassword"
-            class="bg-white"
-          />
-          <FwbInput
-            data-testid="repeat-password"
-            label="Repeat password"
-            type="password"
-            placeholder="Repeat your password"
-            v-model="repeatPassword"
-            class="bg-white"
-          />
-
-          <FwbButton
-            data-testid="save-password"
-            class="text-submit-text gradient-action-button w-full cursor-pointer font-bold hover:outline-1 hover:outline-black"
-            type="button"
-            pill
-            @click="handleChangePassword"
-          >
-            Save
-          </FwbButton>
-        </div>
+        <form
+          class="flex w-full max-w-md flex-col gap-4 rounded-4xl bg-white p-12 md:gap-10"
+          @submit.prevent="handleChangePassword"
+        >
+          <span class="text-xl font-bold">Change Password</span>
+          <div class="flex flex-col gap-4">
+            <FwbInput
+              data-testid="current-password"
+              label="Current Password"
+              type="password"
+              placeholder="Enter current password"
+              v-model="currentPassword"
+              class="bg-white"
+            />
+            <FwbInput
+              data-testid="new-password"
+              label="New Password"
+              type="password"
+              placeholder="Enter new password"
+              v-model="newPassword"
+              class="bg-white"
+            />
+            <FwbInput
+              data-testid="repeat-password"
+              label="Repeat password"
+              type="password"
+              placeholder="Repeat your password"
+              v-model="repeatPassword"
+              class="bg-white"
+            />
+            <FwbButton
+              data-testid="save-password"
+              class="text-submit-text gradient-action-button w-full cursor-pointer font-bold hover:outline-1 hover:outline-black"
+              type="submit"
+              pill
+            >
+              Save
+            </FwbButton>
+          </div>
+        </form>
       </div>
     </div>
   </div>
