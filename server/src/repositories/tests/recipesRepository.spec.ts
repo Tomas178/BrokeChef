@@ -18,6 +18,7 @@ import {
 } from '@server/entities/users';
 import { initialPage, initialPageWithSort } from '@server/entities/shared';
 import { SortingTypes } from '@server/enums/SortingTypes';
+import { NoResultError } from 'kysely';
 import { recipesRepository } from '../recipesRepository';
 
 const database = await wrapInRollbacks(createTestDatabase());
@@ -520,8 +521,8 @@ describe('remove', () => {
   it('Should throw an error if recipe does not exist', async () => {
     const nonExistantId = recipeOne.id + recipeTwo.id;
 
-    await expect(repository.remove(nonExistantId)).rejects.toThrow(
-      /recipe.*not found|not found.*recipe/i
+    await expect(repository.remove(nonExistantId)).rejects.toThrowError(
+      NoResultError
     );
   });
 });

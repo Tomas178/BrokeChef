@@ -16,7 +16,7 @@ export const recipeAuthorProcedure = authenticatedProcedure
     if (!isAuthor) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
-        message: 'Recipe does not belong to the user',
+        message: 'Only author can remove the recipe',
       });
     }
 

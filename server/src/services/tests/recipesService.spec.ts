@@ -13,6 +13,9 @@ import type { RecipesIngredientsRepository } from '@server/repositories/recipesI
 import type { RecipesToolsRepository } from '@server/repositories/recipesToolsRepository';
 import type { Database } from '@server/database';
 import { PostgresError } from 'pg-error-enum';
+import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
+import { S3ServiceException } from '@aws-sdk/client-s3';
+import { NoResultError } from 'kysely';
 import { recipesService } from '../recipesService';
 
 const fakeImageKey = 'fakeKey';
@@ -80,11 +83,13 @@ vi.mock('@server/services/utils/inserts', () => ({
 const mockRecipesRepoCreate = vi.fn();
 const mockRecipesRepoFindById = vi.fn();
 const mockRecipesRepoFindAll = vi.fn();
+const mockRecipesRepoRemove = vi.fn();
 
 const mockRecipesRepository = {
   create: mockRecipesRepoCreate,
   findById: mockRecipesRepoFindById,
   findAll: mockRecipesRepoFindAll,
+  remove: mockRecipesRepoRemove,
 } as Partial<RecipesRepository>;
 
 vi.mock('@server/repositories/recipesRepository', () => ({
@@ -119,6 +124,7 @@ const database = {
     }),
   })),
 } as unknown as Database;
+
 const service = recipesService(database);
 
 const author = fakeUser();
@@ -265,7 +271,7 @@ describe('createRecipe', () => {
 
     expect(mockLoggerError).toHaveBeenCalledOnce();
     expect(mockLoggerError).toHaveBeenCalledWith(
-      'Failed to resolve recipe image:',
+      'Failed to generate recipe image:',
       expect.any(Error)
     );
   });
@@ -333,5 +339,45 @@ describe('findAll', () => {
 
     expect(recipes[0]).toHaveProperty('rating', fakeRecipes[0].rating);
     expect(recipes[1]).toHaveProperty('rating', fakeRecipes[1].rating);
+  });
+});
+
+describe('remove', () => {
+  const recipeId = 123;
+
+  it('Should throw an error if recipe does not exist', async () => {
+    mockRecipesRepoFindById.mockResolvedValueOnce(undefined);
+
+    await expect(service.remove(recipeId)).rejects.toThrowError(RecipeNotFound);
+    expect(mockRecipesRepoRemove).not.toHaveBeenCalled();
+    expect(mockDeleteFile).not.toHaveBeenCalled();
+  });
+
+  it('Should throw an error if database record removal failed', async () => {
+    mockRecipesRepoFindById.mockResolvedValueOnce(fakeRecipeAllInfo());
+    mockRecipesRepoRemove.mockRejectedValueOnce(new NoResultError({} as any));
+
+    await expect(service.remove(recipeId)).rejects.toThrowError(RecipeNotFound);
+  });
+
+  it('Should throw an error if image deletion from S3 failed', async () => {
+    const recipe = fakeRecipeWithRating();
+
+    mockRecipesRepoFindById.mockResolvedValueOnce(fakeRecipeAllInfo());
+    mockRecipesRepoRemove.mockResolvedValueOnce(recipe);
+    mockDeleteFile.mockRejectedValueOnce(new S3ServiceException({} as any));
+
+    await expect(service.remove(recipeId)).rejects.toThrowError(
+      S3ServiceException
+    );
+  });
+
+  it('Should return removed recipe and delete image from S3', async () => {
+    const recipe = fakeRecipeWithRating();
+
+    mockRecipesRepoFindById.mockResolvedValueOnce(fakeRecipeAllInfo());
+    mockRecipesRepoRemove.mockResolvedValueOnce(recipe);
+
+    await expect(service.remove(recipeId)).resolves.toEqual(recipe);
   });
 });

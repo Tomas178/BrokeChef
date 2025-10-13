@@ -1,19 +1,15 @@
 import { TRPCError } from '@trpc/server';
 import { recipeAuthorProcedure } from '@server/trpc/recipeAuthorProcedure';
 import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
-import { deleteFile } from '@server/utils/AWSS3Client/deleteFile';
-import { s3Client } from '@server/utils/AWSS3Client/client';
-import config from '@server/config';
 import { S3ServiceException } from '@aws-sdk/client-s3';
+import provideServices from '@server/trpc/provideServices';
+import { recipesService } from '@server/services/recipesService';
 
-export default recipeAuthorProcedure.mutation(
-  async ({ input: recipeId, ctx: { repos } }) => {
+export default recipeAuthorProcedure
+  .use(provideServices({ recipesService }))
+  .mutation(async ({ input: recipeId, ctx: { services } }) => {
     try {
-      const deletedRecipe = await repos.recipesRepository.remove(recipeId);
-
-      const imageUrl = deletedRecipe.imageUrl;
-
-      await deleteFile(s3Client, config.auth.aws.s3.buckets.images, imageUrl);
+      await services.recipesService.remove(recipeId);
 
       return;
     } catch (error) {
@@ -27,9 +23,8 @@ export default recipeAuthorProcedure.mutation(
       if (error instanceof S3ServiceException) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to delete recipe image from storage',
+          message: 'Failed to delete delete the recipe',
         });
       }
     }
-  }
-);
+  });

@@ -1,98 +1,75 @@
 import { createCallerFactory } from '@server/trpc';
-import type { RecipesRepository } from '@server/repositories/recipesRepository';
-import { fakeRecipe, fakeUser } from '@server/entities/tests/fakes';
-import { pick } from 'lodash-es';
-import { usersKeysPublicWithoutId } from '@server/entities/users';
+import { fakeRecipeWithRating, fakeUser } from '@server/entities/tests/fakes';
 import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
-import * as deleteFileModule from '@server/utils/AWSS3Client/deleteFile';
-import type { Mock } from 'vitest';
+import type { RecipesService } from '@server/services/recipesService';
+import type { Database } from '@server/database';
+import { authContext, requestContext } from '@tests/utils/context';
+import type { RecipesRepository } from '@server/repositories/recipesRepository';
 import { S3ServiceException } from '@aws-sdk/client-s3';
-import type { __ServiceExceptionOptions } from '@aws-sdk/client-s3/dist-types/models/S3ServiceException';
-import type { RecipesPublic } from '@server/entities/recipes';
 import recipesRouter from '..';
 
-vi.mock('@server/utils/AWSS3Client/deleteFile', () => ({
-  deleteFile: vi.fn(),
+const mockIsAuthor = vi.fn(async () => true);
+
+const mockRecipesRepository: Partial<RecipesRepository> = {
+  isAuthor: mockIsAuthor,
+};
+
+vi.mock('@server/repositories/recipesRepository', () => ({
+  recipesRepository: () => mockRecipesRepository,
 }));
 
-const deleteFileMocked = deleteFileModule.deleteFile as Mock;
+const mockRemove = vi.fn();
+
+const mockRecipesService: Partial<RecipesService> = {
+  remove: mockRemove,
+};
+
+vi.mock('@server/services/recipesService', () => ({
+  recipesService: () => mockRecipesService,
+}));
 
 const createCaller = createCallerFactory(recipesRouter);
+const database = {} as Database;
 
-const authUser = {
-  id: 'a'.repeat(32),
-};
-
-const repos = {
-  recipesRepository: {
-    isAuthor: vi.fn(async (): Promise<boolean> => true),
-    remove: vi.fn(
-      async (id: number): Promise<RecipesPublic> => ({
-        ...fakeRecipe({
-          id,
-          userId: authUser.id,
-          author: pick(
-            fakeUser({ id: authUser.id + 1 }),
-            usersKeysPublicWithoutId
-          ),
-        }),
-        rating: 1,
-      })
-    ),
-  } satisfies Partial<RecipesRepository>,
-};
-
-const { remove } = createCaller({ repos, authUser } as any);
-
+const user = fakeUser();
 const recipeId = 26;
 
 beforeEach(() => vi.resetAllMocks());
 
-it('Should remove a recipe', async () => {
-  deleteFileMocked.mockResolvedValueOnce(undefined);
+describe('Unauthenticated tests', () => {
+  const { remove } = createCaller(requestContext({ database }));
 
-  const removedRecipe = await remove(recipeId);
-
-  expect(removedRecipe).toBeUndefined();
-
-  expect(repos.recipesRepository.remove).toHaveBeenCalledOnce();
-  expect(repos.recipesRepository.remove).toHaveBeenCalledWith(recipeId);
-
-  expect(deleteFileMocked).toHaveBeenCalledOnce();
+  it('Should throw an error if user is not authenticated', async () => {
+    await expect(remove(recipeId)).rejects.toThrow(/unauthenticated/i);
+  });
 });
 
-it('Should throw an error if recipe does not exist', async () => {
-  repos.recipesRepository.remove.mockRejectedValueOnce(new RecipeNotFound());
+describe('Authenticated tests', () => {
+  const { remove } = createCaller(authContext({ database }, user));
 
-  await expect(remove(recipeId)).rejects.toThrow(
-    /recipe.*not found|not found.*recipe/i
-  );
+  it('Should throw an error if user is not the recipe author', async () => {
+    mockIsAuthor.mockResolvedValueOnce(false);
 
-  expect(repos.recipesRepository.remove).toHaveBeenCalledOnce();
+    await expect(remove(recipeId)).rejects.toThrow(/author|remove|only/i);
+  });
 
-  expect(deleteFileMocked).toBeCalledTimes(0);
-});
+  it('Should throw an error if recipe does not exist', async () => {
+    mockRemove.mockRejectedValueOnce(new RecipeNotFound());
 
-it('Should throw an error if user is not an owner of recipe', async () => {
-  repos.recipesRepository.isAuthor.mockResolvedValueOnce(false);
+    await expect(remove(recipeId)).rejects.toThrow(/not found/i);
+  });
 
-  await expect(remove(recipeId)).rejects.toThrow(/recipe/i);
+  it('Should throw an error if failure happend upon deleting recipe image from S3', async () => {
+    mockRemove.mockRejectedValueOnce(new S3ServiceException({} as any));
 
-  expect(repos.recipesRepository.remove).toHaveBeenCalledTimes(0);
+    await expect(remove(recipeId)).rejects.toThrow(/failed/i);
+  });
 
-  expect(deleteFileMocked).toBeCalledTimes(0);
-});
+  it('Should return nothing when recipe was removed', async () => {
+    const removedRecipe = fakeRecipeWithRating();
 
-it('Should throw an error is an error from S3 Storage was thrown', async () => {
-  deleteFileMocked.mockRejectedValueOnce(
-    new S3ServiceException({
-      message: 'S3 Failure',
-    } as __ServiceExceptionOptions)
-  );
+    mockRemove.mockResolvedValueOnce(removedRecipe);
 
-  await expect(remove(recipeId)).rejects.toThrow(/failed/i);
-
-  expect(repos.recipesRepository.remove).toHaveBeenCalledOnce();
-
-  expect(deleteFileMocked).toHaveBeenCalledOnce();
+    await expect(remove(recipeId)).resolves.toBeUndefined();
+  });
 });

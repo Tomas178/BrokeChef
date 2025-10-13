@@ -21,12 +21,13 @@ import { AllowedMimeType } from '@server/enums/AllowedMimetype';
 import { deleteFile } from '@server/utils/AWSS3Client/deleteFile';
 import config from '@server/config';
 import logger from '@server/logger';
-import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import { signImages } from '@server/utils/signImages';
 import type { PaginationWithSort } from '@server/shared/pagination';
 import RecipeAlreadyCreated from '@server/utils/errors/recipes/RecipeAlreadyCreated';
+import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import { joinStepsToSingleString } from './utils/joinStepsToSingleString';
 import { insertIngredients, insertTools } from './utils/inserts';
+import { validateRecipeExists } from './utils/recipeValidations';
 
 export interface RecipesService {
   createRecipe: (
@@ -35,6 +36,7 @@ export interface RecipesService {
   ) => Promise<RecipesPublic | undefined>;
   findById: (recipeId: number) => Promise<RecipesPublicAllInfo | undefined>;
   findAll: (pagination: PaginationWithSort) => Promise<RecipesPublic[]>;
+  remove: (recipeId: number) => Promise<RecipesPublic>;
 }
 
 async function handleImageGeneration(
@@ -153,11 +155,7 @@ export function recipesService(database: Database): RecipesService {
     },
 
     async findById(recipeId) {
-      const recipe = await recipesRepository.findById(recipeId);
-
-      if (!recipe) {
-        throw new RecipeNotFound();
-      }
+      const recipe = await validateRecipeExists(recipesRepository, recipeId);
 
       recipe.imageUrl = await signImages(recipe.imageUrl);
 
@@ -181,6 +179,43 @@ export function recipesService(database: Database): RecipesService {
       }
 
       return recipes;
+    },
+
+    async remove(recipeId) {
+      await validateRecipeExists(recipesRepository, recipeId);
+
+      return await database.transaction().execute(async tx => {
+        const recipesRepositoryForTx = buildRecipesRepository(tx);
+        let removedRecipe: RecipesPublic;
+
+        try {
+          removedRecipe = await recipesRepositoryForTx.remove(recipeId);
+        } catch {
+          throw new RecipeNotFound();
+        }
+
+        const imageUrl = removedRecipe.imageUrl;
+
+        try {
+          await deleteFile(
+            s3Client,
+            config.auth.aws.s3.buckets.images,
+            imageUrl
+          );
+          logger.info(`Deleted image: ${imageUrl} for recipe ${recipeId}`);
+        } catch (error) {
+          logger.error(
+            `Failed to delete S3 image for recipe ${recipeId}: ${imageUrl}`
+          );
+          throw error;
+        }
+
+        logger.info(
+          `Recipe ${removedRecipe.id} removed by user ${removedRecipe.userId}`
+        );
+
+        return removedRecipe;
+      });
     },
   };
 }

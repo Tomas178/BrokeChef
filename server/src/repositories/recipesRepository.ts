@@ -9,7 +9,6 @@ import {
   type UsersPublicWithoutId,
 } from '@server/entities/users';
 import type { Pagination, PaginationWithSort } from '@server/shared/pagination';
-import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import { prefixTable } from '@server/utils/strings';
 import {
   type AliasedRawBuilder,
@@ -188,7 +187,7 @@ export function recipesRepository(database: Database): RecipesRepository {
         .returning(recipesKeysPublic)
         .returning(withAuthor)
         .returning(withRatings)
-        .executeTakeFirstOrThrow(() => new RecipeNotFound());
+        .executeTakeFirstOrThrow();
 
       return normalizeRating(recipe);
     },
