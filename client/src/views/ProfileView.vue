@@ -262,6 +262,7 @@ onMounted(async () => {
             />
 
             <label
+              v-if="isOwnProfile"
               class="absolute inset-0 flex scale-100 cursor-pointer items-center justify-center opacity-0 transition-all duration-300 hover:scale-105 hover:opacity-100"
             >
               <FwbFileInput
