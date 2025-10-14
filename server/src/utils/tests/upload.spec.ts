@@ -1,5 +1,6 @@
 import type { Request } from 'express';
 import { upload } from '../upload';
+import WrongImageType from '../errors/images/WrongImageType';
 
 describe('upload', () => {
   const multerOptions = upload;
@@ -12,8 +13,7 @@ describe('upload', () => {
 
     fileFilter(request, file, mockCallback);
 
-    expect(mockCallback).toHaveBeenCalledWith(null, false);
-    expect(request.fileValidationError).toMatch(/.png|.jpg|.jpeg/i);
+    expect(mockCallback).toHaveBeenCalledWith(new WrongImageType());
   });
 
   it('Should allow PNG format', () => {

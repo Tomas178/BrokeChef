@@ -1,6 +1,7 @@
 /* eslint-disable unicorn/no-null */
 import multer from 'multer';
 import { allowedMimetypesArray } from '@server/enums/AllowedMimetype';
+import WrongImageType from './errors/images/WrongImageType';
 
 export const upload = multer({
   storage: multer.memoryStorage(),
@@ -8,10 +9,8 @@ export const upload = multer({
     if (allowedMimetypesArray.includes(file.mimetype)) {
       callback(null, true);
     } else {
-      request.fileValidationError =
-        'Supported types for image are .png, .jpg or .jpeg';
-      callback(null, false);
+      callback(new WrongImageType());
     }
   },
-  limits: { files: 1, fileSize: 5 * 1024 * 1024 }, // 5MB
+  limits: { files: 1, fileSize: 5 * 1024 * 1024 }, // 1 file only and max 5MB
 });

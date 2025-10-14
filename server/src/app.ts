@@ -14,12 +14,16 @@ import { auth } from './auth';
 import type { Context } from './trpc/index';
 import { appRouter } from './controllers';
 import config from './config';
-import { upload } from './utils/upload';
 import { resizeImage } from './utils/resizeImage';
 import { ImageFolder } from './enums/ImageFolder';
 import { uploadImage } from './utils/AWSS3Client/uploadImage';
 import { s3Client } from './utils/AWSS3Client/client';
 import { AllowedMimeType } from './enums/AllowedMimetype';
+import logger from './logger';
+import { jsonRoute } from './utils/middleware';
+import jsonErrorHandler from './middleware/jsonErrors';
+import { authenticate } from './middleware/authenticate';
+import { handleFile } from './utils/handleFile';
 
 export default function createApp(database: Database) {
   const app = express();
@@ -39,51 +43,43 @@ export default function createApp(database: Database) {
     res.status(StatusCodes.OK).send('OK');
   });
 
-  app.post('/api/upload/recipe', upload.single('file'), async (req, res) => {
-    if (req.fileValidationError) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        error: {
-          message: req.fileValidationError,
-        },
-      });
-    }
+  app.post(
+    '/api/upload/recipe',
+    authenticate,
+    jsonRoute(async req => {
+      const file = await handleFile(req);
+      const resizedFileBuffer = await resizeImage(file);
+      const key = await uploadImage(
+        s3Client,
+        ImageFolder.RECIPES,
+        resizedFileBuffer,
+        AllowedMimeType.JPEG
+      );
 
-    const file = req.file as Express.Multer.File;
+      logger.info(`Recipe image object created in S3: ${key}`);
+      return { imageUrl: key };
+    })
+  );
 
-    const resizedFileBuffer = await resizeImage(file);
+  app.post(
+    '/api/upload/profile',
+    authenticate,
+    jsonRoute(async req => {
+      const file = await handleFile(req);
+      const resizedFileBuffer = await resizeImage(file);
+      const key = await uploadImage(
+        s3Client,
+        ImageFolder.PROFILES,
+        resizedFileBuffer,
+        AllowedMimeType.JPEG
+      );
 
-    const key = await uploadImage(
-      s3Client,
-      ImageFolder.RECIPES,
-      resizedFileBuffer,
-      AllowedMimeType.JPEG
-    );
+      logger.info(`Profile image object created in S3: ${key}`);
+      return { image: key };
+    })
+  );
 
-    res.status(StatusCodes.OK).json({ imageUrl: key });
-  });
-
-  app.post('/api/upload/profile', upload.single('file'), async (req, res) => {
-    if (req.fileValidationError) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        error: {
-          message: req.fileValidationError,
-        },
-      });
-    }
-
-    const file = req.file as Express.Multer.File;
-
-    const resizedFileBuffer = await resizeImage(file);
-
-    const key = await uploadImage(
-      s3Client,
-      ImageFolder.PROFILES,
-      resizedFileBuffer,
-      AllowedMimeType.JPEG
-    );
-
-    res.status(StatusCodes.OK).json({ image: key });
-  });
+  app.use(jsonErrorHandler);
 
   app.use(
     '/api/v1/trpc',

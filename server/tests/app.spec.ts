@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/prevent-abbreviations */
 /* eslint-disable unicorn/consistent-function-scoping */
 import createApp from '@server/app';
 import supertest from 'supertest';
@@ -11,6 +12,13 @@ import { wrapInRollbacks } from './utils/transactions';
 vi.mock('@server/utils/upload', () => ({
   upload: {
     single: vi.fn(() => (_request: any, _response: any, next: any) => next()),
+  },
+}));
+
+vi.mock('@server/middleware/authenticate', () => ({
+  authenticate: (request: any, res: any, next: any) => {
+    request.user = { id: 'test-user' };
+    next();
   },
 }));
 
@@ -41,11 +49,11 @@ describe('Image uploading', () => {
   });
 
   const testUploadError = (endpoint: string) => async () => {
-    (upload.single as unknown as Mock).mockImplementation(
-      () => (request: Request, _response: any, next: () => void) => {
-        request.fileValidationError = 'Invalid file type';
-        next();
-      }
+    (upload.single as Mock<(field: string) => any>).mockImplementation(
+      (_field: string) =>
+        (request: Request, _response: any, next: () => void) => {
+          next();
+        }
     );
 
     const app = createApp(database);
@@ -55,7 +63,9 @@ describe('Image uploading', () => {
       .attach('file', Buffer.from('test'), 'document.pdf')
       .expect(StatusCodes.BAD_REQUEST);
 
-    expect(body.error.message).toEqual('Invalid file type');
+    expect(body.error.message).toEqual(
+      'Supported types for image are .png, .jpg or .jpeg'
+    );
   };
 
   const testUploadSuccess =
