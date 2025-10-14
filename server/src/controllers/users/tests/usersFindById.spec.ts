@@ -1,42 +1,62 @@
 import { createCallerFactory } from '@server/trpc';
-import { wrapInRollbacks } from '@tests/utils/transactions';
-import { createTestDatabase } from '@tests/utils/database';
-import { insertAll } from '@tests/utils/record';
 import { fakeUser } from '@server/entities/tests/fakes';
-import { pick } from 'lodash-es';
-import { usersKeysPublic } from '@server/entities/users';
 import { authContext, requestContext } from '@tests/utils/context';
+import type { Database } from '@server/database';
+import type { UsersService } from '@server/services/usersService';
+import UserNotFound from '@server/utils/errors/users/UserNotFound';
 import usersRouter from '..';
 
+const mockFindById = vi.fn();
+
+const mockUsersService = {
+  findById: mockFindById,
+} as Partial<UsersService>;
+
+vi.mock('@server/services/usersService', () => ({
+  usersService: () => mockUsersService,
+}));
+
 const createCaller = createCallerFactory(usersRouter);
-const database = await wrapInRollbacks(createTestDatabase());
+const database = {} as Database;
 
-const [user] = await insertAll(database, 'users', fakeUser());
+const user = fakeUser();
 
-const { findById } = createCaller(authContext({ database }, user));
+beforeEach(() => mockFindById.mockReset());
 
-it('Should return user when given userId', async () => {
-  const userById = await findById(user.id);
-
-  expect(userById).toEqual(pick(user, usersKeysPublic));
-});
-
-it('Should return user when not given userId but authenticanted', async () => {
-  const userByAuth = await findById();
-
-  expect(userByAuth).toEqual(pick(user, usersKeysPublic));
-});
-
-it('Should throw an error if user is not authenticated', async () => {
+describe('Unauthenticated tests', () => {
   const { findById } = createCaller(requestContext({ database }));
 
-  await expect(findById()).rejects.toThrow(/unauthenticated/i);
+  it('Should throw an error if user is not authenticated', async () => {
+    await expect(findById()).rejects.toThrow(/unauthenticated/i);
+  });
 });
 
-it('Should throw an error if user is not found', async () => {
-  const user = fakeUser();
+describe('Authenticated tests', () => {
+  const { findById } = createCaller(authContext({ database }, user));
 
-  await expect(findById(user.id.replaceAll(/[a-z]/gi, 'a'))).rejects.toThrow(
-    /not found/i
-  );
+  it('Should throw an error if user is not found', async () => {
+    mockFindById.mockRejectedValueOnce(new UserNotFound());
+
+    await expect(findById(user.id)).rejects.toThrow(/not found/i);
+    expect(mockFindById).toHaveBeenCalledExactlyOnceWith(user.id);
+  });
+
+  it('Should call findById with userId from cookies return user when not given userId but authenticanted', async () => {
+    mockFindById.mockResolvedValueOnce(user);
+
+    const userByAuth = await findById();
+
+    expect(mockFindById).toHaveBeenCalledExactlyOnceWith(user.id);
+    expect(userByAuth).toEqual(user);
+  });
+
+  it('Should call findById with given userId return user when given userId', async () => {
+    mockFindById.mockResolvedValueOnce(user);
+
+    const randomUserId = 'a'.repeat(32);
+    const userById = await findById(randomUserId);
+
+    expect(mockFindById).toHaveBeenCalledExactlyOnceWith(randomUserId);
+    expect(userById).toEqual(user);
+  });
 });

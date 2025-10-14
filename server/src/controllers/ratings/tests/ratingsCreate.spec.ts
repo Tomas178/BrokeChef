@@ -1,10 +1,6 @@
 import { createCallerFactory } from '@server/trpc';
-import { wrapInRollbacks } from '@tests/utils/transactions';
-import { createTestDatabase } from '@tests/utils/database';
-import { insertAll } from '@tests/utils/record';
 import {
   fakeRating,
-  fakeRecipe,
   fakeRecipeAllInfo,
   fakeUser,
 } from '@server/entities/tests/fakes';
@@ -12,6 +8,7 @@ import { authContext, requestContext } from '@tests/utils/context';
 import type { RatingsRepository } from '@server/repositories/ratingsRepository';
 import type { RecipesRepository } from '@server/repositories/recipesRepository';
 import { PostgresError } from 'pg-error-enum';
+import type { Database } from '@server/database';
 import ratingsRouter from '..';
 
 const mockRatingsRepositoryCreate = vi.fn();
@@ -34,18 +31,11 @@ vi.mock('@server/repositories/recipesRepository', () => ({
 }));
 
 const createCaller = createCallerFactory(ratingsRouter);
-const database = await wrapInRollbacks(createTestDatabase());
+const database = {} as Database;
 
-const [userAuthor, userRater] = await insertAll(database, 'users', [
-  fakeUser(),
-  fakeUser(),
-]);
+const [userAuthor, userRater] = [fakeUser(), fakeUser()];
 
-const [recipe] = await insertAll(
-  database,
-  'recipes',
-  fakeRecipe({ userId: userAuthor.id })
-);
+const recipeId = 123;
 
 beforeEach(() => {
   mockRatingsRepositoryCreate.mockReset();
@@ -66,9 +56,7 @@ describe('Authenticated tests', () => {
   it('Should throw an error if recipe is not found', async () => {
     mockRecipesRepositoryFindById.mockResolvedValueOnce(undefined);
 
-    await expect(rate(fakeRating({ recipeId: recipe.id }))).rejects.toThrow(
-      /not found/i
-    );
+    await expect(rate(fakeRating({ recipeId }))).rejects.toThrow(/not found/i);
   });
 
   it('Should throw an error if recipe is already rated by the user', async () => {
@@ -77,7 +65,7 @@ describe('Authenticated tests', () => {
     }));
 
     mockRecipesRepositoryFindById.mockResolvedValueOnce(
-      fakeRecipeAllInfo({ id: recipe.id, userId: userAuthor.id })
+      fakeRecipeAllInfo({ id: recipeId, userId: userAuthor.id })
     );
 
     mockRatingsRepositoryCreate.mockRejectedValueOnce({
@@ -89,10 +77,10 @@ describe('Authenticated tests', () => {
 
   it('Should throw an error if author is trying to rate the recipe', async () => {
     mockRecipesRepositoryFindById.mockResolvedValueOnce(
-      fakeRecipeAllInfo({ id: recipe.id, userId: userRater.id })
+      fakeRecipeAllInfo({ id: recipeId, userId: userRater.id })
     );
 
-    await expect(rate(fakeRating({ recipeId: recipe.id }))).rejects.toThrow(
+    await expect(rate(fakeRating({ recipeId }))).rejects.toThrow(
       /rate own|own/i
     );
   });
@@ -100,14 +88,14 @@ describe('Authenticated tests', () => {
   it('Should create the rating', async () => {
     const ratingInput = {
       userId: userRater.id,
-      recipeId: recipe.id,
+      recipeId,
       rating: 4,
     };
 
     const mockedRating = fakeRating({ ...ratingInput });
 
     mockRecipesRepositoryFindById.mockResolvedValueOnce(
-      fakeRecipeAllInfo({ id: recipe.id })
+      fakeRecipeAllInfo({ id: recipeId })
     );
 
     mockRatingsRepositoryCreate.mockResolvedValueOnce(mockedRating);
