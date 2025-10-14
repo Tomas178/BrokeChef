@@ -82,31 +82,36 @@ const goBack = async () => {
 const [uploadImage, errorMessage] = useErrorMessage(async () => {
   if (!profileImageFile.value) return null;
 
-  isLoadingImage.value = true;
-
   const formData = new FormData();
   formData.append('file', profileImageFile.value);
 
   const { data } = await axios.post<Pick<UsersPublic, 'image'>>(
     fullEndpoint,
     formData,
-    { headers: { 'Content-Type': 'multipart/form-data' } }
+    {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      withCredentials: true,
+    }
   );
 
   if (data.image && user.value) {
     user.value.image = await trpc.users.updateImage.mutate(data.image);
   }
-});
+
+  return data.image;
+}, true);
 
 async function handleUpload() {
   const id = showLoading('Changing Profile image...');
 
   try {
+    isLoadingImage.value = true;
     await uploadImage();
-
     updateToast(id, 'success', 'Image updated!');
   } catch {
     updateToast(id, 'error', errorMessage.value || DEFAULT_SERVER_ERROR);
+  } finally {
+    isLoadingImage.value = false;
   }
 }
 

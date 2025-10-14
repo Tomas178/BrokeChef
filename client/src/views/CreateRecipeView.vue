@@ -45,12 +45,13 @@ const [createRecipe, errorMessage] = useErrorMessage(async () => {
     const formData = new FormData();
     formData.append('file', recipeImageFile.value);
 
-    console.log(recipeImageFile.value);
-
     const { data } = await axios.post<Pick<RecipesPublic, 'imageUrl'>>(
       fullEndpoint,
       formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        withCredentials: true,
+      }
     );
 
     recipeForm.imageUrl = data.imageUrl;
@@ -61,30 +62,32 @@ const [createRecipe, errorMessage] = useErrorMessage(async () => {
   }
 
   return trpc.recipes.create.mutate(recipeForm);
-});
+}, true);
 
 async function handleCreateRecipe() {
   const id = showLoading('Creating recipe...');
 
-  const recipe = await createRecipe();
+  try {
+    const recipe = await createRecipe();
+    if (!recipe) {
+      updateToast(id, 'error', errorMessage.value || DEFAULT_SERVER_ERROR);
+      return;
+    }
 
-  if (!recipe) {
+    updateToast(id, 'success', 'Recipe has been created!');
+
+    recipeForm.title = '';
+    recipeForm.duration = 0;
+    recipeForm.steps = [''];
+    recipeForm.ingredients = [''];
+    recipeForm.tools = [''];
+    recipeForm.imageUrl = '';
+    recipeImageFile.value = undefined;
+
+    await navigateToRecipe({ id: recipe.id }, 1500);
+  } catch {
     updateToast(id, 'error', errorMessage.value || DEFAULT_SERVER_ERROR);
-    return;
   }
-
-  updateToast(id, 'success', 'Recipe has been created!');
-  console.log(recipe);
-
-  recipeForm.title = '';
-  recipeForm.duration = 0;
-  recipeForm.steps = [''];
-  recipeForm.ingredients = [''];
-  recipeForm.tools = [''];
-  recipeForm.imageUrl = '';
-  recipeImageFile.value = undefined;
-
-  await navigateToRecipe({ id: recipe.id }, 1500);
 }
 </script>
 
