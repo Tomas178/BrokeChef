@@ -89,7 +89,6 @@ const [uploadImage, errorMessage] = useErrorMessage(async () => {
     fullEndpoint,
     formData,
     {
-      headers: { 'Content-Type': 'multipart/form-data' },
       withCredentials: true,
     }
   );
