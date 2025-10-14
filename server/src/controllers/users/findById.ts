@@ -7,12 +7,12 @@ import provideServices from '@server/trpc/provideServices';
 
 export default authenticatedProcedure
   .use(provideServices({ usersService }))
-  .input(oauthUserIdSchema.optional())
+  .input(oauthUserIdSchema.nullish())
   .query(async ({ input: userId, ctx: { authUser, services } }) => {
     try {
-      const user = await (userId
-        ? services.usersService.findById(userId)
-        : services.usersService.findById(authUser.id));
+      userId = userId ?? authUser.id;
+
+      const user = await services.usersService.findById(userId);
 
       return user;
     } catch (error) {

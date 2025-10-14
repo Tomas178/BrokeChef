@@ -11,7 +11,7 @@ import config from '@server/config';
 import logger from '@server/logger';
 import { isOAuthProviderImage } from './utils/isOAuthProviderImage';
 
-interface UsersService {
+export interface UsersService {
   getRecipes: (
     id: string,
     pagination: Pagination

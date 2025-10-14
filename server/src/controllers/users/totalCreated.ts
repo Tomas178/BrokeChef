@@ -5,7 +5,7 @@ import { oauthUserIdSchema } from '@server/entities/shared';
 
 export default authenticatedProcedure
   .use(provideRepos({ recipesRepository }))
-  .input(oauthUserIdSchema.optional())
+  .input(oauthUserIdSchema.nullish())
   .query(async ({ input: userId, ctx: { authUser, repos } }) => {
     userId = userId ?? authUser.id;
 

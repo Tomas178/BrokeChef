@@ -5,7 +5,7 @@ import provideServices from '@server/trpc/provideServices';
 
 export default authenticatedProcedure
   .use(provideServices({ followsService }))
-  .input(oauthUserIdSchema.optional())
+  .input(oauthUserIdSchema.nullish())
   .query(async ({ input: followerId, ctx: { services, authUser } }) => {
     followerId = followerId ?? authUser.id;
 
