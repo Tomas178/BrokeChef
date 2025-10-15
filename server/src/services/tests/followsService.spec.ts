@@ -44,6 +44,7 @@ const users = {
   followedOne: fakeUser(),
   followedTwo: fakeUser(),
   withoutImage: fakeUser({ image: null }),
+  withoutOAuthImage: fakeUser({ image: 'non-oauth-image' }),
 };
 
 const mockFollowsRepoCreate: Mock<FollowsRepository['create']> = vi.fn(
@@ -250,25 +251,22 @@ describe('getFollowing', () => {
   it('Should return an array of users of which the user is following', async () => {
     const usersFollowing = await followsService.getFollowing(followerId);
 
-    expect(usersFollowing[0]).toEqual({
-      ...users.followedOne,
-      image: fakeImageUrl,
-    });
-    expect(usersFollowing[1]).toEqual({
-      ...users.followedTwo,
-      image: fakeImageUrl,
-    });
+    expect(usersFollowing[0]).toEqual(users.followedOne);
+    expect(usersFollowing[1]).toEqual(users.followedTwo);
   });
 
-  it('Should return null for users with no image', async () => {
+  it('Should return null for users with no image and only call signImages with for user with non OAuth image', async () => {
     mockFollowsRepoGetFollowing.mockResolvedValueOnce([
       users.withoutImage,
+      users.withoutOAuthImage,
       users.followedOne,
     ]);
 
     const usersFollowing = await followsService.getFollowing(followerId);
 
-    expect(mockSignImages).toHaveBeenCalledWith([users.followedOne.image]);
+    expect(mockSignImages).toHaveBeenCalledWith([
+      users.withoutOAuthImage.image,
+    ]);
 
     expect(usersFollowing[0].image).toBeNull();
     expect(usersFollowing[1].image).toBe(fakeImageUrl);
@@ -277,13 +275,16 @@ describe('getFollowing', () => {
   it('Should return null for users that had image url but signedImages for some reason are missing signed url', async () => {
     mockFollowsRepoGetFollowing.mockResolvedValueOnce([
       users.withoutImage,
+      users.withoutOAuthImage,
       users.followedOne,
     ]);
     mockSignImages.mockResolvedValueOnce([]);
 
     const usersFollowing = await followsService.getFollowing(followerId);
 
-    expect(mockSignImages).toHaveBeenCalledWith([users.followedOne.image]);
+    expect(mockSignImages).toHaveBeenCalledWith([
+      users.withoutOAuthImage.image,
+    ]);
 
     expect(usersFollowing[0].image).toBeNull();
     expect(usersFollowing[1].image).toBeNull();
@@ -300,34 +301,41 @@ describe('getFollowers', () => {
   it('Should return an array of users followers by the given userId', async () => {
     const followers = await followsService.getFollowers(followedId);
 
-    expect(followers[0]).toEqual({ ...users.followerOne, image: fakeImageUrl });
-    expect(followers[1]).toEqual({ ...users.followerTwo, image: fakeImageUrl });
+    expect(followers[1]).toEqual(users.followerTwo);
+    expect(followers[0]).toEqual(users.followerOne);
   });
 
-  it('Should return null for users with no image', async () => {
+  it('Should return null for users with no image and only call signImages with for user with non OAuth image', async () => {
     mockFollowsRepoGetFollowers.mockResolvedValueOnce([
       users.withoutImage,
+      users.withoutOAuthImage,
       users.followerOne,
     ]);
 
     const followers = await followsService.getFollowers(followerId);
 
-    expect(mockSignImages).toHaveBeenCalledWith([users.followerOne.image]);
+    expect(mockSignImages).toHaveBeenCalledExactlyOnceWith([
+      users.withoutOAuthImage.image,
+    ]);
 
     expect(followers[0].image).toBeNull();
     expect(followers[1].image).toBe(fakeImageUrl);
+    expect(followers[2].image).toBe(users.followerOne.image);
   });
 
   it('Should return null for users that had image url but signedImages for some reason are missing signed url', async () => {
     mockFollowsRepoGetFollowers.mockResolvedValueOnce([
       users.withoutImage,
-      users.followerOne,
+      users.withoutOAuthImage,
+      users.followedOne,
     ]);
     mockSignImages.mockResolvedValueOnce([]);
 
     const followers = await followsService.getFollowers(followerId);
 
-    expect(mockSignImages).toHaveBeenCalledWith([users.followerOne.image]);
+    expect(mockSignImages).toHaveBeenCalledWith([
+      users.withoutOAuthImage.image,
+    ]);
 
     expect(followers[0].image).toBeNull();
     expect(followers[1].image).toBeNull();

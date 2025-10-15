@@ -12,6 +12,7 @@ import FollowLinkNotFound from '@server/utils/errors/follows/FollowLinkNotFound'
 import { signImages } from '@server/utils/signImages';
 import logger from '@server/logger';
 import { validateUserExists } from './utils/userValidations';
+import { isOAuthProviderImage } from './utils/isOAuthProviderImage';
 
 export interface FollowsService {
   create: (followLink: FollowLink) => Promise<FollowsPublic>;
@@ -92,15 +93,17 @@ export function followsService(database: Database): FollowsService {
       const followingUsers = followingUsersFromRepo.map(user => ({ ...user }));
 
       const imageUrls = followingUsers
-        .map(user => user.image)
-        .filter((url): url is string => !!url);
+        .filter(user => user.image && !isOAuthProviderImage(user.image))
+        .map(user => user.image as string);
 
-      const signedImageUrls = await signImages(imageUrls);
+      if (imageUrls.length > 0) {
+        const signedImageUrls = await signImages(imageUrls);
 
-      for (const [, user] of followingUsers.entries()) {
-        if (user.image) {
-          // eslint-disable-next-line unicorn/no-null
-          user.image = signedImageUrls.shift() ?? null;
+        for (const [, user] of followingUsers.entries()) {
+          if (user.image && !isOAuthProviderImage(user.image)) {
+            // eslint-disable-next-line unicorn/no-null
+            user.image = signedImageUrls.shift() ?? null;
+          }
         }
       }
 
@@ -109,19 +112,20 @@ export function followsService(database: Database): FollowsService {
 
     async getFollowers(userId) {
       const followersFromRepo = await followsRepository.getFollowers(userId);
-
       const followers = followersFromRepo.map(user => ({ ...user }));
 
       const imageUrls = followers
-        .map(user => user.image)
-        .filter((url): url is string => !!url);
+        .filter(user => user.image && !isOAuthProviderImage(user.image))
+        .map(user => user.image as string);
 
-      const signedImageUrls = await signImages(imageUrls);
+      if (imageUrls.length > 0) {
+        const signedImageUrls = await signImages(imageUrls);
 
-      for (const [, user] of followers.entries()) {
-        if (user.image) {
-          // eslint-disable-next-line unicorn/no-null
-          user.image = signedImageUrls.shift() ?? null;
+        for (const [, user] of followers.entries()) {
+          if (user.image && !isOAuthProviderImage(user.image)) {
+            // eslint-disable-next-line unicorn/no-null
+            user.image = signedImageUrls.shift() ?? null;
+          }
         }
       }
 
