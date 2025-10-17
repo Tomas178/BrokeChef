@@ -1,14 +1,34 @@
 # Recipe sharing app
 
+# Full version of the project development in (Check this out).
+
+- [Repository](https://github.com/TuringCollegeSubmissions/tompetro-WD2.3.4.5.git)
+
 ## About the project
 
 Recipe sharing app primarily orientied for students. Users can look for various created recipes and create their own ones.
+
+## Features
+
+- Sign up/Sign in
+- Reset password
+- Change email/password
+- Add/update profile image
+- Create recipe (User can add his own image or an AI will generate based of ingredients and title)
+- Delete recipe
+- Save/unsave recipe
+- Rate/remove rating
+- Follow/unfollow another user
+- Look through following/followers list of a user
+- Search recipes in homepage
+- Sorting (newest/oldest, highest/lowest rated)
 
 ## Installation guide
 
 ### Requirements
 
 - [Node.js](https://nodejs.org/en/)
+- [Docker](https://www.docker.com/) (To start up mailhog for development purposes)
 
 ### Setup
 
@@ -118,7 +138,8 @@ _Example usage:_
 {
   "json": {
     "offset": 0,
-    "limit": 5
+    "limit": 5,
+    "sort": "newest"
   }
 }
 ```
@@ -152,34 +173,26 @@ _Example usage:_
 </details>
 
 <details>
-<summary><strong>recipes.findCreated</strong></summary>
+<summary><strong>recipes.isAuthor</strong></summary>
 
 _Example usage:_
 
 ```json
 {
-  "json": {
-    "userId": "abcdefghiklmnop",
-    "offset": 0,
-    "limit": 5
-  }
+  "json": 1
 }
 ```
 
 </details>
 
 <details>
-<summary><strong>recipes.findSaved</strong></summary>
+<summary><strong>recipes.totalCount</strong></summary>
 
 _Example usage:_
 
 ```json
 {
-  "json": {
-    "userId": "abcdefghiklmnop",
-    "offset": 0,
-    "limit": 5
-  }
+  "json": {}
 }
 ```
 
@@ -212,6 +225,19 @@ _Example usage:_
 </details>
 
 <details>
+<summary><strong>savedRecipes.isSaved</strong></summary>
+
+_Example usage:_
+
+```json
+{
+  "json": 2694
+}
+```
+
+</details>
+
+<details>
 <summary><strong>users.getRecipes</strong></summary>
 
 _Example usage:_
@@ -229,52 +255,243 @@ _Example usage:_
 </details>
 
 <details>
+<summary><strong>users.getCreatedRecipes</strong></summary>
+
+_Example usage:_
+
+```json
+{
+  "json": {
+    "offset": 0,
+    "limit": 5
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><strong>users.getSavedRecipes</strong></summary>
+
+_Example usage:_
+
+```json
+{
+  "json": {
+    "offset": 0,
+    "limit": 5
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><strong>users.totalCreated</strong></summary>
+
+_Example usage:_
+
+```json
+{
+  "json": null || "abcdefghiklmnop"
+}
+```
+
+</details>
+
+<details>
+<summary><strong>users.totalSaved</strong></summary>
+
+_Example usage:_
+
+```json
+{
+  "json": null || "abcdefghiklmnop"
+}
+```
+
+</details>
+
+<details>
 <summary><strong>users.findById</strong></summary>
 
 _Example usage:_
 
 ```json
 {
-  "json": "abcdefghiklmnop"
+  "json": null || "abcdefghiklmnop"
 }
 ```
 
 </details>
 
-#### Via front-end
+<details>
+<summary><strong>users.updateImage</strong></summary>
 
-**Homepage testing**
+_Example usage:_
 
-- Traditional sign-up/sign-in (Email verification is required. After signing up can just change email_verified to true in database)
-- OAuth sign-ins via Github or Google accounts
-- Check session (Shows user ID)
-- Logout
-- Password reset:
-  - Click 'Check Session' to get userId in broswer console
-  - Enter the userId in input where 'UserId:' placeholder is
-  - Click 'Get Link For Password Reset'
-  - Go to email and click on the button
-  - Enter new password and click 'Reset Password'
+```json
+{
+  "json": "image-url"
+}
+```
 
-**Testing with real pages** (only mobile design done so far)
+</details>
 
-##### Signup
+<details>
+<summary><strong>ratings.getUserRatingForRecipe</strong></summary>
 
-- Route: _/signup_
-- Test - traditional signup, OAuth sign-ins via Google or Github
-- Email verification is required if signed up via traditional method. After signing up can just change email_verified to true in database
+_Example usage:_
 
-##### Login
+```json
+{
+  "json": ${recipeId}
+}
+```
 
-- Route: _/login_
-- Test - traditional login, OAuth sign-ins via Google or Github
+</details>
 
-##### Request reset password
+<details>
+<summary><strong>ratings.rate</strong></summary>
 
-- Route: _/request-reset-password_
-- Test - Link sending to email for password reset
+_Example usage:_
 
-##### Reset password
+```json
+{
+  "json": {
+    "recipeId": 927,
+    "rating": 2
+  }
+}
+```
 
-- Route: _/reset-password_
-- Test - reset password
+</details>
+
+<details>
+<summary><strong>ratings.update</strong></summary>
+
+_Example usage:_
+
+```json
+{
+  "json": {
+    "recipeId": 927,
+    "rating": 2
+  }
+}
+```
+
+</details>
+
+<details>
+<summary><strong>ratings.remove</strong></summary>
+
+_Example usage:_
+
+```json
+{
+  "json": 1352
+}
+```
+
+</details>
+
+<details>
+<summary><strong>follows.follow</strong></summary>
+
+_Example usage:_
+
+```json
+{
+  "json": ${Other User ID}
+}
+```
+
+</details>
+
+<details>
+<summary><strong>follows.unfollow</strong></summary>
+
+_Example usage:_
+
+```json
+{
+  "json": ${Other User ID}
+}
+```
+
+</details>
+
+<details>
+<summary><strong>follows.isFollowing</strong></summary>
+
+_Example usage:_
+
+```json
+{
+  "json": ${Other User ID}
+}
+```
+
+</details>
+
+<details>
+<summary><strong>follows.totalFollowing</strong></summary>
+
+_Example usage:_
+
+```json
+{
+  "json": null || ${Other User ID}
+}
+```
+
+</details>
+
+<details>
+<summary><strong>follows.totalFollowers</strong></summary>
+
+_Example usage:_
+
+```json
+{
+  "json": null || ${Other User ID}
+}
+```
+
+</details>
+
+<details>
+<summary><strong>follows.getFollowing</strong></summary>
+
+_Example usage:_
+
+```json
+{
+  "json": null || ${Other User ID}
+}
+```
+
+</details>
+
+<details>
+<summary><strong>follows.getFollowers</strong></summary>
+
+_Example usage:_
+
+```json
+{
+  "json": null || ${Other User ID}
+}
+```
+
+</details>
+
+### Hosted site URL
+
+https://brokechef.sk05mvs33xkna.eu-central-1.cs.amazonlightsail.com/
+
+#### Test account
+
+**Username**: _test1234_\
+**Password**: _test1234_
