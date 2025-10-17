@@ -19,6 +19,13 @@ const { recipe, variant } = defineProps<{
 
 const isLoading = ref(true);
 
+const cardClasses = [
+  'flex w-full items-center justify-center overflow-hidden rounded-md bg-gray-200',
+  variant === RECIPE_CARD_VARIANT.RECIPES_LIST
+    ? 'h-48 lg:h-72'
+    : 'h-32 lg:h-64',
+].join(' ');
+
 const infoRowClasses = [
   'flex gap-2 text-xs leading-loose sm:text-base',
   variant === RECIPE_CARD_VARIANT.RECIPES_LIST
@@ -39,9 +46,7 @@ const ratingClasses = [
     :to="{ name: ROUTE_NAMES.RECIPE, params: { id: recipe.id } }"
     class="hover:outline-secondary-green relative flex w-full flex-col items-center rounded-md hover:outline-3"
   >
-    <div
-      class="flex h-48 w-full items-center justify-center overflow-hidden rounded-md bg-gray-200 lg:h-84"
-    >
+    <div :class="cardClasses">
       <Spinner v-show="isLoading" />
       <img
         v-show="!isLoading"
