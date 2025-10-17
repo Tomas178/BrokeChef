@@ -136,17 +136,22 @@ onMounted(async () => {
         color="light"
         :text="`Sort: ${selectedSortLabel}`"
         placement="bottom"
+        triggerClass="cursor-pointer dark:hover:text-black"
         align-to-end
         close-inside
-        class="mb-4 self-end"
+        class="mb-4 self-end text-gray-800 hover:bg-inherit dark:text-gray-100 dark:hover:text-black"
         :disabled="isLoading || !isRecipes"
       >
-        <ul class="w-36 sm:w-48">
+        <ul class="w-36 bg-white sm:w-48 dark:bg-gray-900">
           <li
             v-for="option in sortOptions"
             :key="option.value"
-            class="cursor-pointer px-4 py-2 font-bold transition-colors hover:bg-gray-100"
-            :class="[option.value === pagination.sort ? 'bg-gray-200' : '']"
+            class="cursor-pointer px-4 py-2 font-bold text-gray-800 transition-colors hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-700"
+            :class="[
+              option.value === pagination.sort
+                ? 'bg-gray-200 dark:bg-gray-800'
+                : '',
+            ]"
             @click="onSortChange(option.value)"
           >
             {{ option.label }}

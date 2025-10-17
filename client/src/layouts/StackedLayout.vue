@@ -22,14 +22,15 @@ const navigation = computed(() =>
 </script>
 
 <template>
-  <FwbNavbar class="relative z-50">
+  <FwbNavbar class="relative z-50 dark:bg-white">
     <template #logo>
       <RouterLink
         :to="{ name: ROUTE_NAMES.HOME }"
         class="flex items-center space-x-2 hover:scale-105"
       >
         <img src="@/assets/logo.svg" alt="BrokChef Logo" class="h-12 w-auto" />
-        <span class="text-header md:text-extrabold font-bold md:text-2xl"
+        <span
+          class="text-header md:text-extrabold font-bold md:text-2xl dark:text-black"
           >BrokeChef</span
         >
       </RouterLink>
@@ -41,7 +42,7 @@ const navigation = computed(() =>
         :is-show-menu="isShowMenu"
       >
         <FwbNavbarLink
-          class="font-bold"
+          class="font-bold dark:bg-inherit"
           v-for="link in navigation"
           :key="`${link.name}-${String(route.name)}`"
           :is-active="link.isActive"
@@ -60,26 +61,27 @@ const navigation = computed(() =>
 </template>
 
 <style scoped>
+@reference "../assets/index.css";
+
 :deep(ul > a) {
-  background-color: var(--color-background-form);
+  @apply bg-background-form dark:bg-inherit;
 }
 
 :deep(ul .router-link-exact-active) {
-  background-color: var(--color-primary-green);
+  @apply bg-primary-green dark:bg-inherit;
 }
 
 @media ((width >= 768px)) {
   :deep(ul .router-link-exact-active) {
-    background-color: white;
+    @apply bg-white dark:bg-inherit;
   }
 
   :deep(.router-link-exact-active) {
-    background-color: white;
-    color: var(--color-primary-green);
+    @apply text-primary-green bg-white dark:bg-inherit;
   }
 
   :deep(a:hover) {
-    color: var(--color-secondary-green);
+    @apply text-secondary-green;
   }
 }
 </style>

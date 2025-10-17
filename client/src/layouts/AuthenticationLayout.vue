@@ -28,7 +28,7 @@ const links = computed(() => [
       <FwbNavbarLink
         v-if="user.isLoggedIn"
         @click.prevent="user.logout"
-        class="font-bold"
+        class="font-bold dark:bg-inherit"
         link="#"
       >
         Logout
