@@ -1,9 +1,5 @@
 # Recipe sharing app
 
-# Full version of the project development in (Check this out).
-
-- [Repository](https://github.com/TuringCollegeSubmissions/tompetro-WD2.3.4.5.git)
-
 ## About the project
 
 Recipe sharing app primarily orientied for students. Users can look for various created recipes and create their own ones.
