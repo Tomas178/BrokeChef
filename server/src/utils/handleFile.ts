@@ -1,6 +1,6 @@
 import type { Request } from 'express';
 import { MulterError } from 'multer';
-import { logger } from 'better-auth';
+import logger from '@server/logger';
 import ImageTooLarge from './errors/images/ImageTooLarge';
 import WrongImageType from './errors/images/WrongImageType';
 import { upload } from './upload';

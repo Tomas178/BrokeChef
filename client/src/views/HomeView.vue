@@ -58,8 +58,6 @@ const fetchPage = async (page: number) => {
     recipes.value = fetchedRecipes;
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  } catch {
-    isLoading.value = false;
   } finally {
     isLoading.value = false;
   }

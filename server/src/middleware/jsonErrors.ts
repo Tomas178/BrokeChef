@@ -15,7 +15,6 @@ const jsonErrors: ErrorRequestHandler = (error, _request, response, _next) => {
   response.status(statusCode).json({
     error: {
       message: error.message ?? 'Internal server error',
-      ...error,
     },
   });
 };

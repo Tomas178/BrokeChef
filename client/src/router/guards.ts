@@ -4,6 +4,7 @@ import type { NavigationGuard } from 'vue-router';
 
 export const authenticate: NavigationGuard = (to) => {
   const user = useUserStore();
+  console.log(user.isLoggedIn);
 
   if (!user.isLoggedIn) {
     return { name: 'Login' };

@@ -5,7 +5,7 @@ import { frontendBase, resetPasswordBase } from '@/config';
 import { navigateToLogin } from '@/router/utils';
 
 export const useUserStore = defineStore('user', () => {
-  const authToken = ref<string | null>(localStorage.getItem('authToken'));
+  const authToken = ref<string | null>(null);
 
   const session = authClient.useSession();
   const id = ref<string | undefined>(undefined);
@@ -13,19 +13,15 @@ export const useUserStore = defineStore('user', () => {
   watch(
     () => session.value?.data?.session,
     (session) => {
-      if (session?.token) setToken(session.token);
-      if (session?.id) id.value = session.userId;
+      if (session) {
+        authToken.value = session.token;
+        id.value = session.userId;
+      }
     },
     { immediate: true }
   );
 
   const isLoggedIn = computed(() => !!authToken.value);
-
-  function setToken(token: string | null) {
-    authToken.value = token;
-    if (token) localStorage.setItem('authToken', token);
-    else localStorage.removeItem('authToken');
-  }
 
   async function signup(credentials: {
     username: string;
@@ -39,10 +35,6 @@ export const useUserStore = defineStore('user', () => {
       email,
       password,
       callbackURL: frontendBase,
-      fetchOptions: {
-        onSuccess: () => console.log(`Email verification sent to ${email}`),
-        onError: (ctx) => console.log(ctx.error.message),
-      },
     });
 
     if (error) throw new Error(error.message);
@@ -54,15 +46,11 @@ export const useUserStore = defineStore('user', () => {
     const { data, error } = await authClient.signIn.email({
       email,
       password,
-      fetchOptions: {
-        onSuccess: () => console.log(`${email} logged in!`),
-        onError: (ctx) => console.log(ctx.error.message),
-      },
     });
 
     if (error) throw new Error(error.message);
 
-    setToken(data.token);
+    authToken.value = data.token;
   }
 
   async function socialLogin(providerName: string) {
@@ -81,11 +69,6 @@ export const useUserStore = defineStore('user', () => {
     await authClient.requestPasswordReset({
       email,
       redirectTo: resetPasswordBase,
-      fetchOptions: {
-        onSuccess: () =>
-          console.log(`Reset password link is sent to: ${email}`),
-        onError: (ctx) => console.log(ctx.error.message),
-      },
     });
   }
 
@@ -100,10 +83,6 @@ export const useUserStore = defineStore('user', () => {
     const { error } = await authClient.resetPassword({
       newPassword,
       token,
-      fetchOptions: {
-        onSuccess: () => console.log('Password is resetted'),
-        onError: (ctx) => console.log(ctx.error.message),
-      },
     });
 
     if (error) throw new Error(error.message);
@@ -137,16 +116,14 @@ export const useUserStore = defineStore('user', () => {
     const { error } = await authClient.signOut({
       fetchOptions: {
         onSuccess: async () => {
-          console.log('User logged out successfully!');
           await navigateToLogin();
         },
-        onError: (ctx) => console.log(ctx.error.message),
       },
     });
 
     if (error) throw new Error(error.message);
 
-    setToken(null);
+    authToken.value = null;
   }
 
   return {
