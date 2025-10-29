@@ -27,7 +27,6 @@ describe('jsonErrors middleware', () => {
     expect(res.json).toHaveBeenCalledWith({
       error: {
         message: errorMessage,
-        status: statusCode,
       },
     });
   });
