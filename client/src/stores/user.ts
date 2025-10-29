@@ -16,10 +16,21 @@ export const useUserStore = defineStore('user', () => {
       if (session) {
         authToken.value = session.token;
         id.value = session.userId;
+      } else {
+        authToken.value = null;
+        id.value = undefined;
       }
     },
     { immediate: true }
   );
+
+  async function initialize() {
+    const { data } = await authClient.getSession();
+    if (data?.session) {
+      authToken.value = data.session.token;
+      id.value = data.session.userId;
+    }
+  }
 
   const isLoggedIn = computed(() => !!authToken.value);
 
@@ -57,9 +68,6 @@ export const useUserStore = defineStore('user', () => {
     const { error } = await authClient.signIn.social({
       provider: providerName,
       callbackURL: frontendBase,
-      fetchOptions: {
-        onSuccess: () => console.log(`Logged in via ${providerName}`),
-      },
     });
 
     if (error) throw new Error(error.message);
@@ -130,6 +138,7 @@ export const useUserStore = defineStore('user', () => {
     authToken,
     isLoggedIn,
     id,
+    initialize,
     signup,
     login,
     socialLogin,
