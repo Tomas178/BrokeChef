@@ -34,7 +34,7 @@ jobs:
       AWS_S3_IMAGES_BUCKET_NAME: ${{ secrets.DEV_AWS_S3_IMAGES_BUCKET_NAME }}
 
       FRONT_END_URL: ${{ vars.DEV_FRONT_END_URL }}
-      FRONT_END_FULL_URL: ${{ secrets.FRONT_END_FULL_URL }}
+      FRONT_END_FULL_URL: ${{ vars.FRONT_END_FULL_URL }}
 
       DATABASE_URL: ${{ vars.DEV_DATABASE_URL }}
     services:
