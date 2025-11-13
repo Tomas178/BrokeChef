@@ -4,6 +4,10 @@
 
 Recipe sharing app primarily orientied for students. Users can look for various created recipes and create their own ones.
 
+### Hosted site URL
+
+https://brokechef.sk05mvs33xkna.eu-central-1.cs.amazonlightsail.com/
+
 ## Features
 
 - Sign up/Sign in
@@ -482,12 +486,3 @@ _Example usage:_
 ```
 
 </details>
-
-### Hosted site URL
-
-https://brokechef.sk05mvs33xkna.eu-central-1.cs.amazonlightsail.com/
-
-#### Test account
-
-**Username**: _test1234_\
-**Password**: _test1234_
