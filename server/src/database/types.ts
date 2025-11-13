@@ -28,6 +28,12 @@ export interface Accounts {
   userId: string;
 }
 
+export interface CookedRecipes {
+  createdAt: Generated<Timestamp>;
+  recipeId: number;
+  userId: string;
+}
+
 export interface Follows {
   createdAt: Generated<Timestamp>;
   followedId: string;
@@ -112,6 +118,7 @@ export interface Verifications {
 
 export interface DB {
   accounts: Accounts;
+  cookedRecipes: CookedRecipes;
   follows: Follows;
   ingredients: Ingredients;
   ratings: Ratings;

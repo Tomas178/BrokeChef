@@ -13,6 +13,7 @@ export const TABLES = {
   RECIPES_TOOLS: 'recipes_tools',
   RATINGS: 'ratings',
   FOLLOWS: 'follows',
+  COOKED_RECIPES: 'cooked_recipes',
 } as const;
 
 export type TablesValues = ObjectValues<typeof TABLES>;
