@@ -1,5 +1,6 @@
 /* eslint-disable unicorn/no-null */
 import type {
+  CookedRecipes,
   Follows,
   Ingredients,
   Ratings,
@@ -188,6 +189,15 @@ export const fakeFollow = <T extends Partial<Insertable<Follows>>>(
 ) => ({
   followerId: randomOAuthId(),
   followedId: randomOAuthId(),
+  ...overrides,
+  createdAt: new Date(),
+});
+
+export const fakeCookedRecipe = <T extends Partial<Insertable<CookedRecipes>>>(
+  overrides: T = {} as T
+) => ({
+  recipeId: randomRecipeId(),
+  userId: randomOAuthId(),
   ...overrides,
   createdAt: new Date(),
 });
