@@ -23,7 +23,7 @@ const nonExistantUserId = user.id + 1;
 const nonExistantRecipeId = recipe.id + 1;
 
 describe('create', () => {
-  it('Should create a new save recipe', async () => {
+  it('Should create a new saved recipe', async () => {
     const savedRecipe = await repository.create({
       userId: user.id,
       recipeId: recipe.id,
@@ -48,7 +48,7 @@ describe('create', () => {
   });
 });
 
-describe('remove', async () => {
+describe('remove', () => {
   it('Should remove saved recipe', async () => {
     const [createdSavedRecipe] = await insertAll(
       database,
