@@ -1,4 +1,4 @@
-export default class RecipeAlreadyCooked extends Error {
+export default class RecipeAlreadyMarkedAsCooked extends Error {
   constructor() {
     super('Recipe already marked as cooked');
   }

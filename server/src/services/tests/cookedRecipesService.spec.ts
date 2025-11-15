@@ -6,7 +6,7 @@ import type {
 import { USER_ID_LENGTH } from '@server/entities/shared';
 import { fakeCookedRecipe } from '@server/entities/tests/fakes';
 import { PostgresError } from 'pg-error-enum';
-import RecipeAlreadyCooked from '@server/utils/errors/recipes/RecipeAlreadyCooked';
+import RecipeAlreadyMarkedAsCooked from '@server/utils/errors/recipes/RecipeAlreadyMarkedAsCooked';
 import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import CannotMarkOwnRecipeAsCooked from '@server/utils/errors/recipes/CannotMarkOwnRecipeAsCooked';
 import { NoResultError } from 'kysely';
@@ -75,7 +75,7 @@ describe('create', () => {
     });
 
     await expect(service.create(link)).rejects.toThrowError(
-      RecipeAlreadyCooked
+      RecipeAlreadyMarkedAsCooked
     );
   });
 

@@ -3,7 +3,7 @@ import type { cookedRecipesPublic } from '@server/entities/cookedRecipes';
 import type { CookedRecipesLink } from '@server/repositories/cookedRecipesRepository';
 import { assertError, assertPostgresError } from '@server/utils/errors';
 import { PostgresError } from 'pg-error-enum';
-import RecipeAlreadyCooked from '@server/utils/errors/recipes/RecipeAlreadyCooked';
+import RecipeAlreadyMarkedAsCooked from '@server/utils/errors/recipes/RecipeAlreadyMarkedAsCooked';
 import logger from '@server/logger';
 import { recipesRepository as buildRecipesRepository } from '@server/repositories/recipesRepository';
 import CannotMarkOwnRecipeAsCooked from '@server/utils/errors/recipes/CannotMarkOwnRecipeAsCooked';
@@ -44,7 +44,7 @@ export function cookedRecipesService(database: Database): CookedRecipesService {
         assertPostgresError(error);
 
         if (error.code === PostgresError.UNIQUE_VIOLATION) {
-          throw new RecipeAlreadyCooked();
+          throw new RecipeAlreadyMarkedAsCooked();
         }
       }
     },
