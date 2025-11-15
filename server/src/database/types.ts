@@ -30,7 +30,7 @@ export interface Accounts {
 
 export interface Collections {
   createdAt: Generated<Timestamp>;
-  id: number;
+  id: Generated<number>;
   title: string;
   updatedAt: Generated<Timestamp>;
   userId: string;

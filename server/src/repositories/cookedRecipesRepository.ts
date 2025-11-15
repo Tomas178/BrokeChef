@@ -1,5 +1,8 @@
 import type { CookedRecipes, Database } from '@server/database';
-import { cookedRecipesPublic } from '@server/entities/cookedRecipes';
+import {
+  cookedRecipesKeysPublic,
+  type CookedRecipesPublic,
+} from '@server/entities/cookedRecipes';
 import type { Insertable } from 'kysely';
 
 const TABLE = 'cookedRecipes';
@@ -7,8 +10,8 @@ const TABLE = 'cookedRecipes';
 export type CookedRecipesLink = Insertable<CookedRecipes>;
 
 export interface CookedRecipesRepository {
-  create: (link: CookedRecipesLink) => Promise<cookedRecipesPublic>;
-  remove: (link: CookedRecipesLink) => Promise<cookedRecipesPublic>;
+  create: (link: CookedRecipesLink) => Promise<CookedRecipesPublic>;
+  remove: (link: CookedRecipesLink) => Promise<CookedRecipesPublic>;
   isCooked: (link: CookedRecipesLink) => Promise<boolean>;
 }
 
@@ -20,7 +23,7 @@ export function cookedRecipesRepository(
       return database
         .insertInto(TABLE)
         .values(link)
-        .returning(cookedRecipesPublic)
+        .returning(cookedRecipesKeysPublic)
         .executeTakeFirstOrThrow();
     },
 
@@ -29,7 +32,7 @@ export function cookedRecipesRepository(
         .deleteFrom(TABLE)
         .where('userId', '=', link.userId)
         .where('recipeId', '=', link.recipeId)
-        .returning(cookedRecipesPublic)
+        .returning(cookedRecipesKeysPublic)
         .executeTakeFirstOrThrow();
     },
 

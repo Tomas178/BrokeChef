@@ -17,7 +17,9 @@ export async function up(database: Kysely<any>) {
   await addTimestampColumns(
     database.schema
       .createTable(TABLES.COLLECTIONS)
-      .addColumn('id', 'integer', c => c.primaryKey())
+      .addColumn('id', 'integer', c =>
+        c.primaryKey().generatedAlwaysAsIdentity()
+      )
       .addColumn(COLUMN_USER_ID, 'text', c =>
         c.notNull().references(`${TABLES.USERS}.id`).onDelete('cascade')
       )
