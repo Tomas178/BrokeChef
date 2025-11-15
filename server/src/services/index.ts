@@ -4,6 +4,7 @@ import { savedRecipesService } from './savedRecipesService';
 import { usersService } from './usersService';
 import { ratingsService } from './ratingsService';
 import { followsService } from './followsService';
+import { cookedRecipesService } from './cookedRecipesService';
 
 export type ServiceFactory = <T>(database: Database) => T;
 
@@ -13,6 +14,7 @@ const services = {
   usersService,
   ratingsService,
   followsService,
+  cookedRecipesService,
 };
 
 export type ServicesFactories = typeof services;

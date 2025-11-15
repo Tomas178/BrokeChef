@@ -2,6 +2,7 @@ import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import CannotRateOwnRecipe from '@server/utils/errors/recipes/CannotRateOwnRecipe';
 import CannotSaveOwnRecipe from '@server/utils/errors/recipes/CannotSaveOwnRecipe';
 import type { RecipesRepository } from '@server/repositories/recipesRepository';
+import type CannotMarkOwnRecipeAsCooked from '@server/utils/errors/recipes/CannotMarkOwnRecipeAsCooked';
 
 export async function validateRecipeExists(
   recipesRepository: RecipesRepository,
@@ -17,7 +18,10 @@ export async function validateRecipeExists(
 }
 
 export async function validateRecipeAndUserIsNotAuthor<
-  T extends CannotRateOwnRecipe | CannotSaveOwnRecipe,
+  T extends
+    | CannotRateOwnRecipe
+    | CannotSaveOwnRecipe
+    | CannotMarkOwnRecipeAsCooked,
 >(
   recipesRepository: RecipesRepository,
   recipeId: number,
