@@ -12,13 +12,13 @@ export default authenticatedProcedure
   .input(integerIdSchema)
   .mutation(async ({ input: recipeId, ctx: { services, authUser } }) => {
     try {
-      const SaveRecipeLink: SavedRecipesLink = {
+      const saveRecipeLink: SavedRecipesLink = {
         userId: authUser.id,
         recipeId,
       };
 
       const savedRecipe =
-        await services.savedRecipesService.create(SaveRecipeLink);
+        await services.savedRecipesService.create(saveRecipeLink);
 
       return savedRecipe;
     } catch (error) {
