@@ -1,9 +1,11 @@
 import { SortingTypes } from '@server/enums/SortingTypes';
 import * as z from 'zod';
 
+export const USER_ID_LENGTH = 32;
+
 export const integerIdSchema = z.number().int().positive();
 
-export const oauthUserIdSchema = z.string().length(32);
+export const oauthUserIdSchema = z.string().length(USER_ID_LENGTH);
 
 export const arrayStringSchema = z.array(z.string().nonempty().max(100).trim());
 
