@@ -15,7 +15,7 @@ export const collectionsRecipesKeysAll = Object.keys(
 
 export const collectionsRecipesKeysPublic = collectionsRecipesKeysAll;
 
-export type CollectionsRecipesKeysAll = Pick<
+export type CollectionsRecipesPublic = Pick<
   Selectable<CollectionsRecipes>,
   (typeof collectionsRecipesKeysPublic)[number]
 >;

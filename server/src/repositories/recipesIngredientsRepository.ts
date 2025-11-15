@@ -1,7 +1,7 @@
 import type { Database, RecipesIngredients } from '@server/database';
 import {
   recipesIngredientsKeysPublic,
-  type recipesIngredientsPublic,
+  type RecipesIngredientsPublic,
 } from '@server/entities/recipesIngredients';
 import type { Insertable } from 'kysely';
 
@@ -12,10 +12,10 @@ export type RecipesIngredientsLink = Insertable<RecipesIngredients>;
 export interface RecipesIngredientsRepository {
   create: (
     links: RecipesIngredientsLink[]
-  ) => Promise<recipesIngredientsPublic[]>;
+  ) => Promise<RecipesIngredientsPublic[]>;
   findByRecipeId: (
     recipeId: number
-  ) => Promise<recipesIngredientsPublic | undefined>;
+  ) => Promise<RecipesIngredientsPublic | undefined>;
 }
 
 export function recipesIngredientsRepository(

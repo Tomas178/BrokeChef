@@ -16,6 +16,7 @@ import type { CreateRecipeInput } from '@server/controllers/recipes/create';
 import {
   MAX_COLLECTION_TITLE_LENGTH,
   MAX_DURATION,
+  MAX_RECIPE_TITLE_LENGTH,
   MIN_DURATION,
 } from '@server/shared/consts';
 import type { AuthUser, UsersPublic } from '../users';
@@ -36,6 +37,9 @@ const randomDuration = () =>
 const randomIntegerId = () => random.integer({ min: 1, max: 10_000_000 });
 
 const randomRating = () => random.integer({ min: 1, max: 5 });
+
+const randomRecipeTitle = () =>
+  random.string({ length: MAX_RECIPE_TITLE_LENGTH });
 
 export const fakeUser = <T extends Partial<UsersPublic>>(
   overrides: T = {} as T
@@ -63,7 +67,7 @@ export const fakeRecipe = <T extends Partial<Insertable<Recipes>>>(
   overrides: T = {} as T
 ) => ({
   userId: randomOAuthId(),
-  title: random.string(),
+  title: randomRecipeTitle(),
   duration: randomDuration(),
   steps: random.paragraph(),
   imageUrl: random.url(),
@@ -75,7 +79,7 @@ export const fakeRecipeWithRating = <T extends Partial<RecipesPublic>>(
   overrides: T = {} as T
 ) => ({
   userId: randomOAuthId(),
-  title: random.string(),
+  title: randomRecipeTitle(),
   duration: randomDuration(),
   steps: random.paragraph(),
   imageUrl: random.url(),
@@ -91,7 +95,7 @@ export const fakeRecipeWithAuthor = <
 ) => ({
   id: randomIntegerId(),
   userId: randomOAuthId(),
-  title: random.string(),
+  title: randomRecipeTitle(),
   duration: randomDuration(),
   steps: random.paragraph(),
   imageUrl: random.url(),
@@ -109,7 +113,7 @@ export const fakeRecipeAllInfo = <T extends Partial<RecipesPublicAllInfo>>(
 ) => ({
   id: randomIntegerId(),
   userId: randomOAuthId(),
-  title: random.string(),
+  title: randomRecipeTitle(),
   duration: randomDuration(),
   steps: random.paragraph(),
   imageUrl: random.url(),
@@ -214,7 +218,6 @@ export const fakeCookedRecipe = <T extends Partial<Insertable<CookedRecipes>>>(
 export const fakeCollection = <T extends Partial<Insertable<Collections>>>(
   overrides: T = {} as T
 ) => ({
-  id: randomIntegerId(),
   userId: randomOAuthId(),
   title: random.string({ length: MAX_COLLECTION_TITLE_LENGTH }),
   ...overrides,

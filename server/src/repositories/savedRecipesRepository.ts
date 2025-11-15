@@ -1,7 +1,7 @@
 import type { Database, SavedRecipes } from '@server/database';
 import {
   savedRecipesKeysPublic,
-  type savedRecipesPublic,
+  type SavedRecipesPublic,
 } from '@server/entities/savedRecipes';
 import type { Insertable } from 'kysely';
 
@@ -10,8 +10,8 @@ const TABLE = 'savedRecipes';
 export type SavedRecipesLink = Insertable<SavedRecipes>;
 
 export interface SavedRecipesRepository {
-  create: (link: SavedRecipesLink) => Promise<savedRecipesPublic>;
-  remove: (link: SavedRecipesLink) => Promise<savedRecipesPublic>;
+  create: (link: SavedRecipesLink) => Promise<SavedRecipesPublic>;
+  remove: (link: SavedRecipesLink) => Promise<SavedRecipesPublic>;
   isSaved: (link: SavedRecipesLink) => Promise<boolean>;
 }
 

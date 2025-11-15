@@ -15,7 +15,7 @@ export const savedRecipesKeysAll = Object.keys(
 
 export const savedRecipesKeysPublic = savedRecipesKeysAll;
 
-export type savedRecipesPublic = Pick<
+export type SavedRecipesPublic = Pick<
   Selectable<SavedRecipes>,
   (typeof savedRecipesKeysPublic)[number]
 >;

@@ -1,7 +1,7 @@
 import type { Database, RecipesTools } from '@server/database';
 import {
   recipesToolsKeysPublic,
-  type recipesToolsPublic,
+  type RecipesToolsPublic,
 } from '@server/entities/recipesTools';
 import type { Insertable } from 'kysely';
 
@@ -10,8 +10,8 @@ const TABLE = 'recipesTools';
 export type RecipesToolsLink = Insertable<RecipesTools>;
 
 export interface RecipesToolsRepository {
-  create: (links: RecipesToolsLink[]) => Promise<recipesToolsPublic[]>;
-  findByRecipeId: (recipeId: number) => Promise<recipesToolsPublic | undefined>;
+  create: (links: RecipesToolsLink[]) => Promise<RecipesToolsPublic[]>;
+  findByRecipeId: (recipeId: number) => Promise<RecipesToolsPublic | undefined>;
 }
 
 export function recipesToolsRepository(

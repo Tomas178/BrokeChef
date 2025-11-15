@@ -10,7 +10,7 @@ import { PostgresError } from 'pg-error-enum';
 import CannotSaveOwnRecipe from '@server/utils/errors/recipes/CannotSaveOwnRecipe';
 import { NoResultError } from 'kysely';
 import SavedRecipeNotFound from '@server/utils/errors/recipes/SavedRecipeNotFound';
-import type { savedRecipesPublic } from '@server/entities/savedRecipes';
+import type { SavedRecipesPublic } from '@server/entities/savedRecipes';
 import logger from '@server/logger';
 import {
   validateRecipeAndUserIsNotAuthor,
@@ -18,8 +18,8 @@ import {
 } from './utils/recipeValidations';
 
 export interface SavedRecipesService {
-  create: (link: SavedRecipesLink) => Promise<savedRecipesPublic | undefined>;
-  remove: (link: SavedRecipesLink) => Promise<savedRecipesPublic | undefined>;
+  create: (link: SavedRecipesLink) => Promise<SavedRecipesPublic | undefined>;
+  remove: (link: SavedRecipesLink) => Promise<SavedRecipesPublic | undefined>;
 }
 
 export function savedRecipesService(database: Database): SavedRecipesService {

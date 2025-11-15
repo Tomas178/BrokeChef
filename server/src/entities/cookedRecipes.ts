@@ -13,9 +13,9 @@ export const cookedRecipesKeysAll = Object.keys(
   cookedRecipesSchema.shape
 ) as (keyof CookedRecipes)[];
 
-export const cookedRecipesPublic = cookedRecipesKeysAll;
+export const cookedRecipesKeysPublic = cookedRecipesKeysAll;
 
-export type cookedRecipesPublic = Pick<
+export type CookedRecipesPublic = Pick<
   Selectable<CookedRecipes>,
-  (typeof cookedRecipesPublic)[number]
+  (typeof cookedRecipesKeysPublic)[number]
 >;
