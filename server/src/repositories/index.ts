@@ -9,6 +9,8 @@ import { usersRepository } from './usersRepository';
 import { ratingsRepository } from './ratingsRepository';
 import { followsRepository } from './followsRepository';
 import { cookedRecipesRepository } from './cookedRecipesRepository';
+import { collectionsRepository } from './collectionsRepository';
+import { collectionsRecipesRepository } from './collectionsRecipesRepository';
 
 export type RepositoryFactory = <T>(database: Database) => T;
 
@@ -23,6 +25,8 @@ const repositories = {
   ratingsRepository,
   followsRepository,
   cookedRecipesRepository,
+  collectionsRepository,
+  collectionsRecipesRepository,
 };
 
 export type RepositoriesFactories = typeof repositories;

@@ -38,6 +38,7 @@ export interface RecipesRepository {
     { offset, limit }: Pagination
   ) => Promise<RecipesPublic[]>;
   totalSavedByUser: (userId: string) => Promise<number>;
+  findByCollectionId: (collectionId: number) => Promise<RecipesPublic[]>;
   findAll: ({
     offset,
     limit,
@@ -140,6 +141,24 @@ export function recipesRepository(database: Database): RecipesRepository {
         .executeTakeFirstOrThrow();
 
       return Number(count);
+    },
+
+    async findByCollectionId(collectionId) {
+      const recipes = await database
+        .selectFrom(TABLE)
+        .innerJoin(
+          'collectionsRecipes',
+          'collectionsRecipes.recipeId',
+          'recipes.id'
+        )
+        .select(prefixTable(TABLE, recipesKeysPublic))
+        .select(withAuthor)
+        .select(withRatings)
+        .where('collectionsRecipes.collectionId', '=', collectionId)
+        .orderBy('recipes.id', 'desc')
+        .execute();
+
+      return recipes.map(recipe => normalizeRating(recipe));
     },
 
     async findAll({ offset, limit, sort }) {

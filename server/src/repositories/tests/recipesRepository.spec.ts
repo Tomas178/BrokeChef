@@ -2,6 +2,8 @@ import { createTestDatabase } from '@tests/utils/database';
 import { wrapInRollbacks } from '@tests/utils/transactions';
 import { clearTables, insertAll, selectAll } from '@tests/utils/record';
 import {
+  fakeCollection,
+  fakeCollectionRecipe,
   fakeRating,
   fakeRecipe,
   fakeSavedRecipe,
@@ -240,6 +242,163 @@ describe('totalSavedByUser', () => {
     await expect(repository.totalSavedByUser(userRater.id)).resolves.toBe(
       saved.length
     );
+  });
+});
+
+describe('findByCollectionId', () => {
+  it('Should return an empty array when collection has no recipes', async () => {
+    const [collection] = await insertAll(
+      database,
+      'collections',
+      fakeCollection({ userId: authorOne.id })
+    );
+
+    const recipes = await repository.findByCollectionId(collection.id);
+
+    expect(recipes).toEqual([]);
+  });
+
+  it('Should return recipes in a collection', async () => {
+    const [collection] = await insertAll(
+      database,
+      'collections',
+      fakeCollection({ userId: authorOne.id })
+    );
+
+    const [recipe] = await insertAll(
+      database,
+      'recipes',
+      fakeRecipe({ userId: authorOne.id })
+    );
+
+    await insertAll(database, 'collectionsRecipes', [
+      fakeCollectionRecipe({
+        collectionId: collection.id,
+        recipeId: recipe.id,
+      }),
+    ]);
+
+    const recipes = await repository.findByCollectionId(collection.id);
+
+    expect(recipes).toHaveLength(1);
+    expect(recipes[0]).toEqual({
+      ...pick(recipe, recipesKeysPublic),
+      author: pick(authorOne, usersKeysPublicWithoutId),
+      rating: null,
+    });
+  });
+
+  it('Should return recipes with correct ratings', async () => {
+    const [collection] = await insertAll(
+      database,
+      'collections',
+      fakeCollection({ userId: authorOne.id })
+    );
+
+    const [recipe] = await insertAll(
+      database,
+      'recipes',
+      fakeRecipe({ userId: authorOne.id })
+    );
+
+    await insertAll(database, 'collectionsRecipes', [
+      fakeCollectionRecipe({
+        collectionId: collection.id,
+        recipeId: recipe.id,
+      }),
+    ]);
+
+    const [ratingOne, ratingTwo] = await insertAll(database, 'ratings', [
+      fakeRating({ userId: authorOne.id, recipeId: recipe.id }),
+      fakeRating({ userId: authorTwo.id, recipeId: recipe.id }),
+    ]);
+
+    const recipes = await repository.findByCollectionId(collection.id);
+
+    expect(recipes[0]).toHaveProperty(
+      'rating',
+      (ratingOne.rating + ratingTwo.rating) / 2
+    );
+  });
+
+  it('Should return multiple recipes ordered by id descending', async () => {
+    const [collection] = await insertAll(
+      database,
+      'collections',
+      fakeCollection({ userId: authorOne.id })
+    );
+
+    const [recipeOne, recipeTwo, recipeThree] = await insertAll(
+      database,
+      'recipes',
+      [
+        fakeRecipe({ userId: authorOne.id }),
+        fakeRecipe({ userId: authorTwo.id }),
+        fakeRecipe({ userId: authorOne.id }),
+      ]
+    );
+
+    await insertAll(database, 'collectionsRecipes', [
+      fakeCollectionRecipe({
+        collectionId: collection.id,
+        recipeId: recipeOne.id,
+      }),
+      fakeCollectionRecipe({
+        collectionId: collection.id,
+        recipeId: recipeTwo.id,
+      }),
+      fakeCollectionRecipe({
+        collectionId: collection.id,
+        recipeId: recipeThree.id,
+      }),
+    ]);
+
+    const recipes = await repository.findByCollectionId(collection.id);
+
+    expect(recipes).toHaveLength(3);
+
+    // Ordered by id descending (newest first)
+    expect(recipes[0].id).toBe(recipeThree.id);
+    expect(recipes[1].id).toBe(recipeTwo.id);
+    expect(recipes[2].id).toBe(recipeOne.id);
+  });
+
+  it('Should only return recipes from the specified collection', async () => {
+    const [collectionOne, collectionTwo] = await insertAll(
+      database,
+      'collections',
+      [
+        fakeCollection({ userId: authorOne.id }),
+        fakeCollection({ userId: authorTwo.id }),
+      ]
+    );
+
+    const [recipeInCollectionOne, recipeInCollectionTwo] = await insertAll(
+      database,
+      'recipes',
+      [
+        fakeRecipe({ userId: authorOne.id }),
+        fakeRecipe({ userId: authorTwo.id }),
+      ]
+    );
+
+    await insertAll(database, 'collectionsRecipes', [
+      fakeCollectionRecipe({
+        collectionId: collectionOne.id,
+        recipeId: recipeInCollectionOne.id,
+      }),
+      fakeCollectionRecipe({
+        collectionId: collectionTwo.id,
+        recipeId: recipeInCollectionTwo.id,
+      }),
+    ]);
+
+    const recipesInCollectionOne = await repository.findByCollectionId(
+      collectionOne.id
+    );
+
+    expect(recipesInCollectionOne).toHaveLength(1);
+    expect(recipesInCollectionOne[0].id).toBe(recipeInCollectionOne.id);
   });
 });
 
