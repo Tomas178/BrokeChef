@@ -1,5 +1,7 @@
 /* eslint-disable unicorn/no-null */
 import type {
+  Collections,
+  CollectionsRecipes,
   CookedRecipes,
   Follows,
   Ingredients,
@@ -11,6 +13,11 @@ import type {
 import { random } from '@tests/utils/random';
 import type { Insertable } from 'kysely';
 import type { CreateRecipeInput } from '@server/controllers/recipes/create';
+import {
+  MAX_COLLECTION_TITLE_LENGTH,
+  MAX_DURATION,
+  MIN_DURATION,
+} from '@server/shared/consts';
 import type { AuthUser, UsersPublic } from '../users';
 import type {
   RecipesPublicWithoutRating,
@@ -19,12 +26,14 @@ import type {
 } from '../recipes';
 import type { ToolsPublic } from '../tools';
 import type { IngredientsPublic } from '../ingredients';
+import { USER_ID_LENGTH } from '../shared';
 
-const randomOAuthId = () => random.string({ length: 32 });
+const randomOAuthId = () => random.string({ length: USER_ID_LENGTH });
 
-const randomDuration = () => random.integer({ min: 1, max: 240 });
+const randomDuration = () =>
+  random.integer({ min: MIN_DURATION, max: MAX_DURATION });
 
-const randomRecipeId = () => random.integer({ min: 1, max: 10_000_000 });
+const randomIntegerId = () => random.integer({ min: 1, max: 10_000_000 });
 
 const randomRating = () => random.integer({ min: 1, max: 5 });
 
@@ -80,7 +89,7 @@ export const fakeRecipeWithAuthor = <
 >(
   overrides: T = {} as T
 ) => ({
-  id: randomRecipeId(),
+  id: randomIntegerId(),
   userId: randomOAuthId(),
   title: random.string(),
   duration: randomDuration(),
@@ -98,7 +107,7 @@ export const fakeRecipeWithAuthor = <
 export const fakeRecipeAllInfo = <T extends Partial<RecipesPublicAllInfo>>(
   overrides: T = {} as T
 ) => ({
-  id: randomRecipeId(),
+  id: randomIntegerId(),
   userId: randomOAuthId(),
   title: random.string(),
   duration: randomDuration(),
@@ -128,7 +137,7 @@ export const fakeIngredient = <T extends Partial<Insertable<Ingredients>>>(
 export const fakeFullIngredient = <T extends Partial<IngredientsPublic>>(
   overrides: T = {} as T
 ) => ({
-  id: randomRecipeId(),
+  id: randomIntegerId(),
   name: random.string(),
   ...overrides,
   createdAt: new Date(),
@@ -145,7 +154,7 @@ export const fakeTool = <T extends Partial<Insertable<Tools>>>(
 export const fakeFullTool = <T extends Partial<ToolsPublic>>(
   overrides: T = {} as T
 ) => ({
-  id: randomRecipeId(),
+  id: randomIntegerId(),
   name: random.string(),
   ...overrides,
   createdAt: new Date(),
@@ -168,7 +177,7 @@ export const fakeCreateRecipeData = <
 export const fakeSavedRecipe = <T extends Partial<Insertable<SavedRecipes>>>(
   overrides: T = {} as T
 ) => ({
-  recipeId: randomRecipeId(),
+  recipeId: randomIntegerId(),
   userId: randomOAuthId(),
   ...overrides,
   createdAt: new Date(),
@@ -177,7 +186,7 @@ export const fakeSavedRecipe = <T extends Partial<Insertable<SavedRecipes>>>(
 export const fakeRating = <T extends Partial<Insertable<Ratings>>>(
   overrides: T = {} as T
 ) => ({
-  recipeId: randomRecipeId(),
+  recipeId: randomIntegerId(),
   userId: randomOAuthId(),
   rating: randomRating(),
   ...overrides,
@@ -196,8 +205,30 @@ export const fakeFollow = <T extends Partial<Insertable<Follows>>>(
 export const fakeCookedRecipe = <T extends Partial<Insertable<CookedRecipes>>>(
   overrides: T = {} as T
 ) => ({
-  recipeId: randomRecipeId(),
+  recipeId: randomIntegerId(),
   userId: randomOAuthId(),
+  ...overrides,
+  createdAt: new Date(),
+});
+
+export const fakeCollection = <T extends Partial<Insertable<Collections>>>(
+  overrides: T = {} as T
+) => ({
+  id: randomIntegerId(),
+  userId: randomOAuthId(),
+  title: random.string({ length: MAX_COLLECTION_TITLE_LENGTH }),
+  ...overrides,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+});
+
+export const fakeCollectionRecipe = <
+  T extends Partial<Insertable<CollectionsRecipes>>,
+>(
+  overrides: T = {} as T
+) => ({
+  collectionId: randomIntegerId(),
+  recipeId: randomIntegerId(),
   ...overrides,
   createdAt: new Date(),
 });
