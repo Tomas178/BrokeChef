@@ -8,6 +8,7 @@ import { PostgresError } from 'pg-error-enum';
 import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import CannotSaveOwnRecipe from '@server/utils/errors/recipes/CannotSaveOwnRecipe';
 import { NoResultError } from 'kysely';
+import { USER_ID_LENGTH } from '@server/entities/shared';
 import { savedRecipesService } from '../savedRecipesService';
 
 vi.mock('@server/utils/errors', () => ({
@@ -38,7 +39,7 @@ vi.mock('@server/services/utils/recipeValidations', () => ({
 const database = {} as Database;
 const service = savedRecipesService(database);
 
-const userId = 'a'.repeat(32);
+const userId = 'a'.repeat(USER_ID_LENGTH);
 const recipeId = 123;
 const link: SavedRecipesLink = { userId, recipeId };
 const savedRecipeLink = fakeSavedRecipe(link);
@@ -94,10 +95,10 @@ describe('remove', () => {
   it('Should throw an error that recipe does not exist', async () => {
     mockValidateRecipeExists.mockRejectedValueOnce(new RecipeNotFound());
 
-    expect(mockSavedRecipesRepoRemove).not.toHaveBeenCalled();
     await expect(service.remove(link)).rejects.toThrow(
       /recipe.*not found|not found.*recipe/i
     );
+    expect(mockSavedRecipesRepoRemove).not.toHaveBeenCalled();
   });
 
   it('Should throw an error that saved recipe with given data does not exist', async () => {
