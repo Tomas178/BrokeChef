@@ -3,9 +3,9 @@ import type { Recipes } from '@server/database';
 import type { Selectable } from 'kysely';
 import {
   MAX_DURATION,
-  MAX_TITLE_LENGTH,
+  MAX_RECIPE_TITLE_LENGTH,
   MIN_DURATION,
-  MIN_TITLE_LENGTH,
+  MIN_RECIPE_TITLE_LENGTH,
 } from '@server/shared/consts';
 import { createdAtSchema, integerIdSchema, oauthUserIdSchema } from './shared';
 import type { UsersPublicWithoutId } from './users';
@@ -19,8 +19,8 @@ export const recipesSchema = z.object({
   title: z
     .string()
     .trim()
-    .min(MIN_TITLE_LENGTH, 'Too short title')
-    .max(MAX_TITLE_LENGTH, 'Too long title'),
+    .min(MIN_RECIPE_TITLE_LENGTH, 'Too short title')
+    .max(MAX_RECIPE_TITLE_LENGTH, 'Too long title'),
   duration: z
     .number()
     .int()
