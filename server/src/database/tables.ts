@@ -14,6 +14,8 @@ export const TABLES = {
   RATINGS: 'ratings',
   FOLLOWS: 'follows',
   COOKED_RECIPES: 'cooked_recipes',
+  COLLECTIONS: 'collections',
+  COLLECTIONS_RECIPES: 'collections_recipes',
 } as const;
 
 export type TablesValues = ObjectValues<typeof TABLES>;

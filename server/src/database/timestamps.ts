@@ -1,4 +1,5 @@
-import { sql, type CreateTableBuilder } from 'kysely';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Kysely, sql, type CreateTableBuilder } from 'kysely';
 import type { TablesValues } from './tables';
 
 export const CREATED_AT = 'created_at';
@@ -24,4 +25,23 @@ export function addTimestampColumns<TB extends TablesValues, C extends string>(
   tableBuilder: CreateTableBuilder<TB, C>
 ) {
   return addCreatedAtColumn(addUpdatedAtColumn(tableBuilder));
+}
+
+export async function addUpdatedAtTrigger(
+  database: Kysely<any>,
+  tableName: string
+) {
+  await sql`
+    CREATE OR REPLACE TRIGGER tg_update_timestamp BEFORE UPDATE ON ${sql.table(tableName)}
+    FOR EACH ROW EXECUTE FUNCTION moddatetime(${sql.raw(UPDATED_AT)});
+  `.execute(database);
+}
+
+export async function dropUpdatedAtTrigger(
+  database: Kysely<any>,
+  tableName: string
+) {
+  await sql`DROP TRIGGER IF EXISTS tg_update_timestamp ON ${sql.table(tableName)};`.execute(
+    database
+  );
 }

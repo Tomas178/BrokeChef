@@ -28,6 +28,20 @@ export interface Accounts {
   userId: string;
 }
 
+export interface Collections {
+  createdAt: Generated<Timestamp>;
+  id: number;
+  title: string;
+  updatedAt: Generated<Timestamp>;
+  userId: string;
+}
+
+export interface CollectionsRecipes {
+  collectionId: number;
+  createdAt: Generated<Timestamp>;
+  recipeId: number;
+}
+
 export interface CookedRecipes {
   createdAt: Generated<Timestamp>;
   recipeId: number;
@@ -118,6 +132,8 @@ export interface Verifications {
 
 export interface DB {
   accounts: Accounts;
+  collections: Collections;
+  collectionsRecipes: CollectionsRecipes;
   cookedRecipes: CookedRecipes;
   follows: Follows;
   ingredients: Ingredients;
