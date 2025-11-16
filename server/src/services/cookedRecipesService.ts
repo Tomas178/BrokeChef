@@ -1,5 +1,5 @@
 import type { Database } from '@server/database';
-import type { cookedRecipesPublic } from '@server/entities/cookedRecipes';
+import type { CookedRecipesPublic } from '@server/entities/cookedRecipes';
 import type { CookedRecipesLink } from '@server/repositories/cookedRecipesRepository';
 import { assertError, assertPostgresError } from '@server/utils/errors';
 import { PostgresError } from 'pg-error-enum';
@@ -16,8 +16,8 @@ import {
 } from './utils/recipeValidations';
 
 export interface CookedRecipesService {
-  create: (link: CookedRecipesLink) => Promise<cookedRecipesPublic | undefined>;
-  remove: (link: CookedRecipesLink) => Promise<cookedRecipesPublic | undefined>;
+  create: (link: CookedRecipesLink) => Promise<CookedRecipesPublic | undefined>;
+  remove: (link: CookedRecipesLink) => Promise<CookedRecipesPublic | undefined>;
 }
 
 export function cookedRecipesService(database: Database): CookedRecipesService {
