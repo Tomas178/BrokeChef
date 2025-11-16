@@ -12,6 +12,7 @@ const COLUMN_TITLE = 'title';
 
 const COLUMN_COLLECTION_ID = 'collection_id';
 const COLUMN_RECIPE_ID = 'recipe_id';
+const COLUMN_IMAGE_URL = 'image_url';
 
 export async function up(database: Kysely<any>) {
   await addTimestampColumns(
@@ -24,6 +25,7 @@ export async function up(database: Kysely<any>) {
         c.notNull().references(`${TABLES.USERS}.id`).onDelete('cascade')
       )
       .addColumn(COLUMN_TITLE, 'text', c => c.notNull())
+      .addColumn(COLUMN_IMAGE_URL, 'text', c => c.notNull())
       .addUniqueConstraint(`${COLUMN_USER_ID}_${COLUMN_TITLE}_unique`, [
         COLUMN_USER_ID,
         COLUMN_TITLE,

@@ -220,6 +220,7 @@ export const fakeCollection = <T extends Partial<Insertable<Collections>>>(
 ) => ({
   userId: randomOAuthId(),
   title: random.string({ length: MAX_COLLECTION_TITLE_LENGTH }),
+  imageUrl: random.url(),
   ...overrides,
   createdAt: new Date(),
   updatedAt: new Date(),

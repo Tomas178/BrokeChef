@@ -20,6 +20,7 @@ export const collectionsSchema = z.object({
     .trim()
     .min(MIN_COLLECTION_TITLE_LENGTH, 'Too short title')
     .max(MAX_COLLECTION_TITLE_LENGTH, 'Too long title'),
+  imageUrl: z.string().trim().optional(),
   createdAt: createdAtSchema,
   updatedAt: updatedAtSchema,
 });
