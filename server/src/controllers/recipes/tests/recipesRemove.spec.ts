@@ -59,7 +59,7 @@ describe('Authenticated tests', () => {
     await expect(remove(recipeId)).rejects.toThrow(/not found/i);
   });
 
-  it('Should throw an error if failure happend upon deleting recipe image from S3', async () => {
+  it('Should throw an error if failure happened upon deleting recipe image from S3', async () => {
     mockRemove.mockRejectedValueOnce(new S3ServiceException({} as any));
 
     await expect(remove(recipeId)).rejects.toThrow(/failed/i);

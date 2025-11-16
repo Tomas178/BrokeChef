@@ -25,7 +25,7 @@ const [recipeOne, recipeTwo] = await insertAll(database, 'recipes', [
 const createCaller = createCallerFactory(routes);
 const authenticated = createCaller(authContext({ database }, userOne));
 
-it('Should pass ir recipe belongs to the user', async () => {
+it('Should pass if recipe belongs to the user', async () => {
   const response = await authenticated.testCall(recipeOne.id);
 
   expect(response).toEqual('passed');

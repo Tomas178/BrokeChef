@@ -23,7 +23,7 @@ export default recipeAuthorProcedure
       if (error instanceof S3ServiceException) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to delete delete the recipe',
+          message: 'Failed to delete the recipe',
         });
       }
     }
