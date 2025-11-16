@@ -30,7 +30,7 @@ export interface CollectionsService {
     dataForCollection: CreateCollectionInput
   ) => Promise<CollectionsPublic | undefined>;
   findById: (id: number) => Promise<CollectionsPublic | undefined>;
-  findByCollectionId: (collectionId: number) => Promise<RecipesPublic[]>;
+  findRecipesByCollectionId: (collectionId: number) => Promise<RecipesPublic[]>;
   totalCollectionsByUser: (userId: string) => Promise<number>;
   remove: (id: number) => Promise<CollectionsPublic>;
 }
@@ -113,7 +113,7 @@ export function collectionsService(database: Database): CollectionsService {
       return collection;
     },
 
-    async findByCollectionId(collectionId) {
+    async findRecipesByCollectionId(collectionId) {
       await validateCollectionExists(collectionsRepository, collectionId);
 
       const recipesInCollection =
