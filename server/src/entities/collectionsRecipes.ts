@@ -9,6 +9,14 @@ export const collectionsRecipesSchema = z.object({
   createdAt: createdAtSchema,
 });
 
+export const collectionsRecipesRequest = collectionsRecipesSchema.omit({
+  createdAt: true,
+});
+
+export type CollectionsRecipesRequest = z.infer<
+  typeof collectionsRecipesRequest
+>;
+
 export const collectionsRecipesKeysAll = Object.keys(
   collectionsRecipesSchema.shape
 ) as (keyof CollectionsRecipes)[];

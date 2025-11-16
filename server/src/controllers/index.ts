@@ -6,6 +6,7 @@ import ratings from './ratings';
 import follows from './follows';
 import cookedRecipes from './cookedRecipes';
 import collections from './collections';
+import collectionsRecipes from './collectionsRecipes';
 
 export const appRouter = router({
   recipes,
@@ -15,6 +16,7 @@ export const appRouter = router({
   follows,
   cookedRecipes,
   collections,
+  collectionsRecipes,
 });
 
 export type AppRouter = typeof appRouter;
