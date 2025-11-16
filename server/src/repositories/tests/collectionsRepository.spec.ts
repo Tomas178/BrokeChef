@@ -23,9 +23,10 @@ const fakeCollectionDefault = (
     ...collection,
   });
 
-describe('create', () => {
-  const collectionTitle = 'My Favorite Recipes';
+const collectionTitle = 'My Favorite Recipes';
+const nonExistantCollectionId = 999_999;
 
+describe('create', () => {
   it('Should throw an error when creating a collection with duplicate title for the same user', async () => {
     await repository.create(fakeCollectionDefault({ title: collectionTitle }));
 
@@ -59,6 +60,26 @@ describe('create', () => {
   });
 });
 
+describe('findById', () => {
+  it('Should return undefined if collection with given id does not exist', async () => {
+    await expect(
+      repository.findById(nonExistantCollectionId)
+    ).resolves.toBeUndefined();
+  });
+
+  it('Should return the collection when it does exist', async () => {
+    const [createdCollection] = await insertAll(
+      database,
+      'collections',
+      fakeCollectionDefault({ title: collectionTitle })
+    );
+
+    const retreivedCollection = await repository.findById(createdCollection.id);
+
+    expect(retreivedCollection).toEqual(createdCollection);
+  });
+});
+
 describe('totalCollectionsByUser', () => {
   it('Should return 0 when user has no collections', async () => {
     const [userTwo] = await insertAll(database, 'users', fakeUser());
@@ -82,8 +103,6 @@ describe('totalCollectionsByUser', () => {
 
 describe('Remove', () => {
   it('Should throw an error if collection does not exist', async () => {
-    const nonExistantCollectionId = 999_999;
-
     await expect(
       repository.remove(nonExistantCollectionId)
     ).rejects.toThrowError(NoResultError);

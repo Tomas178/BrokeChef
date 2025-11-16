@@ -7,10 +7,9 @@ import type { Insertable } from 'kysely';
 
 const TABLE = 'collections';
 
-export type RowInsert = Insertable<Collections>;
-
 export interface CollectionsRepository {
-  create: (collection: RowInsert) => Promise<CollectionsPublic>;
+  create: (collection: Insertable<Collections>) => Promise<CollectionsPublic>;
+  findById: (id: number) => Promise<CollectionsPublic | undefined>;
   totalCollectionsByUser: (userId: string) => Promise<number>;
   remove: (id: number) => Promise<CollectionsPublic>;
 }
@@ -25,6 +24,14 @@ export function collectionsRepository(
         .values(collection)
         .returning(collectionsKeysPublic)
         .executeTakeFirstOrThrow();
+    },
+
+    async findById(id) {
+      return database
+        .selectFrom(TABLE)
+        .select(collectionsKeysPublic)
+        .where('id', '=', id)
+        .executeTakeFirst();
     },
 
     async totalCollectionsByUser(userId) {
