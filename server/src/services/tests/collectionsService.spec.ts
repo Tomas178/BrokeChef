@@ -4,11 +4,13 @@ import { PostgresError } from 'pg-error-enum';
 import {
   fakeCollection,
   fakeCreateCollectionData,
+  fakeRecipe,
 } from '@server/entities/tests/fakes';
 import UserNotFound from '@server/utils/errors/users/UserNotFound';
 import CollectionAlreadyCreated from '@server/utils/errors/collections/CollectionAlreadyCreated';
 import { USER_ID_LENGTH } from '@server/entities/shared';
 import { S3ServiceException } from '@aws-sdk/client-s3';
+import type { RecipesRepository } from '@server/repositories/recipesRepository';
 import { collectionsService } from '../collectionsService';
 import CollectionNotFound from '../../utils/errors/collections/CollectionNotFound';
 
@@ -104,6 +106,16 @@ const mockUsersRepository = {
 
 vi.mock('@server/repositories/usersRepository', () => ({
   usersRepository: () => mockUsersRepository,
+}));
+
+const mockRecipesRepoFindByCollectionId = vi.fn();
+
+const mockRecipesRepository = {
+  findByCollectionId: mockRecipesRepoFindByCollectionId,
+} as Partial<RecipesRepository>;
+
+vi.mock('@server/repositories/recipesRepository', () => ({
+  recipesRepository: () => mockRecipesRepository,
 }));
 
 const database = {} as Database;
@@ -224,6 +236,63 @@ describe('findById', () => {
       ...collectionData,
       imageUrl: fakeImageUrl,
     });
+  });
+});
+
+describe('findByIdCollectionId', () => {
+  it('Should throw an error when the collection does exist', async () => {
+    mockValidateCollectionExists.mockRejectedValueOnce(
+      new CollectionNotFound()
+    );
+
+    await expect(service.findByCollectionId(collectionId)).rejects.toThrowError(
+      CollectionNotFound
+    );
+
+    expect(mockRecipesRepoFindByCollectionId).not.toHaveBeenCalled();
+    expect(mockSignImages).not.toHaveBeenCalled();
+  });
+
+  it('Should return an array of one recipe with signed image if there is only one recipe in collection', async () => {
+    const recipe = fakeRecipe();
+    const imageUrl = recipe.imageUrl;
+    mockRecipesRepoFindByCollectionId.mockResolvedValueOnce([recipe]);
+
+    const recipesInCollection = await service.findByCollectionId(collectionId);
+
+    expect(mockRecipesRepoFindByCollectionId).toHaveBeenCalledExactlyOnceWith(
+      collectionId
+    );
+    expect(mockSignImages).toHaveBeenCalledExactlyOnceWith([imageUrl]);
+
+    expect(recipesInCollection).toEqual([
+      { ...recipe, imageUrl: fakeImageUrl },
+    ]);
+  });
+
+  it('Should return an array of multiple recipes with signed images', async () => {
+    mockValidateCollectionExists.mockResolvedValueOnce(undefined);
+
+    const recipes = [fakeRecipe(), fakeRecipe(), fakeRecipe()];
+    const imageUrls = recipes.map(recipe => recipe.imageUrl);
+    mockRecipesRepoFindByCollectionId.mockResolvedValueOnce(recipes);
+
+    const recipesInCollection = await service.findByCollectionId(collectionId);
+
+    expect(mockValidateCollectionExists).toHaveBeenCalledExactlyOnceWith(
+      mockCollectionsRepository,
+      collectionId
+    );
+    expect(mockRecipesRepoFindByCollectionId).toHaveBeenCalledExactlyOnceWith(
+      collectionId
+    );
+    expect(mockSignImages).toHaveBeenCalledExactlyOnceWith(imageUrls);
+    expect(recipesInCollection).toHaveLength(3);
+    expect(recipesInCollection).toEqual([
+      { ...recipes[0], imageUrl: fakeImageUrl },
+      { ...recipes[1], imageUrl: fakeImageUrl },
+      { ...recipes[2], imageUrl: fakeImageUrl },
+    ]);
   });
 });
 

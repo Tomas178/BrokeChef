@@ -19,6 +19,8 @@ import { usersRepository as buildUsersRepository } from '@server/repositories/us
 import { deleteFile } from '@server/utils/AWSS3Client/deleteFile';
 import config from '@server/config';
 import { signImages } from '@server/utils/signImages';
+import type { RecipesPublic } from '@server/entities/recipes';
+import { recipesRepository as buildRecipesRepository } from '@server/repositories/recipesRepository';
 import { rollbackImageUpload } from './utils/rollbackImageUpload';
 import { validateUserExists } from './utils/userValidations';
 import { validateCollectionExists } from './utils/collectionValidations';
@@ -28,6 +30,7 @@ export interface CollectionsService {
     dataForCollection: CreateCollectionInput
   ) => Promise<CollectionsPublic | undefined>;
   findById: (id: number) => Promise<CollectionsPublic | undefined>;
+  findByCollectionId: (collectionId: number) => Promise<RecipesPublic[]>;
   totalCollectionsByUser: (userId: string) => Promise<number>;
   remove: (id: number) => Promise<CollectionsPublic>;
 }
@@ -53,6 +56,7 @@ async function handleCollectionImageGeneration(
 export function collectionsService(database: Database): CollectionsService {
   const collectionsRepository = buildCollectionsRepository(database);
   const usersRepository = buildUsersRepository(database);
+  const recipesRepository = buildRecipesRepository(database);
 
   return {
     async create(dataForCollection) {
@@ -107,6 +111,25 @@ export function collectionsService(database: Database): CollectionsService {
       collection.imageUrl = await signImages(collection.imageUrl);
 
       return collection;
+    },
+
+    async findByCollectionId(collectionId) {
+      await validateCollectionExists(collectionsRepository, collectionId);
+
+      const recipesInCollection =
+        await recipesRepository.findByCollectionId(collectionId);
+
+      const recipesImageUrls = recipesInCollection.map(
+        recipe => recipe.imageUrl
+      );
+
+      const signedRecipesImageUrls = await signImages(recipesImageUrls);
+
+      for (const [index, recipe] of recipesInCollection.entries()) {
+        recipe.imageUrl = signedRecipesImageUrls[index];
+      }
+
+      return recipesInCollection;
     },
 
     async totalCollectionsByUser(userId) {
