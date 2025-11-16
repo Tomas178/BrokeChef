@@ -11,6 +11,7 @@ export interface CollectionsRepository {
   create: (collection: Insertable<Collections>) => Promise<CollectionsPublic>;
   findById: (id: number) => Promise<CollectionsPublic | undefined>;
   totalCollectionsByUser: (userId: string) => Promise<number>;
+  isAuthor: (collectionId: number, userId: string) => Promise<boolean>;
   remove: (id: number) => Promise<CollectionsPublic>;
 }
 
@@ -42,6 +43,17 @@ export function collectionsRepository(
         .executeTakeFirstOrThrow();
 
       return Number(count);
+    },
+
+    async isAuthor(collectionId, userId) {
+      const exists = await database
+        .selectFrom(TABLE)
+        .select('userId')
+        .where('userId', '=', userId)
+        .where('id', '=', collectionId)
+        .executeTakeFirst();
+
+      return !!exists;
     },
 
     async remove(id) {

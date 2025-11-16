@@ -90,14 +90,43 @@ describe('totalCollectionsByUser', () => {
   });
 
   it('Should return the amount that was created', async () => {
+    const [userThree] = await insertAll(database, 'users', fakeUser());
+
     const createdCollections = await insertAll(database, 'collections', [
-      fakeCollection({ userId: userOne.id }),
-      fakeCollection({ userId: userOne.id }),
+      fakeCollection({ userId: userThree.id }),
+      fakeCollection({ userId: userThree.id }),
     ]);
 
-    await expect(repository.totalCollectionsByUser(userOne.id)).resolves.toBe(
+    await expect(repository.totalCollectionsByUser(userThree.id)).resolves.toBe(
       createdCollections.length
     );
+  });
+});
+
+describe('isAuthor', async () => {
+  const collection = fakeCollectionDefault();
+  const [createdCollection] = await insertAll(
+    database,
+    'collections',
+    collection
+  );
+
+  it('Should return true', async () => {
+    const isAuthor = await repository.isAuthor(
+      createdCollection.id,
+      userOne.id
+    );
+
+    expect(isAuthor).toBeTruthy();
+  });
+
+  it('Should return false', async () => {
+    const isAuthor = await repository.isAuthor(
+      createdCollection.id,
+      userTwo.id
+    );
+
+    expect(isAuthor).toBeFalsy();
   });
 });
 
