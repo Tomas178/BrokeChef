@@ -28,6 +28,7 @@ import type {
 import type { ToolsPublic } from '../tools';
 import type { IngredientsPublic } from '../ingredients';
 import { USER_ID_LENGTH } from '../shared';
+import type { CreateCollectionInput } from '../collections';
 
 const randomOAuthId = () => random.string({ length: USER_ID_LENGTH });
 
@@ -224,6 +225,17 @@ export const fakeCollection = <T extends Partial<Insertable<Collections>>>(
   ...overrides,
   createdAt: new Date(),
   updatedAt: new Date(),
+});
+
+export const fakeCreateCollectionData = <
+  T extends Partial<CreateCollectionInput>,
+>(
+  overrides: T = {} as T
+) => ({
+  userId: randomOAuthId(),
+  title: random.string(),
+  imageUrl: random.url(),
+  ...overrides,
 });
 
 export const fakeCollectionRecipe = <

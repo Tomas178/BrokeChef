@@ -31,6 +31,7 @@ export interface Accounts {
 export interface Collections {
   createdAt: Generated<Timestamp>;
   id: Generated<number>;
+  imageUrl: string;
   title: string;
   updatedAt: Generated<Timestamp>;
   userId: string;
