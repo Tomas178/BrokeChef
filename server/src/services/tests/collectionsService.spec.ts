@@ -92,7 +92,7 @@ const mockCollectionsRepository = {
   findById: mockCollectionsRepoFindById,
   totalCollectionsByUser: mockCollectionsRepoTotalCollectionsByUser,
   remove: mockCollectionsRepoRemove,
-} as CollectionsRepository;
+} as Partial<CollectionsRepository>;
 
 vi.mock('@server/repositories/collectionsRepository', () => ({
   collectionsRepository: () => mockCollectionsRepository,
