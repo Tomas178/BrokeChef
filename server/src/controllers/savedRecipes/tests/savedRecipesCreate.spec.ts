@@ -34,7 +34,7 @@ beforeEach(() => vi.resetAllMocks());
 describe('Unauthenticated tests', () => {
   const { save } = createCaller(requestContext({ database }));
 
-  it('Should thrown an error if user is not authenticated', async () => {
+  it('Should throw an error if user is not authenticated', async () => {
     await expect(save(recipeId)).rejects.toThrow(/unauthenticated/i);
     expect(mockCreate).not.toHaveBeenCalled();
   });
