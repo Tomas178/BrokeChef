@@ -79,6 +79,24 @@ export default function createApp(database: Database) {
     })
   );
 
+  app.post(
+    '/api/upload/collection',
+    authenticate,
+    jsonRoute(async req => {
+      const file = await handleFile(req);
+      const resizedFileBuffer = await resizeImage(file);
+      const key = await uploadImage(
+        s3Client,
+        ImageFolder.COLLECTIONS,
+        resizedFileBuffer,
+        AllowedMimeType.JPEG
+      );
+
+      logger.info(`Collection image object created in S3: ${key}`);
+      return { image: key };
+    })
+  );
+
   app.use(jsonErrorHandler);
 
   app.use(

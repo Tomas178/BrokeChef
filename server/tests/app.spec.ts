@@ -111,4 +111,18 @@ describe('Image uploading', () => {
       testUploadSuccess(ENDPOINT, 'image')
     );
   });
+
+  describe('Collections', () => {
+    const ENDPOINT = '/api/upload/collection';
+
+    it(
+      'Should throw an error when an invalid file is given',
+      testUploadError(ENDPOINT)
+    );
+
+    it(
+      'Uploads collection image successfully',
+      testUploadSuccess(ENDPOINT, 'image')
+    );
+  });
 });
