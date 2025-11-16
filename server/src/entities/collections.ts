@@ -26,12 +26,19 @@ export const collectionsSchema = z.object({
 });
 
 export const createCollectionInputSchema = collectionsSchema.pick({
-  userId: true,
   title: true,
   imageUrl: true,
+  userId: true,
+});
+
+export const createCollectionRequestSchema = createCollectionInputSchema.omit({
+  userId: true,
 });
 
 export type CreateCollectionInput = z.infer<typeof createCollectionInputSchema>;
+export type CreateCollectionRequest = z.infer<
+  typeof createCollectionRequestSchema
+>;
 
 export const collectionsKeysAll = Object.keys(
   collectionsSchema.shape

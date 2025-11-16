@@ -28,7 +28,10 @@ import type {
 import type { ToolsPublic } from '../tools';
 import type { IngredientsPublic } from '../ingredients';
 import { USER_ID_LENGTH } from '../shared';
-import type { CreateCollectionInput } from '../collections';
+import type {
+  CreateCollectionInput,
+  CreateCollectionRequest,
+} from '../collections';
 
 const randomOAuthId = () => random.string({ length: USER_ID_LENGTH });
 
@@ -41,6 +44,9 @@ const randomRating = () => random.integer({ min: 1, max: 5 });
 
 const randomRecipeTitle = () =>
   random.string({ length: MAX_RECIPE_TITLE_LENGTH });
+
+const randomCollectionTitle = () =>
+  random.string({ length: MAX_COLLECTION_TITLE_LENGTH });
 
 export const fakeUser = <T extends Partial<UsersPublic>>(
   overrides: T = {} as T
@@ -220,7 +226,7 @@ export const fakeCollection = <T extends Partial<Insertable<Collections>>>(
   overrides: T = {} as T
 ) => ({
   userId: randomOAuthId(),
-  title: random.string({ length: MAX_COLLECTION_TITLE_LENGTH }),
+  title: randomCollectionTitle(),
   imageUrl: random.url(),
   ...overrides,
   createdAt: new Date(),
@@ -233,7 +239,17 @@ export const fakeCreateCollectionData = <
   overrides: T = {} as T
 ) => ({
   userId: randomOAuthId(),
-  title: random.string(),
+  title: randomCollectionTitle(),
+  imageUrl: random.url(),
+  ...overrides,
+});
+
+export const fakeCollectionRequestData = <
+  T extends Partial<CreateCollectionRequest>,
+>(
+  overrides: T = {} as T
+) => ({
+  title: randomCollectionTitle(),
   imageUrl: random.url(),
   ...overrides,
 });
