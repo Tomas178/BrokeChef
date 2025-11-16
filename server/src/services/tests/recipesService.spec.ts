@@ -129,9 +129,7 @@ const service = recipesService(database);
 
 const author = fakeUser();
 
-beforeEach(async () => {
-  vi.resetAllMocks();
-});
+beforeEach(() => vi.resetAllMocks());
 
 describe('createRecipe', () => {
   it('Should create a new recipe with user given image', async () => {

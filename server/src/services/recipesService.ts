@@ -28,6 +28,7 @@ import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import { joinStepsToSingleString } from './utils/joinStepsToSingleString';
 import { insertIngredients, insertTools } from './utils/inserts';
 import { validateRecipeExists } from './utils/recipeValidations';
+import { rollbackImageUpload } from './utils/rollbackImageUpload';
 
 export interface RecipesService {
   createRecipe: (
@@ -39,7 +40,7 @@ export interface RecipesService {
   remove: (recipeId: number) => Promise<RecipesPublic>;
 }
 
-async function handleImageGeneration(
+async function handleRecipeImageGeneration(
   userProvidedUrl: string | undefined,
   recipeTitle: string,
   ingredients: CreateRecipeInput['ingredients']
@@ -61,14 +62,6 @@ async function handleImageGeneration(
   );
 }
 
-async function rollbackImageUpload(imageUrl: string): Promise<void> {
-  try {
-    await deleteFile(s3Client, config.auth.aws.s3.buckets.images, imageUrl);
-  } catch (error) {
-    logger.error('Failed to rollback S3 Object:', error);
-  }
-}
-
 export function recipesService(database: Database): RecipesService {
   const recipesRepository = buildRecipesRepository(database);
 
@@ -80,7 +73,7 @@ export function recipesService(database: Database): RecipesService {
       let isImageGenerated = false;
 
       try {
-        imageUrl = await handleImageGeneration(
+        imageUrl = await handleRecipeImageGeneration(
           recipeData.imageUrl,
           recipeData.title,
           ingredients
