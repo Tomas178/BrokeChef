@@ -2,7 +2,7 @@ import type { Insertable } from 'kysely';
 import { Chance } from 'chance';
 import { UserLogin, UserSignup } from './api';
 import { Recipes, RecipesPublicAllInfo } from '@server/shared/types';
-import { MAX_TITLE_LENGTH } from '@server/shared/consts';
+import { MAX_RECIPE_TITLE_LENGTH } from '@server/shared/consts';
 
 export const random = process.env.CI ? Chance(1) : Chance();
 
@@ -42,7 +42,7 @@ export const fakeRecipeAllInfo = <T extends Partial<RecipesPublicAllInfo>>(
 ) => ({
   id: random.integer({ min: 1 }),
   userId: randomOAuthId(),
-  title: random.string({ length: MAX_TITLE_LENGTH }),
+  title: random.string({ length: MAX_RECIPE_TITLE_LENGTH }),
   duration: randomDuration(),
   steps: random.paragraph(),
   imageUrl: random.url(),
