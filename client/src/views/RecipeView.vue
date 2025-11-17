@@ -1,244 +1,53 @@
 <script lang="ts" setup>
-import { trpc } from '@/trpc';
 import { useRoute } from 'vue-router';
-import type {
-  CreateRatingInput,
-  Rating,
-  RecipesPublicAllInfo,
-} from '@server/shared/types';
 import { onBeforeMount, ref } from 'vue';
 import { titleCase } from 'title-case';
 import { format } from 'date-fns';
-import useErrorMessage from '@/composables/useErrorMessage';
-import { DEFAULT_SERVER_ERROR } from '@/consts';
 import RecipeDetailsCard from '@/components/RecipeDetailsCard.vue';
 import Spinner from '@/components/Spinner.vue';
-import useToast from '@/composables/useToast';
 import Dialog from '@/components/Dialog.vue';
 import { formatRecipeRating } from '@/utils/formatRecipeRating';
-import { navigateToHome } from '@/router/utils';
+import { useRecipesService } from '@/composables/useRecipesService';
+import { useSavedRecipeService } from '@/composables/useSavedRecipesService';
 import { ROUTE_NAMES } from '@/router/consts/routeNames';
-
-const { showLoading, updateToast } = useToast();
+import { useCookedRecipesService } from '@/composables/useCookedRecipesService';
+import { useRatingsService } from '@/composables/useRatingsService';
 
 const route = useRoute();
 
-const recipe = ref<RecipesPublicAllInfo>();
-const isAuthor = ref(false);
-const isSaved = ref(false);
-const isCooked = ref(false);
-
 const isLoading = ref(true);
-
 const recipeId = Number(route.params.id);
-
 const dialogRef = ref<InstanceType<typeof Dialog> | null>(null);
 
 function showDialog() {
   dialogRef.value?.open();
 }
 
-const [deleteRecipe, deleteErrorMessage] = useErrorMessage(
-  async () => await trpc.recipes.remove.mutate(recipeId),
-  true
-);
+const { recipe, isAuthor, getRecipe, checkIsAuthor, handleDelete } =
+  useRecipesService(recipeId);
 
-async function handleDelete() {
-  const id = showLoading('Removing Recipe...');
+const { isSaved, handleSave, handleUnsave, checkIfSaved } =
+  useSavedRecipeService(recipeId);
 
-  try {
-    await deleteRecipe();
+const { isCooked, handleMarkAsCooked, handleUnmarkAsCooked, checkIfCooked } =
+  useCookedRecipesService(recipeId);
 
-    updateToast(id, 'success', 'Recipe Removed!');
-
-    await navigateToHome(undefined, 1000);
-  } catch {
-    updateToast(id, 'error', deleteErrorMessage.value || DEFAULT_SERVER_ERROR);
-  }
-}
-
-const [saveRecipe, saveErrorMessage] = useErrorMessage(
-  async () => await trpc.savedRecipes.save.mutate(recipeId),
-  true
-);
-
-async function handleSave() {
-  const id = showLoading('Saving recipe...');
-
-  try {
-    await saveRecipe();
-
-    isSaved.value = true;
-    updateToast(id, 'success', 'Recipe saved successfully');
-  } catch {
-    updateToast(id, 'error', saveErrorMessage.value || DEFAULT_SERVER_ERROR);
-  }
-}
-
-const [unsaveRecipe, unsaveErrorMessage] = useErrorMessage(
-  async () => await trpc.savedRecipes.unsave.mutate(recipeId),
-  true
-);
-
-async function handleUnsave() {
-  const id = showLoading('Unsaving recipe...');
-
-  try {
-    await unsaveRecipe();
-
-    isSaved.value = false;
-    updateToast(id, 'success', 'Recipe unsaved successfully');
-  } catch {
-    updateToast(id, 'error', unsaveErrorMessage.value || DEFAULT_SERVER_ERROR);
-  }
-}
-
-const [markAsCooked, markCookedErrorMessage] = useErrorMessage(
-  async () => await trpc.cookedRecipes.mark.mutate(recipeId),
-  true
-);
-
-async function handleMarkAsCooked() {
-  const id = showLoading('Marking as cooked...');
-
-  try {
-    await markAsCooked();
-
-    isCooked.value = true;
-    updateToast(id, 'success', 'Recipe marked as cooked!');
-  } catch {
-    updateToast(
-      id,
-      'error',
-      markCookedErrorMessage.value || DEFAULT_SERVER_ERROR
-    );
-  }
-}
-
-const [unmarkAsCooked, unmarkCookedErrorMessage] = useErrorMessage(
-  async () => await trpc.cookedRecipes.unmark.mutate(recipeId),
-  true
-);
-
-async function handleUnmarkAsCooked() {
-  const id = showLoading('Unmarking as cooked...');
-
-  try {
-    await unmarkAsCooked();
-
-    isCooked.value = false;
-    updateToast(id, 'success', 'Recipe unmarked as cooked');
-  } catch {
-    updateToast(
-      id,
-      'error',
-      unmarkCookedErrorMessage.value || DEFAULT_SERVER_ERROR
-    );
-  }
-}
-
-const hoveredRating = ref(0);
-const userRating = ref<Rating>(undefined);
-
-const [rateRecipe, rateErrorMessage] = useErrorMessage<
-  [CreateRatingInput],
-  ReturnType<typeof trpc.ratings.rate.mutate>,
-  typeof trpc.ratings.rate.mutate
->(
-  async (fullRating: CreateRatingInput) =>
-    await trpc.ratings.rate.mutate(fullRating),
-  true
-);
-
-async function handleCreateRating(rating: number) {
-  const id = showLoading('Saving rating...');
-
-  try {
-    const ratingData: CreateRatingInput = { rating, recipeId };
-    const createdRating = await rateRecipe(ratingData);
-
-    if (recipe.value) {
-      recipe.value.rating = createdRating?.rating;
-    }
-
-    userRating.value = rating;
-    updateToast(id, 'success', 'Rating saved successfully');
-  } catch {
-    updateToast(id, 'error', rateErrorMessage.value || DEFAULT_SERVER_ERROR);
-  }
-}
-
-const [updateRating, updateRatingErrorMessage] = useErrorMessage<
-  [CreateRatingInput],
-  ReturnType<typeof trpc.ratings.update.mutate>,
-  typeof trpc.ratings.update.mutate
->(
-  async (fullRating: CreateRatingInput) =>
-    await trpc.ratings.update.mutate(fullRating),
-  true
-);
-
-async function handleUpdateRating(rating: number) {
-  const id = showLoading('Updating rating...');
-
-  try {
-    const ratingData: CreateRatingInput = { rating, recipeId };
-    const updatedRating = await updateRating(ratingData);
-
-    if (recipe.value) {
-      recipe.value.rating = updatedRating;
-    }
-
-    userRating.value = rating;
-    updateToast(id, 'success', 'Rating updated successfully');
-  } catch {
-    updateToast(
-      id,
-      'error',
-      updateRatingErrorMessage.value || DEFAULT_SERVER_ERROR
-    );
-  }
-}
-
-const [removeRating, removeRatingErrorMessage] = useErrorMessage(
-  async () => await trpc.ratings.remove.mutate(recipeId),
-  true
-);
-
-async function handleRemoveRating() {
-  const id = showLoading('Removing your rating...');
-
-  try {
-    const ratingAfterRemoval = await removeRating();
-
-    if (recipe.value) {
-      recipe.value.rating = ratingAfterRemoval;
-    }
-
-    userRating.value = undefined;
-    updateToast(id, 'success', 'Rating removed successfully');
-  } catch {
-    updateToast(
-      id,
-      'error',
-      removeRatingErrorMessage.value || DEFAULT_SERVER_ERROR
-    );
-  }
-}
+const {
+  hoveredRating,
+  userRating,
+  handleCreateRating,
+  handleUpdateRating,
+  handleRemoveRating,
+  getUserRating,
+} = useRatingsService(recipeId, recipe);
 
 onBeforeMount(async () => {
-  [
-    recipe.value,
-    isAuthor.value,
-    isSaved.value,
-    userRating.value,
-    isCooked.value,
-  ] = await Promise.all([
-    trpc.recipes.findById.query(recipeId),
-    trpc.recipes.isAuthor.query(recipeId),
-    trpc.savedRecipes.isSaved.query(recipeId),
-    trpc.ratings.getUserRatingForRecipe.query(recipeId),
-    trpc.cookedRecipes.isMarked.query(recipeId),
+  await Promise.all([
+    getRecipe(),
+    checkIsAuthor(),
+    checkIfSaved(),
+    getUserRating(),
+    checkIfCooked(),
   ]);
 });
 </script>

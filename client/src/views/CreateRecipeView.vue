@@ -1,15 +1,7 @@
 <script lang="ts" setup>
 import CreateForm from '@/components/Forms/CreateForm.vue';
-import type { CreateRecipeInput, RecipesPublic } from '@server/shared/types';
 import { FwbButton, FwbHeading, FwbInput, FwbFileInput } from 'flowbite-vue';
-import { reactive, computed, ref } from 'vue';
-import { trpc } from '@/trpc';
-import useErrorMessage from '@/composables/useErrorMessage';
-import { DEFAULT_SERVER_ERROR } from '@/consts';
-import axios from 'axios';
-import { apiOrigin } from '@/config';
-import useToast from '@/composables/useToast';
-import { navigateToRecipe } from '@/router/utils';
+import { useRecipesService } from '@/composables/useRecipesService';
 import {
   MAX_DURATION,
   MAX_RECIPE_TITLE_LENGTH,
@@ -17,77 +9,8 @@ import {
   MIN_RECIPE_TITLE_LENGTH,
 } from '@server/shared/consts';
 
-const { showLoading, updateToast } = useToast();
-
-const recipeForm = reactive<CreateRecipeInput>({
-  title: '',
-  duration: 0,
-  imageUrl: undefined,
-  steps: [''],
-  ingredients: [''],
-  tools: [''],
-});
-
-const fullEndpoint = `${apiOrigin}/api/upload/recipe`;
-
-const recipeImageFile = ref<File | undefined>(undefined);
-
-const durationString = computed({
-  get: () => recipeForm.duration.toString(),
-  set: (val: string) => {
-    const parsed = parseInt(val);
-    recipeForm.duration = isNaN(parsed) ? 0 : parsed;
-  },
-});
-
-const [createRecipe, errorMessage] = useErrorMessage(async () => {
-  if (recipeImageFile.value) {
-    const formData = new FormData();
-    formData.append('file', recipeImageFile.value);
-
-    const { data } = await axios.post<Pick<RecipesPublic, 'imageUrl'>>(
-      fullEndpoint,
-      formData,
-      {
-        withCredentials: true,
-      }
-    );
-
-    recipeForm.imageUrl = data.imageUrl;
-
-    return trpc.recipes.create.mutate(recipeForm);
-  } else {
-    recipeForm.imageUrl = undefined;
-  }
-
-  return trpc.recipes.create.mutate(recipeForm);
-}, true);
-
-async function handleCreateRecipe() {
-  const id = showLoading('Creating recipe...');
-
-  try {
-    const recipe = await createRecipe();
-    if (!recipe) {
-      updateToast(id, 'error', errorMessage.value || DEFAULT_SERVER_ERROR);
-      return;
-    }
-
-    updateToast(id, 'success', 'Recipe has been created!');
-
-    recipeForm.title = '';
-    recipeForm.duration = 0;
-    recipeForm.steps = [''];
-    recipeForm.ingredients = [''];
-    recipeForm.tools = [''];
-    recipeForm.imageUrl = '';
-    recipeImageFile.value = undefined;
-
-    await navigateToRecipe({ id: recipe.id }, 1500);
-  } catch {
-    updateToast(id, 'error', errorMessage.value || DEFAULT_SERVER_ERROR);
-  }
-}
+const { recipeForm, recipeImageFile, durationString, handleCreateRecipe } =
+  useRecipesService();
 </script>
 
 <template>
