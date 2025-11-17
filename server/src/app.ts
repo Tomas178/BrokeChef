@@ -16,6 +16,7 @@ import { appRouter } from './controllers';
 import config from './config';
 import jsonErrorHandler from './middleware/jsonErrors';
 import uploadRouter from './routes/uploadRouter';
+import generateRecipesRouter from './routes/generateRecipesRouter';
 
 export default function createApp(database: Database) {
   const app = express();
@@ -36,6 +37,8 @@ export default function createApp(database: Database) {
   });
 
   app.use('/api/upload', uploadRouter);
+
+  app.use('/api/recipe', generateRecipesRouter);
 
   app.use(jsonErrorHandler);
 

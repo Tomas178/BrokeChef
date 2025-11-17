@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/prevent-abbreviations */
 /* eslint-disable unicorn/consistent-function-scoping */
 import createApp from '@server/app';
 import supertest from 'supertest';
@@ -6,8 +5,7 @@ import { StatusCodes } from 'http-status-codes';
 import type { Request } from 'express';
 import { upload } from '@server/utils/upload';
 import type { Mock } from 'vitest';
-import { createTestDatabase } from './utils/database';
-import { wrapInRollbacks } from './utils/transactions';
+import type { Database } from '@server/database';
 
 vi.mock('@server/utils/upload', () => ({
   upload: {
@@ -16,7 +14,7 @@ vi.mock('@server/utils/upload', () => ({
 }));
 
 vi.mock('@server/middleware/authenticate', () => ({
-  authenticate: (request: any, res: any, next: any) => {
+  authenticate: (request: any, _: any, next: any) => {
     request.user = { id: 'test-user' };
     next();
   },
@@ -33,7 +31,7 @@ vi.mock('@server/utils/AWSS3Client/uploadImage', () => ({
   uploadImage: vi.fn(() => fakeKey),
 }));
 
-const database = await wrapInRollbacks(createTestDatabase());
+const database = {} as Database;
 
 describe('Server health check', () => {
   it('can launch the app', async () => {
