@@ -26,6 +26,7 @@ const route = useRoute();
 const recipe = ref<RecipesPublicAllInfo>();
 const isAuthor = ref(false);
 const isSaved = ref(false);
+const isCooked = ref(false);
 
 const isLoading = ref(true);
 
@@ -89,6 +90,50 @@ async function handleUnsave() {
     updateToast(id, 'success', 'Recipe unsaved successfully');
   } catch {
     updateToast(id, 'error', unsaveErrorMessage.value || DEFAULT_SERVER_ERROR);
+  }
+}
+
+const [markAsCooked, markCookedErrorMessage] = useErrorMessage(
+  async () => await trpc.cookedRecipes.mark.mutate(recipeId),
+  true
+);
+
+async function handleMarkAsCooked() {
+  const id = showLoading('Marking as cooked...');
+
+  try {
+    await markAsCooked();
+
+    isCooked.value = true;
+    updateToast(id, 'success', 'Recipe marked as cooked!');
+  } catch {
+    updateToast(
+      id,
+      'error',
+      markCookedErrorMessage.value || DEFAULT_SERVER_ERROR
+    );
+  }
+}
+
+const [unmarkAsCooked, unmarkCookedErrorMessage] = useErrorMessage(
+  async () => await trpc.cookedRecipes.unmark.mutate(recipeId),
+  true
+);
+
+async function handleUnmarkAsCooked() {
+  const id = showLoading('Unmarking as cooked...');
+
+  try {
+    await unmarkAsCooked();
+
+    isCooked.value = false;
+    updateToast(id, 'success', 'Recipe unmarked as cooked');
+  } catch {
+    updateToast(
+      id,
+      'error',
+      unmarkCookedErrorMessage.value || DEFAULT_SERVER_ERROR
+    );
   }
 }
 
@@ -182,13 +227,19 @@ async function handleRemoveRating() {
 }
 
 onBeforeMount(async () => {
-  [recipe.value, isAuthor.value, isSaved.value, userRating.value] =
-    await Promise.all([
-      trpc.recipes.findById.query(recipeId),
-      trpc.recipes.isAuthor.query(recipeId),
-      trpc.savedRecipes.isSaved.query(recipeId),
-      trpc.ratings.getUserRatingForRecipe.query(recipeId),
-    ]);
+  [
+    recipe.value,
+    isAuthor.value,
+    isSaved.value,
+    userRating.value,
+    isCooked.value,
+  ] = await Promise.all([
+    trpc.recipes.findById.query(recipeId),
+    trpc.recipes.isAuthor.query(recipeId),
+    trpc.savedRecipes.isSaved.query(recipeId),
+    trpc.ratings.getUserRatingForRecipe.query(recipeId),
+    trpc.cookedRecipes.isMarked.query(recipeId),
+  ]);
 });
 </script>
 
@@ -243,6 +294,29 @@ onBeforeMount(async () => {
             >
               <span>Cook duration {{ recipe.duration }} minutes</span>
             </div>
+            <div>
+              <button
+                v-if="!isAuthor && !isCooked"
+                @click="handleMarkAsCooked"
+                type="button"
+                data-testid="mark-cooked-button"
+                title="Mark as Cooked"
+                class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-green-500/90 transition-transform hover:scale-110 hover:bg-green-600/90"
+              >
+                <span class="material-symbols-outlined"> fork_spoon </span>
+              </button>
+
+              <button
+                v-if="!isAuthor && isCooked"
+                @click="handleUnmarkAsCooked"
+                type="button"
+                data-testid="unmark-cooked-button"
+                title="Unmark as Cooked"
+                class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-gray-500/90 transition-transform hover:scale-110 hover:bg-gray-600/90"
+              >
+                <span class="material-symbols-outlined"> no_meals </span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -271,11 +345,18 @@ onBeforeMount(async () => {
                   {{ formatRecipeRating(recipe.rating) }}/5
                 </span>
                 <span
+                  data-testid="not-rated-author-text"
+                  v-else-if="isAuthor"
+                  class="text-primary-green"
+                >
+                  No Ratings yet!
+                </span>
+                <span
                   data-testid="not-rated-text"
                   v-else
                   class="text-primary-green"
                 >
-                  Be the first one to Rate!
+                  Be the First one to Rate!
                 </span>
               </div>
             </div>
@@ -290,13 +371,18 @@ onBeforeMount(async () => {
                 :data-testid="`star-${star}`"
                 type="button"
                 @click="
-                  userRating
+                  !isAuthor &&
+                  (userRating
                     ? handleUpdateRating(star)
-                    : handleCreateRating(star)
+                    : handleCreateRating(star))
                 "
-                @mouseenter="hoveredRating = star"
-                @mouseleave="hoveredRating = 0"
-                class="cursor-pointer transition-transform hover:scale-110"
+                @mouseenter="!isAuthor && (hoveredRating = star)"
+                @mouseleave="!isAuthor && (hoveredRating = 0)"
+                :class="{
+                  'cursor-pointer transition-transform hover:scale-110':
+                    !isAuthor,
+                  'cursor-default': isAuthor,
+                }"
               >
                 <svg
                   class="h-6 w-6 sm:h-12 sm:w-12 lg:h-14 lg:w-14"
@@ -320,7 +406,7 @@ onBeforeMount(async () => {
               v-if="isAuthor"
               @click="showDialog"
               type="button"
-              class="cursor-pointer rounded-3xl bg-red-400/90 px-6 py-2 text-xl leading-tight font-medium text-white hover:scale-105"
+              class="cursor-pointer rounded-3xl bg-red-400/90 px-6 py-2 text-xl leading-tight font-medium text-white hover:outline-1 hover:outline-black"
             >
               Delete
             </button>
@@ -329,7 +415,7 @@ onBeforeMount(async () => {
               v-else-if="!isSaved"
               @click="handleSave"
               type="button"
-              class="gradient-action-button cursor-pointer rounded-3xl px-6 py-2 text-xl leading-tight font-medium text-white hover:scale-105"
+              class="gradient-action-button cursor-pointer rounded-3xl px-6 py-2 text-xl leading-tight font-medium text-white hover:outline-1 hover:outline-black"
             >
               Save
             </button>
@@ -338,7 +424,7 @@ onBeforeMount(async () => {
               v-else
               @click="handleUnsave"
               type="button"
-              class="gradient-action-button cursor-pointer rounded-3xl px-6 py-2 text-xl leading-tight font-medium text-white hover:scale-105"
+              class="gradient-action-button cursor-pointer rounded-3xl px-6 py-2 text-xl leading-tight font-medium text-white hover:outline-1 hover:outline-black"
             >
               Unsave
             </button>
