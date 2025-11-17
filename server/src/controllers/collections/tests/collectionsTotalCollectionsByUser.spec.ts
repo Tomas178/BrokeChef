@@ -55,6 +55,15 @@ describe('Authenticated tests', () => {
     await expect(totalCollectionsByUser(userId)).rejects.toThrow(errorMessage);
   });
 
+  it('Should call totalCollectionsByUser with userId from cookies return user when not given userId but authenticanted', async () => {
+    mockTotalCollectionsByUser.mockResolvedValueOnce(user);
+
+    const userByAuth = await totalCollectionsByUser();
+
+    expect(mockTotalCollectionsByUser).toHaveBeenCalledExactlyOnceWith(user.id);
+    expect(userByAuth).toEqual(user);
+  });
+
   it('Should return the total count of collections that user has created', async () => {
     mockTotalCollectionsByUser.mockResolvedValueOnce(totalCollectionsCount);
 

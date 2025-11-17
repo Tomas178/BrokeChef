@@ -7,7 +7,7 @@ import { TRPCError } from '@trpc/server';
 
 export default authenticatedProcedure
   .use(provideServices({ collectionsService }))
-  .input(oauthUserIdSchema)
+  .input(oauthUserIdSchema.nullish())
   .query(async ({ input: userId, ctx: { authUser, services } }) => {
     try {
       userId = userId ?? authUser.id;
