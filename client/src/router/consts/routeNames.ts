@@ -11,6 +11,7 @@ export const ROUTE_NAMES = {
   MY_PROFILE: 'MyProfile',
   USER_PROFILE: 'UserProfile',
   EDIT_MY_PROFILE: 'EditMyProfile',
+  FRIDGE_MODE: 'FridgeMode',
 } as const;
 
 export type RouteNamesValues = ObjectValues<typeof ROUTE_NAMES>;

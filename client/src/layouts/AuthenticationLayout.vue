@@ -14,6 +14,7 @@ const links = computed(() => [
     ? [
         { label: 'Create a recipe', name: ROUTE_NAMES.CREATE_RECIPE },
         { label: 'Profile', name: ROUTE_NAMES.MY_PROFILE },
+        { label: 'Fridge Mode', name: ROUTE_NAMES.FRIDGE_MODE },
       ]
     : [
         { label: 'Login', name: ROUTE_NAMES.LOGIN },

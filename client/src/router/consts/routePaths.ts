@@ -11,6 +11,7 @@ export const ROUTE_PATHS = {
   MY_PROFILE: '/profile',
   USER_PROFILE: '/profile/:id',
   EDIT_MY_PROFILE: '/profile/:id/edit',
+  FRIDGE_MODE: '/fridge-mode',
 } as const;
 
 export type RoutePathsValues = ObjectValues<typeof ROUTE_PATHS>;

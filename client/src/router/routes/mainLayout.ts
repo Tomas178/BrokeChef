@@ -43,4 +43,10 @@ export const mainLayoutRoutes: RouteRecordRaw[] = [
     component: () => import('@/views/EditProfileView.vue'),
     props: true,
   },
+  {
+    beforeEnter: [authenticate],
+    path: ROUTE_PATHS.FRIDGE_MODE,
+    name: ROUTE_NAMES.FRIDGE_MODE,
+    component: () => import('@/views/FridgeModeView.vue'),
+  },
 ];
