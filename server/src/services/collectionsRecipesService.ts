@@ -8,6 +8,7 @@ import { NoResultError } from 'kysely';
 import CollectionRecipeLinkNotFound from '@server/utils/errors/collections/CollectionRecipeLinkNotFound';
 import CollectionRecipesLinkAlreadyExists from '@server/utils/errors/collections/CollectionRecipeLinkAlreadyExists';
 import { PostgresError } from 'pg-error-enum';
+import logger from '@server/logger';
 import { validateCollectionExists } from './utils/collectionValidations';
 import { validateRecipeExists } from './utils/recipeValidations';
 
@@ -34,6 +35,9 @@ export function collectionsRecipesService(
       try {
         const createdLink = await collectionsRecipesRepository.create(link);
 
+        logger.info(
+          `Recipe: ${createdLink.recipeId} has been added to collection: ${createdLink.collectionId}`
+        );
         return createdLink;
       } catch (error) {
         assertPostgresError(error);
@@ -53,6 +57,9 @@ export function collectionsRecipesService(
       try {
         const removedLink = await collectionsRecipesRepository.remove(link);
 
+        logger.info(
+          `Recipe: ${removedLink.recipeId} has been removed from collection: ${removedLink.collectionId}`
+        );
         return removedLink;
       } catch (error) {
         assertError(error);
