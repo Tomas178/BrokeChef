@@ -51,10 +51,15 @@ export type CollectionsPublic = Pick<
   (typeof collectionsKeysPublic)[number]
 >;
 
-export const collectionsPublicBasicSchema = collectionsSchema.pick({
-  id: true,
-  title: true,
-});
+export const collectionsPublicBasicSchema = collectionsSchema
+  .pick({
+    id: true,
+    title: true,
+    imageUrl: true,
+  })
+  .required({
+    imageUrl: true,
+  });
 
 export const collectionsKeysPublicBasic = ['id', 'title', 'imageUrl'] as const;
 
