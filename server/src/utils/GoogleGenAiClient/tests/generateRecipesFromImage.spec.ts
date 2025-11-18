@@ -102,17 +102,17 @@ describe('generateRecipesFromImage', () => {
 
     expect(result[0]).toEqual({
       ...VALID_RESPONSE_SCHEMA_OF_THREE.recipes[0],
-      image: RESPONSE_IMAGES_OF_THREE[0],
+      imageUrl: `data:image/jpeg;base64,${RESPONSE_IMAGES_OF_THREE[0].toString('base64')}`,
     });
 
     expect(result[1]).toEqual({
       ...VALID_RESPONSE_SCHEMA_OF_THREE.recipes[1],
-      image: RESPONSE_IMAGES_OF_THREE[1],
+      imageUrl: `data:image/jpeg;base64,${RESPONSE_IMAGES_OF_THREE[1].toString('base64')}`,
     });
 
     expect(result[2]).toEqual({
       ...VALID_RESPONSE_SCHEMA_OF_THREE.recipes[2],
-      image: RESPONSE_IMAGES_OF_THREE[2],
+      imageUrl: `data:image/jpeg;base64,${RESPONSE_IMAGES_OF_THREE[2].toString('base64')}`,
     });
 
     expect(mockGenerateRecipeImage).toHaveBeenCalledTimes(

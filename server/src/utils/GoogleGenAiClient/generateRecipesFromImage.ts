@@ -134,17 +134,19 @@ export async function generateRecipesFromImage(
   }
 
   const recipesWithImages: GeneratedRecipe[] = await Promise.all(
-    parsedData.recipes.map(async (recipe: Omit<GeneratedRecipe, 'image'>) => {
-      const imageBuffer = await generateRecipeImage(ai, {
-        title: recipe.title,
-        ingredients: recipe.ingredients,
-      });
+    parsedData.recipes.map(
+      async (recipe: Omit<GeneratedRecipe, 'imageUrl'>) => {
+        const imageBuffer = await generateRecipeImage(ai, {
+          title: recipe.title,
+          ingredients: recipe.ingredients,
+        });
 
-      return {
-        ...recipe,
-        image: imageBuffer,
-      };
-    })
+        return {
+          ...recipe,
+          imageUrl: `data:image/jpeg;base64,${imageBuffer.toString('base64')}`,
+        };
+      }
+    )
   );
 
   return recipesWithImages;

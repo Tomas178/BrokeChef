@@ -11,7 +11,7 @@ export const generatedRecipeSchema = recipesSchema
     steps: arrayStringSchema,
     ingredients: arrayStringSchema,
     tools: arrayStringSchema,
-    image: z.instanceof(Buffer),
+    imageUrl: z.string(),
   });
 
 export type GeneratedRecipe = z.infer<typeof generatedRecipeSchema>;

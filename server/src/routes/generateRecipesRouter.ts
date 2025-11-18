@@ -18,8 +18,6 @@ generateRecipesRouter.post(
 
     const recipes = await generateRecipesFromImage(ai, resizedFileBuffer);
 
-    console.log(recipes);
-
     logger.info(`Generated ${recipes.length} recipes from uploaded image`);
     return recipes;
   })
