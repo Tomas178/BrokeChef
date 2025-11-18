@@ -8,6 +8,10 @@ export type * from '@server/entities/savedRecipes';
 export type * from '@server/entities/tools';
 export type * from '@server/entities/users';
 export type * from '@server/entities/ratings';
+export type * from '@server/entities/cookedRecipes';
+export type * from '@server/entities/collections';
+export type * from '@server/entities/collectionsRecipes';
+export type * from '@server/entities/generatedRecipe';
 export type * from '@server/entities/shared';
 
 export type * from '@server/controllers/recipes/create';
