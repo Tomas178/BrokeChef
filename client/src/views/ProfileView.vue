@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { FwbButton, FwbFileInput, FwbModal } from 'flowbite-vue';
 import { useRoute, useRouter } from 'vue-router';
-import type { UsersPublic } from '@server/shared/types';
+import type {
+  CollectionsPublicBasic,
+  RecipesPublic,
+  UsersPublic,
+} from '@server/shared/types';
 import { onMounted, ref, watch } from 'vue';
 import { trpc } from '@/trpc';
 import useErrorMessage from '@/composables/useErrorMessage';
@@ -19,6 +23,7 @@ import {
 import { useUserStore } from '@/stores/user';
 import { computed } from 'vue';
 import { MODAL_TYPES, type ModalType } from '@/types/profile';
+import CreateCollectionModal from '@/components/Modals/CreateCollectionModal.vue';
 
 const { showLoading, updateToast } = useToast();
 const userStore = useUserStore();
@@ -39,6 +44,16 @@ const showModal = ref(false);
 const modalType = ref<ModalType>(MODAL_TYPES.FOLLOWING);
 const modalUsers = ref<UsersPublic[]>([]);
 const isLoadingModalUsers = ref(true);
+
+const showCollectionsModal = ref(false);
+const isLoadingCollections = ref(false);
+const isLoadingCollectionRecipes = ref(false);
+
+const collections = ref<CollectionsPublicBasic[]>([]);
+const selectedCollection = ref<CollectionsPublicBasic | undefined>(undefined);
+const collectionRecipes = ref<RecipesPublic[]>([]);
+
+const showCreateCollectionModal = ref(false);
 
 const isOwnProfile = computed(() => {
   return userStore.id === user.value?.id;
@@ -219,6 +234,98 @@ async function openFollowModal(type: ModalType) {
   }
 }
 
+async function openCollectionsModal() {
+  showCollectionsModal.value = true;
+  selectedCollection.value = undefined;
+  collectionRecipes.value = [];
+  await fetchCollections();
+}
+
+async function fetchCollections() {
+  if (!user.value) return;
+  isLoadingCollections.value = true;
+
+  try {
+    collections.value = await trpc.collections.findByUserId.query();
+  } finally {
+    isLoadingCollections.value = false;
+  }
+}
+
+async function openCollectionRecipes(collection: CollectionsPublicBasic) {
+  selectedCollection.value = collection;
+  isLoadingCollectionRecipes.value = true;
+
+  try {
+    collectionRecipes.value =
+      await trpc.collections.findRecipesByCollectionId.query(collection.id);
+  } finally {
+    isLoadingCollectionRecipes.value = false;
+  }
+}
+
+const [removeCollection, removeCollectionErrorMessage] = useErrorMessage(
+  (async (...args: unknown[]) => {
+    const collectionId = args[0] as number;
+
+    return trpc.collections.remove.mutate(collectionId);
+  }) as (...args: unknown[]) => unknown,
+  true
+);
+
+async function handleRemoveCollection(collectionId: number) {
+  const id = showLoading('Removing collection...');
+
+  try {
+    await removeCollection(collectionId);
+
+    collections.value = collections.value.filter((c) => c.id !== collectionId);
+
+    updateToast(id, 'success', 'Collection removed successfully');
+  } catch {
+    updateToast(
+      id,
+      'error',
+      removeCollectionErrorMessage.value || DEFAULT_SERVER_ERROR
+    );
+  }
+}
+
+const [removeRecipeFromCollection, removeRecipeFromCollectionErrorMessage] =
+  useErrorMessage(
+    (async (...args: unknown[]) => {
+      if (!selectedCollection.value) return;
+
+      const recipeId = args[0] as number;
+
+      return trpc.collectionsRecipes.unsave.mutate({
+        collectionId: selectedCollection.value.id,
+        recipeId,
+      });
+    }) as (...args: unknown[]) => unknown,
+    true
+  );
+
+async function handleRemoveRecipeFromCollection(recipeId: number) {
+  const id = showLoading('Removing recipe from collection...');
+
+  try {
+    await removeRecipeFromCollection(recipeId);
+
+    collectionRecipes.value = collectionRecipes.value.filter(
+      (r) => r.id !== recipeId
+    );
+
+    updateToast(id, 'success', 'Removed recipe from collection successfully');
+  } catch {
+    updateToast(
+      id,
+      'error',
+      removeRecipeFromCollectionErrorMessage.value || DEFAULT_SERVER_ERROR
+    );
+  }
+}
+
 onMounted(async () => {
   await fetchProfileData();
 });
@@ -391,6 +498,29 @@ onMounted(async () => {
       </div>
 
       <div>
+        <div v-if="isOwnProfile" class="flex items-center justify-between">
+          <FwbButton
+            data-testid="open-collections-modal"
+            @click="openCollectionsModal"
+            class="text-primary-green inline-flex cursor-pointer rounded-3xl bg-white px-4 py-2 text-lg font-bold shadow-md hover:bg-white hover:outline-2"
+          >
+            View Collections
+          </FwbButton>
+
+          <FwbButton
+            data-testid="create-collection-button"
+            @click="showCreateCollectionModal = true"
+            class="text-primary-green inline-flex cursor-pointer rounded-3xl bg-white px-4 py-2 text-lg font-bold shadow-md hover:bg-white hover:outline-2"
+            pill
+            square
+          >
+            <div class="flex items-center justify-center">
+              <span class="material-symbols-outlined">add</span>
+              Create Collection
+            </div>
+          </FwbButton>
+        </div>
+
         <div class="flex flex-col gap-10">
           <RecipesList
             data-testid="saved-recipes"
@@ -451,12 +581,12 @@ onMounted(async () => {
             yet
           </div>
 
-          <div
+          <ul
             v-else
             data-testid="follow-modal-loaded-state"
             class="flex max-h-96 flex-col gap-3 overflow-y-auto pr-2"
           >
-            <div
+            <li
               v-for="modalUser in modalUsers"
               :key="modalUser.id"
               @click="
@@ -491,10 +621,145 @@ onMounted(async () => {
                 class="text-base font-medium"
                 >{{ modalUser.name }}</span
               >
+            </li>
+          </ul>
+        </template>
+      </FwbModal>
+
+      <FwbModal
+        v-if="showCollectionsModal"
+        data-testid="collections-modal"
+        @close="showCollectionsModal = false"
+        focus-trap
+      >
+        <template #header>
+          <h3 class="text-xl font-semibold">
+            {{
+              selectedCollection ? selectedCollection.title : 'My Collections'
+            }}
+          </h3>
+        </template>
+
+        <template #body>
+          <div v-if="!selectedCollection">
+            <div v-if="isLoadingCollections" class="flex justify-center py-8">
+              <Spinner />
             </div>
+
+            <div
+              v-else-if="collections.length === 0"
+              class="py-8 text-center text-gray-500"
+            >
+              You don't have any collections yet.
+            </div>
+
+            <ul
+              v-else
+              class="flex max-h-96 flex-col gap-3 overflow-y-auto pr-2"
+            >
+              <li
+                v-for="collection in collections"
+                :key="collection.id"
+                class="cursor-pointer rounded-lg p-3 hover:bg-gray-100"
+                @click="openCollectionRecipes(collection)"
+              >
+                <div class="flex items-center gap-3">
+                  <div class="h-12 w-12 overflow-hidden rounded bg-gray-300">
+                    <img
+                      v-if="collection.imageUrl"
+                      :src="collection.imageUrl"
+                      class="h-full w-full object-cover"
+                    />
+                    <div
+                      v-else
+                      class="flex h-full w-full items-center justify-center text-xs text-gray-600"
+                    >
+                      {{ collection.title.charAt(0).toUpperCase() }}
+                    </div>
+                  </div>
+
+                  <span class="text-lg font-medium">
+                    {{ collection.title }}
+                  </span>
+                </div>
+
+                <button
+                  class="cursor-pointer text-red-600 hover:underline"
+                  @click.stop="handleRemoveCollection(collection.id)"
+                >
+                  Remove
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <div v-else>
+            <FwbButton
+              class="mb-4 cursor-pointer"
+              color="light"
+              @click="selectedCollection = undefined"
+            >
+              ← Back to Collections
+            </FwbButton>
+
+            <div
+              v-if="isLoadingCollectionRecipes"
+              class="flex justify-center py-8"
+            >
+              <Spinner />
+            </div>
+
+            <div
+              v-else-if="collectionRecipes.length === 0"
+              class="py-8 text-center text-gray-500"
+            >
+              No recipes in this collection.
+            </div>
+
+            <ul
+              v-else
+              class="flex max-h-96 flex-col gap-3 overflow-y-auto pr-2"
+            >
+              <li
+                v-for="recipe in collectionRecipes"
+                :key="recipe.id"
+                class="cursor-pointer rounded-lg p-3 hover:bg-gray-100"
+                @click="router.push(`/recipe/${recipe.id}`)"
+              >
+                <div class="flex items-center gap-3">
+                  <div class="h-12 w-12 overflow-hidden rounded bg-gray-300">
+                    <img
+                      v-if="recipe.imageUrl"
+                      :src="recipe.imageUrl"
+                      class="h-full w-full object-cover"
+                    />
+                    <div
+                      v-else
+                      class="flex h-full w-full items-center justify-center text-xs text-gray-600"
+                    >
+                      {{ recipe.title.charAt(0).toUpperCase() }}
+                    </div>
+                  </div>
+
+                  <span class="text-lg font-medium">{{ recipe.title }}</span>
+                </div>
+
+                <button
+                  class="cursor-pointer text-red-600 hover:underline"
+                  @click.stop="handleRemoveRecipeFromCollection(recipe.id)"
+                >
+                  Remove
+                </button>
+              </li>
+            </ul>
           </div>
         </template>
       </FwbModal>
     </div>
+
+    <CreateCollectionModal
+      :show="showCreateCollectionModal"
+      @close="showCreateCollectionModal = false"
+    />
   </div>
 </template>

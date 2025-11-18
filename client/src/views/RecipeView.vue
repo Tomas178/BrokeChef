@@ -12,6 +12,9 @@ import { useSavedRecipeService } from '@/composables/useSavedRecipesService';
 import { ROUTE_NAMES } from '@/router/consts/routeNames';
 import { useCookedRecipesService } from '@/composables/useCookedRecipesService';
 import { useRatingsService } from '@/composables/useRatingsService';
+import { FwbDropdown } from 'flowbite-vue';
+import { useCollectionsService } from '@/composables/useCollectionsService';
+import { useCollectionsRecipesService } from '@/composables/useCollectionsRecipesService';
 
 const route = useRoute();
 
@@ -31,6 +34,10 @@ const { isSaved, handleSave, handleUnsave, checkIfSaved } =
 
 const { isCooked, handleMarkAsCooked, handleUnmarkAsCooked, checkIfCooked } =
   useCookedRecipesService(recipeId);
+
+const { userCollections, fetchUserCollections } = useCollectionsService();
+
+const { handleSaveToCollection } = useCollectionsRecipesService(recipeId);
 
 const {
   hoveredRating,
@@ -101,30 +108,83 @@ onBeforeMount(async () => {
               data-testid="duration"
               class="justify-center leading-loose text-gray-500"
             >
-              <span>Cook duration {{ recipe.duration }} minutes</span>
+              <span>Cooking duration {{ recipe.duration }} minutes</span>
             </div>
-            <div>
-              <button
-                v-if="!isAuthor && !isCooked"
-                @click="handleMarkAsCooked"
-                type="button"
-                data-testid="mark-cooked-button"
-                title="Mark as Cooked"
-                class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-green-500/90 transition-transform hover:scale-110 hover:bg-green-600/90"
-              >
-                <span class="material-symbols-outlined"> fork_spoon </span>
-              </button>
+            <div
+              :class="{
+                'flex gap-4': !isAuthor,
+                flex: isAuthor,
+              }"
+            >
+              <div>
+                <button
+                  v-if="!isAuthor && !isCooked"
+                  @click="handleMarkAsCooked"
+                  type="button"
+                  data-testid="mark-cooked-button"
+                  title="Mark as Cooked"
+                  class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-green-500/90 transition-transform hover:scale-110 hover:bg-green-600/90"
+                >
+                  <span class="material-symbols-outlined"> fork_spoon </span>
+                </button>
 
-              <button
-                v-if="!isAuthor && isCooked"
-                @click="handleUnmarkAsCooked"
-                type="button"
-                data-testid="unmark-cooked-button"
-                title="Unmark as Cooked"
-                class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-gray-500/90 transition-transform hover:scale-110 hover:bg-gray-600/90"
-              >
-                <span class="material-symbols-outlined"> no_meals </span>
-              </button>
+                <button
+                  v-if="!isAuthor && isCooked"
+                  @click="handleUnmarkAsCooked"
+                  type="button"
+                  data-testid="unmark-cooked-button"
+                  title="Unmark as Cooked"
+                  class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-gray-500/90 transition-transform hover:scale-110 hover:bg-gray-600/90"
+                >
+                  <span class="material-symbols-outlined"> no_meals </span>
+                </button>
+              </div>
+              <div>
+                <FwbDropdown
+                  color="light"
+                  text="Add to Collection"
+                  placement="bottom"
+                  close-inside
+                  triggerClass="cursor-pointer dark:hover:text-black"
+                  @show="fetchUserCollections"
+                >
+                  <ul
+                    class="flex max-h-96 w-36 flex-col gap-3 overflow-y-auto pr-2 sm:w-48 dark:bg-gray-900"
+                  >
+                    <li
+                      v-for="collection in userCollections"
+                      :key="collection.id"
+                      class="flex cursor-pointer items-center justify-between hover:bg-green-100"
+                      @click="handleSaveToCollection(collection.id)"
+                    >
+                      <div
+                        :data-testid="`follow-modal-user-${collection.id}`"
+                        class="h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-gray-300"
+                      >
+                        <img
+                          v-if="collection.imageUrl"
+                          data-testid="follow-modal-user-image"
+                          :src="collection.imageUrl"
+                          :alt="collection.title"
+                          class="h-full w-full object-cover"
+                        />
+                        <div
+                          v-else
+                          data-testid="follow-modal-user-image-fallback"
+                          class="flex h-full w-full items-center justify-center text-xs text-gray-600"
+                        >
+                          {{ collection.title.charAt(0).toUpperCase() }}
+                        </div>
+                      </div>
+                      <span
+                        data-testid="follow-modal-user-username"
+                        class="text-base font-medium"
+                        >{{ collection.title }}</span
+                      >
+                    </li>
+                  </ul>
+                </FwbDropdown>
+              </div>
             </div>
           </div>
         </div>

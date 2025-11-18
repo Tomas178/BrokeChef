@@ -125,6 +125,7 @@ const { recipeForm, recipeImageFile, durationString, handleCreateRecipe } =
           v-model="recipeImageFile"
           label="Recipe Image"
           size="xs"
+          accept="image/*"
           class="flex-1"
         >
           <p
