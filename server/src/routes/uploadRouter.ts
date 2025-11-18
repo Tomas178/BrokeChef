@@ -61,7 +61,7 @@ uploadRouter.post(
     );
 
     logger.info(`Collection image object created in S3: ${key}`);
-    return { image: key };
+    return { imageUrl: key };
   })
 );
 

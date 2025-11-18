@@ -120,7 +120,7 @@ describe('Image uploading', () => {
 
     it(
       'Uploads collection image successfully',
-      testUploadSuccess(ENDPOINT, 'image')
+      testUploadSuccess(ENDPOINT, 'imageUrl')
     );
   });
 });
