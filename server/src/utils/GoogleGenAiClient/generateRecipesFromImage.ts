@@ -10,14 +10,15 @@ import {
 } from '@server/shared/consts';
 import { generateRecipeImage } from '@server/utils/GoogleGenAiClient/generateRecipeImage';
 
+const NUMBER_OF_RECIPES = 3;
+
 export async function generateRecipesFromImage(
   ai: GoogleGenAI,
-  image: Buffer,
-  numberOfRecipes: number
+  image: Buffer
 ): Promise<GeneratedRecipe[]> {
   const base64Image = image.toString('base64');
 
-  const prompt = `Analyze the food ingredients or dish in the provided image(s) and generate exactly ${numberOfRecipes} different recipe ideas.
+  const prompt = `Analyze the food ingredients or dish in the provided image(s) and generate exactly ${NUMBER_OF_RECIPES} different recipe ideas.
         For each recipe, provide:
         1. A creative and appealing title
         2. Duration in minutes between ${MIN_DURATION} and ${MAX_DURATION}
@@ -126,9 +127,9 @@ export async function generateRecipesFromImage(
     );
   }
 
-  if (parsedData.recipes.length !== numberOfRecipes) {
+  if (parsedData.recipes.length !== NUMBER_OF_RECIPES) {
     throw new Error(
-      `Expected exactly ${numberOfRecipes} recipes but received ${parsedData.recipes.length}`
+      `Expected exactly ${NUMBER_OF_RECIPES} recipes but received ${parsedData.recipes.length}`
     );
   }
 

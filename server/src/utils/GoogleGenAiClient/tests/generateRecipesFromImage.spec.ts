@@ -3,12 +3,10 @@ import { generateRecipesFromImage } from '../generateRecipesFromImage';
 import {
   FAKE_FRIDGE_IMAGE,
   INVALID_RESPONSE_SCHEMA,
-  RESPONSE_IMAGES_OF_TWO,
-  RESPONSE_RECIPE_ONE,
-  RESPONSE_RECIPE_TWO,
+  RESPONSE_IMAGES_OF_THREE,
+  VALID_RESPONSE_SCHEMA_OF_FOUR,
   VALID_RESPONSE_SCHEMA_OF_ONE,
   VALID_RESPONSE_SCHEMA_OF_THREE,
-  VALID_RESPONSE_SCHEMA_OF_TWO,
 } from './utils/generateRecipesFromImage';
 
 const mockGenerateContent = vi.fn();
@@ -31,7 +29,7 @@ describe('generateRecipesFromImage', () => {
     mockGenerateContent.mockResolvedValueOnce({ text: undefined });
 
     await expect(
-      generateRecipesFromImage(mockGoogleGenAi, FAKE_FRIDGE_IMAGE, 3)
+      generateRecipesFromImage(mockGoogleGenAi, FAKE_FRIDGE_IMAGE)
     ).rejects.toThrow(/failed/i);
 
     expect(mockGenerateRecipeImage).not.toHaveBeenCalled();
@@ -43,7 +41,7 @@ describe('generateRecipesFromImage', () => {
     });
 
     await expect(
-      generateRecipesFromImage(mockGoogleGenAi, FAKE_FRIDGE_IMAGE, 3)
+      generateRecipesFromImage(mockGoogleGenAi, FAKE_FRIDGE_IMAGE)
     ).rejects.toThrow(/(ai|failed).*(generate)/i);
 
     expect(mockGenerateRecipeImage).not.toHaveBeenCalled();
@@ -55,75 +53,82 @@ describe('generateRecipesFromImage', () => {
     });
 
     await expect(
-      generateRecipesFromImage(mockGoogleGenAi, FAKE_FRIDGE_IMAGE, 3)
+      generateRecipesFromImage(mockGoogleGenAi, FAKE_FRIDGE_IMAGE)
     ).rejects.toThrow(/(invalid|failed).*(response|schema|structure)/i);
 
     expect(mockGenerateRecipeImage).not.toHaveBeenCalled();
   });
 
   it('Should throw an error if it generated less recipes that it was requested', async () => {
-    const recipesCount = 2;
     mockGenerateContent.mockResolvedValueOnce({
       text: JSON.stringify(VALID_RESPONSE_SCHEMA_OF_ONE),
     });
 
     await expect(
-      generateRecipesFromImage(mockGoogleGenAi, FAKE_FRIDGE_IMAGE, recipesCount)
+      generateRecipesFromImage(mockGoogleGenAi, FAKE_FRIDGE_IMAGE)
     ).rejects.toThrow(/expected/i);
 
     expect(mockGenerateRecipeImage).not.toHaveBeenCalled();
   });
 
   it('Should throw an error if it generated more recipes that it was requested', async () => {
-    const recipesCount = 2;
     mockGenerateContent.mockResolvedValueOnce({
-      text: JSON.stringify(VALID_RESPONSE_SCHEMA_OF_THREE),
+      text: JSON.stringify(VALID_RESPONSE_SCHEMA_OF_FOUR),
     });
 
     await expect(
-      generateRecipesFromImage(mockGoogleGenAi, FAKE_FRIDGE_IMAGE, recipesCount)
+      generateRecipesFromImage(mockGoogleGenAi, FAKE_FRIDGE_IMAGE)
     ).rejects.toThrow(/expected/i);
 
     expect(mockGenerateRecipeImage).not.toHaveBeenCalled();
   });
 
   it('Should return recipes with their data and generated images', async () => {
-    const numberOfRecipes = 2;
-
     mockGenerateContent.mockResolvedValueOnce({
-      text: JSON.stringify(VALID_RESPONSE_SCHEMA_OF_TWO),
+      text: JSON.stringify(VALID_RESPONSE_SCHEMA_OF_THREE),
     });
 
     mockGenerateRecipeImage
-      .mockResolvedValueOnce(RESPONSE_IMAGES_OF_TWO[0])
-      .mockResolvedValueOnce(RESPONSE_IMAGES_OF_TWO[1]);
+      .mockResolvedValueOnce(RESPONSE_IMAGES_OF_THREE[0])
+      .mockResolvedValueOnce(RESPONSE_IMAGES_OF_THREE[1])
+      .mockResolvedValueOnce(RESPONSE_IMAGES_OF_THREE[2]);
 
     const result = await generateRecipesFromImage(
       mockGoogleGenAi,
-      FAKE_FRIDGE_IMAGE,
-      numberOfRecipes
+      FAKE_FRIDGE_IMAGE
     );
 
-    expect(result).toHaveLength(numberOfRecipes);
+    expect(result).toHaveLength(VALID_RESPONSE_SCHEMA_OF_THREE.recipes.length);
 
     expect(result[0]).toEqual({
-      ...RESPONSE_RECIPE_ONE,
-      image: RESPONSE_IMAGES_OF_TWO[0],
+      ...VALID_RESPONSE_SCHEMA_OF_THREE.recipes[0],
+      image: RESPONSE_IMAGES_OF_THREE[0],
     });
 
     expect(result[1]).toEqual({
-      ...RESPONSE_RECIPE_TWO,
-      image: RESPONSE_IMAGES_OF_TWO[1],
+      ...VALID_RESPONSE_SCHEMA_OF_THREE.recipes[1],
+      image: RESPONSE_IMAGES_OF_THREE[1],
     });
 
-    expect(mockGenerateRecipeImage).toHaveBeenCalledTimes(numberOfRecipes);
+    expect(result[2]).toEqual({
+      ...VALID_RESPONSE_SCHEMA_OF_THREE.recipes[2],
+      image: RESPONSE_IMAGES_OF_THREE[2],
+    });
+
+    expect(mockGenerateRecipeImage).toHaveBeenCalledTimes(
+      VALID_RESPONSE_SCHEMA_OF_THREE.recipes.length
+    );
     expect(mockGenerateRecipeImage).toHaveBeenCalledWith(mockGoogleGenAi, {
-      title: RESPONSE_RECIPE_ONE.title,
-      ingredients: RESPONSE_RECIPE_ONE.ingredients,
+      title: VALID_RESPONSE_SCHEMA_OF_THREE.recipes[0].title,
+      ingredients: VALID_RESPONSE_SCHEMA_OF_THREE.recipes[0].ingredients,
     });
     expect(mockGenerateRecipeImage).toHaveBeenCalledWith(mockGoogleGenAi, {
-      title: RESPONSE_RECIPE_TWO.title,
-      ingredients: RESPONSE_RECIPE_TWO.ingredients,
+      title: VALID_RESPONSE_SCHEMA_OF_THREE.recipes[1].title,
+      ingredients: VALID_RESPONSE_SCHEMA_OF_THREE.recipes[1].ingredients,
+    });
+    expect(mockGenerateRecipeImage).toHaveBeenCalledWith(mockGoogleGenAi, {
+      title: VALID_RESPONSE_SCHEMA_OF_THREE.recipes[2].title,
+      ingredients: VALID_RESPONSE_SCHEMA_OF_THREE.recipes[2].ingredients,
     });
   });
 });
