@@ -1,7 +1,9 @@
 import type { Database } from '@server/database';
-import type {
-  CollectionsPublic,
-  CreateCollectionInput,
+import {
+  collectionsKeysPublicBasic,
+  type CollectionsPublic,
+  type CollectionsPublicBasic,
+  type CreateCollectionInput,
 } from '@server/entities/collections';
 import { AllowedMimeType } from '@server/enums/AllowedMimetype';
 import { ImageFolder } from '@server/enums/ImageFolder';
@@ -21,6 +23,7 @@ import config from '@server/config';
 import { signImages } from '@server/utils/signImages';
 import type { RecipesPublic } from '@server/entities/recipes';
 import { recipesRepository as buildRecipesRepository } from '@server/repositories/recipesRepository';
+import { pick } from 'lodash-es';
 import { rollbackImageUpload } from './utils/rollbackImageUpload';
 import { validateUserExists } from './utils/userValidations';
 import { validateCollectionExists } from './utils/collectionValidations';
@@ -30,6 +33,7 @@ export interface CollectionsService {
     dataForCollection: CreateCollectionInput
   ) => Promise<CollectionsPublic | undefined>;
   findById: (id: number) => Promise<CollectionsPublic | undefined>;
+  findByUserId: (userId: string) => Promise<CollectionsPublicBasic[]>;
   findRecipesByCollectionId: (collectionId: number) => Promise<RecipesPublic[]>;
   totalCollectionsByUser: (userId: string) => Promise<number>;
   remove: (id: number) => Promise<CollectionsPublic>;
@@ -111,6 +115,27 @@ export function collectionsService(database: Database): CollectionsService {
       collection.imageUrl = await signImages(collection.imageUrl);
 
       return collection;
+    },
+
+    async findByUserId(userId) {
+      await validateUserExists(usersRepository, userId);
+
+      const collections = await collectionsRepository.findByUserId(userId);
+      const mappedCollections = collections.map(collection =>
+        pick(collection, collectionsKeysPublicBasic)
+      );
+
+      const collectionsImageUrls = mappedCollections.map(
+        collection => collection.imageUrl
+      );
+
+      const signedCollectionsImageUrls = await signImages(collectionsImageUrls);
+
+      for (const [index, collection] of mappedCollections.entries()) {
+        collection.imageUrl = signedCollectionsImageUrls[index];
+      }
+
+      return mappedCollections;
     },
 
     async findRecipesByCollectionId(collectionId) {

@@ -80,6 +80,28 @@ describe('findById', () => {
   });
 });
 
+describe('findByUserId', () => {
+  it('Should return an empty array if there are no collections by the given userId', async () => {
+    await expect(repository.findByUserId(userTwo.id)).resolves.toEqual([]);
+  });
+
+  it('Should return an array of the collections when the user has collections', async () => {
+    const [userCreator] = await insertAll(database, 'users', fakeUser());
+
+    const createdCollections = await insertAll(database, 'collections', [
+      fakeCollection({ userId: userCreator.id }),
+      fakeCollection({ userId: userCreator.id }),
+    ]);
+
+    const retrievedCollections = await repository.findByUserId(userCreator.id);
+
+    expect(retrievedCollections).toHaveLength(createdCollections.length);
+
+    expect(retrievedCollections[0]).toEqual(createdCollections[0]);
+    expect(retrievedCollections[1]).toEqual(createdCollections[1]);
+  });
+});
+
 describe('totalCollectionsByUser', () => {
   it('Should return 0 when user has no collections', async () => {
     const [userTwo] = await insertAll(database, 'users', fakeUser());

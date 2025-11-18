@@ -50,3 +50,14 @@ export type CollectionsPublic = Pick<
   Selectable<Collections>,
   (typeof collectionsKeysPublic)[number]
 >;
+
+export const collectionsPublicBasicSchema = collectionsSchema.pick({
+  id: true,
+  title: true,
+});
+
+export const collectionsKeysPublicBasic = ['id', 'title', 'imageUrl'] as const;
+
+export type CollectionsPublicBasic = z.infer<
+  typeof collectionsPublicBasicSchema
+>;

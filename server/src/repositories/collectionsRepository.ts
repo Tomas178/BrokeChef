@@ -10,6 +10,7 @@ const TABLE = 'collections';
 export interface CollectionsRepository {
   create: (collection: Insertable<Collections>) => Promise<CollectionsPublic>;
   findById: (id: number) => Promise<CollectionsPublic | undefined>;
+  findByUserId: (userId: string) => Promise<CollectionsPublic[]>;
   totalCollectionsByUser: (userId: string) => Promise<number>;
   isAuthor: (collectionId: number, userId: string) => Promise<boolean>;
   remove: (id: number) => Promise<CollectionsPublic>;
@@ -33,6 +34,14 @@ export function collectionsRepository(
         .select(collectionsKeysPublic)
         .where('id', '=', id)
         .executeTakeFirst();
+    },
+
+    async findByUserId(userId) {
+      return database
+        .selectFrom(TABLE)
+        .select(collectionsKeysPublic)
+        .where('userId', '=', userId)
+        .execute();
     },
 
     async totalCollectionsByUser(userId) {

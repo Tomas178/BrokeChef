@@ -11,6 +11,8 @@ import CollectionAlreadyCreated from '@server/utils/errors/collections/Collectio
 import { USER_ID_LENGTH } from '@server/entities/shared';
 import { S3ServiceException } from '@aws-sdk/client-s3';
 import type { RecipesRepository } from '@server/repositories/recipesRepository';
+import { pick } from 'lodash-es';
+import { collectionsKeysPublicBasic } from '@server/entities/collections';
 import { collectionsService } from '../collectionsService';
 import CollectionNotFound from '../../utils/errors/collections/CollectionNotFound';
 
@@ -84,12 +86,14 @@ vi.mock('@server/services/utils/rollbackImageUpload', () => ({
 
 const mockCollectionsRepoCreate = vi.fn();
 const mockCollectionsRepoFindById = vi.fn();
+const mockCollectionsFindByUserId = vi.fn();
 const mockCollectionsRepoTotalCollectionsByUser = vi.fn();
 const mockCollectionsRepoRemove = vi.fn();
 
 const mockCollectionsRepository = {
   create: mockCollectionsRepoCreate,
   findById: mockCollectionsRepoFindById,
+  findByUserId: mockCollectionsFindByUserId,
   totalCollectionsByUser: mockCollectionsRepoTotalCollectionsByUser,
   remove: mockCollectionsRepoRemove,
 } as Partial<CollectionsRepository>;
@@ -234,6 +238,51 @@ describe('findById', () => {
     expect(mockSignImages).toHaveBeenCalledOnce();
     expect(retrievedCollection).toEqual({
       ...collectionData,
+      imageUrl: fakeImageUrl,
+    });
+  });
+});
+
+describe('findByUserId', () => {
+  it('Should throw an error if user with given userId does not exist', async () => {
+    mockValidateUserExists.mockRejectedValueOnce(new UserNotFound());
+
+    await expect(service.findByUserId(userId)).rejects.toThrowError(
+      UserNotFound
+    );
+
+    expect(mockCollectionsFindByUserId).not.toHaveBeenCalled();
+  });
+
+  it('Should return an empty array if user has no collections', async () => {
+    mockCollectionsFindByUserId.mockResolvedValueOnce([]);
+
+    await expect(service.findByUserId(userId)).resolves.toEqual([]);
+
+    expect(mockCollectionsFindByUserId).toHaveBeenCalledExactlyOnceWith(userId);
+  });
+
+  it('Should return an array of collections with basic information and signed images', async () => {
+    const collections = [fakeCollection(), fakeCollection(), fakeCollection()];
+    mockCollectionsFindByUserId.mockResolvedValueOnce(collections);
+
+    const retrievedCollections = await service.findByUserId(userId);
+
+    expect(mockCollectionsFindByUserId).toHaveBeenCalledExactlyOnceWith(userId);
+
+    expect(retrievedCollections).toHaveLength(collections.length);
+    expect(retrievedCollections[0]).toEqual({
+      ...pick(retrievedCollections[0], collectionsKeysPublicBasic),
+      imageUrl: fakeImageUrl,
+    });
+
+    expect(retrievedCollections[1]).toEqual({
+      ...pick(retrievedCollections[1], collectionsKeysPublicBasic),
+      imageUrl: fakeImageUrl,
+    });
+
+    expect(retrievedCollections[2]).toEqual({
+      ...pick(retrievedCollections[2], collectionsKeysPublicBasic),
       imageUrl: fakeImageUrl,
     });
   });
