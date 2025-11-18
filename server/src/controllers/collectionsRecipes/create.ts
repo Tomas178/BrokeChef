@@ -6,6 +6,7 @@ import { TRPCError } from '@trpc/server';
 import CollectionNotFound from '@server/utils/errors/collections/CollectionNotFound';
 import type { CollectionsRecipesLink } from '@server/repositories/collectionsRecipesRepository';
 import { collectionsRecipesRequest } from '@server/entities/collectionsRecipes';
+import CollectionRecipesLinkAlreadyExists from '@server/utils/errors/collections/CollectionRecipeLinkAlreadyExists';
 
 export default authenticatedProcedure
   .use(provideServices({ collectionsRecipesService }))
@@ -31,6 +32,13 @@ export default authenticatedProcedure
       if (error instanceof CollectionNotFound) {
         throw new TRPCError({
           code: 'NOT_FOUND',
+          message: error.message,
+        });
+      }
+
+      if (error instanceof CollectionRecipesLinkAlreadyExists) {
+        throw new TRPCError({
+          code: 'CONFLICT',
           message: error.message,
         });
       }

@@ -6,6 +6,7 @@ import { authContext, requestContext } from '@tests/utils/context';
 import type { CollectionsRecipesRequest } from '@server/entities/collectionsRecipes';
 import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import CollectionNotFound from '@server/utils/errors/collections/CollectionNotFound';
+import CollectionRecipesLinkAlreadyExists from '@server/utils/errors/collections/CollectionRecipeLinkAlreadyExists';
 import collectionsRecipesRouter from '..';
 
 const mockCreate = vi.fn();
@@ -54,6 +55,12 @@ describe('Authenticated tests', () => {
     mockCreate.mockRejectedValueOnce(new CollectionNotFound());
 
     await expect(save(request)).rejects.toThrow(/not found/i);
+  });
+
+  it('Should throw an error if collection recipe link already exists', async () => {
+    mockCreate.mockRejectedValueOnce(new CollectionRecipesLinkAlreadyExists());
+
+    await expect(save(request)).rejects.toThrow(/already|saved/i);
   });
 
   it('Should rethrow any other error', async () => {

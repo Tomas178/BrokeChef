@@ -5,7 +5,14 @@ import { fakeCollectionRecipe } from '@server/entities/tests/fakes';
 import CollectionNotFound from '@server/utils/errors/collections/CollectionNotFound';
 import { NoResultError } from 'kysely';
 import CollectionRecipeLinkNotFound from '@server/utils/errors/collections/CollectionRecipeLinkNotFound';
+import { PostgresError } from 'pg-error-enum';
+import CollectionRecipesLinkAlreadyExists from '@server/utils/errors/collections/CollectionRecipeLinkAlreadyExists';
 import { collectionsRecipesService } from '../collectionsRecipesService';
+
+vi.mock('@server/utils/errors', () => ({
+  assertPostgresError: vi.fn(),
+  assertError: vi.fn(),
+}));
 
 const { mockValidateRecipeExists, mockValidateCollectionExists } = vi.hoisted(
   () => ({
@@ -60,6 +67,27 @@ describe('create', () => {
     );
 
     expect(mockCollectionsRecipesRepoCreate).not.toHaveBeenCalled();
+  });
+
+  it('Should throw an error if recpie is already saved in this collection', async () => {
+    mockCollectionsRecipesRepoCreate.mockRejectedValueOnce({
+      code: PostgresError.UNIQUE_VIOLATION,
+    });
+
+    await expect(service.create(collectionsRecipesLink)).rejects.toThrowError(
+      CollectionRecipesLinkAlreadyExists
+    );
+  });
+
+  it('Should rethrow any other error', async () => {
+    const errorMessage = 'Something happened';
+    mockCollectionsRecipesRepoCreate.mockRejectedValueOnce(
+      new Error(errorMessage)
+    );
+
+    await expect(service.create(collectionsRecipesLink)).rejects.toThrow(
+      errorMessage
+    );
   });
 
   it('Should create the collections recipes link', async () => {

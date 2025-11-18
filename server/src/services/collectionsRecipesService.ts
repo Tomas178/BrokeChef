@@ -3,9 +3,11 @@ import type { CollectionsRecipesLink } from '@server/repositories/collectionsRec
 import { collectionsRecipesRepository as buildCollectionsRecipesRepository } from '@server/repositories/collectionsRecipesRepository';
 import { recipesRepository as buildRecipesRepository } from '@server/repositories/recipesRepository';
 import { collectionsRepository as buildCollectionsRepository } from '@server/repositories/collectionsRepository';
-import { assertError } from '@server/utils/errors';
+import { assertError, assertPostgresError } from '@server/utils/errors';
 import { NoResultError } from 'kysely';
 import CollectionRecipeLinkNotFound from '@server/utils/errors/collections/CollectionRecipeLinkNotFound';
+import CollectionRecipesLinkAlreadyExists from '@server/utils/errors/collections/CollectionRecipeLinkAlreadyExists';
+import { PostgresError } from 'pg-error-enum';
 import { validateCollectionExists } from './utils/collectionValidations';
 import { validateRecipeExists } from './utils/recipeValidations';
 
@@ -29,9 +31,19 @@ export function collectionsRecipesService(
       await validateRecipeExists(recipesRepository, link.recipeId);
       await validateCollectionExists(collectionsRepository, link.collectionId);
 
-      const createdLink = await collectionsRecipesRepository.create(link);
+      try {
+        const createdLink = await collectionsRecipesRepository.create(link);
 
-      return createdLink;
+        return createdLink;
+      } catch (error) {
+        assertPostgresError(error);
+
+        if (error.code === PostgresError.UNIQUE_VIOLATION) {
+          throw new CollectionRecipesLinkAlreadyExists();
+        }
+
+        throw error;
+      }
     },
 
     async remove(link) {
