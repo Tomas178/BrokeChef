@@ -498,7 +498,10 @@ onMounted(async () => {
       </div>
 
       <div>
-        <div v-if="isOwnProfile" class="flex items-center justify-between">
+        <div
+          v-if="isOwnProfile"
+          class="flex flex-col items-start gap-4 sm:flex-row sm:items-start sm:justify-between"
+        >
           <FwbButton
             data-testid="open-collections-modal"
             @click="openCollectionsModal"
