@@ -58,7 +58,7 @@ const ratingClasses = [
     </div>
 
     <div
-      class="flex w-full flex-1 flex-col rounded-md bg-black/10 p-2 lg:px-5 lg:py-3"
+      class="flex w-full flex-1 flex-col rounded-md bg-black/10 p-2 lg:px-5 lg:py-3 dark:bg-gray-400"
     >
       <div :class="infoRowClasses">
         <span>{{ recipe.author.name }}</span>

@@ -123,7 +123,7 @@ onBeforeMount(async () => {
                   type="button"
                   data-testid="mark-cooked-button"
                   title="Mark as Cooked"
-                  class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-green-500/90 transition-transform hover:scale-110 hover:bg-green-600/90"
+                  class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-green-500/90 transition-transform hover:scale-110 hover:bg-green-600/90 dark:bg-green-600/90 dark:hover:bg-green-700/90"
                 >
                   <span class="material-symbols-outlined"> fork_spoon </span>
                 </button>
@@ -134,7 +134,7 @@ onBeforeMount(async () => {
                   type="button"
                   data-testid="unmark-cooked-button"
                   title="Unmark as Cooked"
-                  class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-gray-500/90 transition-transform hover:scale-110 hover:bg-gray-600/90"
+                  class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-gray-500/90 transition-transform hover:scale-110 hover:bg-gray-600/90 dark:bg-gray-600/90 dark:hover:bg-gray-700/90"
                 >
                   <span class="material-symbols-outlined"> no_meals </span>
                 </button>
@@ -149,7 +149,7 @@ onBeforeMount(async () => {
                   @show="fetchUserCollections"
                 >
                   <ul
-                    class="flex max-h-96 w-36 flex-col gap-3 overflow-y-auto pr-2 sm:w-48 dark:bg-gray-900"
+                    class="dark:bg-background-recipe-card-dark flex max-h-96 w-36 flex-col gap-3 overflow-y-auto pr-2 sm:w-48"
                   >
                     <li
                       v-for="collection in userCollections"
@@ -275,7 +275,7 @@ onBeforeMount(async () => {
               v-if="isAuthor"
               @click="showDialog"
               type="button"
-              class="cursor-pointer rounded-3xl bg-red-400/90 px-6 py-2 text-xl leading-tight font-medium text-white hover:outline-1 hover:outline-black"
+              class="cursor-pointer rounded-3xl bg-red-400/90 px-6 py-2 text-xl leading-tight font-medium text-white hover:outline-1 hover:outline-black dark:hover:outline-white"
             >
               Delete
             </button>
@@ -284,7 +284,7 @@ onBeforeMount(async () => {
               v-else-if="!isSaved"
               @click="handleSave"
               type="button"
-              class="gradient-action-button cursor-pointer rounded-3xl px-6 py-2 text-xl leading-tight font-medium text-white hover:outline-1 hover:outline-black"
+              class="gradient-action-button cursor-pointer rounded-3xl px-6 py-2 text-xl leading-tight font-medium text-white hover:outline-1 hover:outline-black dark:hover:outline-white"
             >
               Save
             </button>
@@ -293,7 +293,7 @@ onBeforeMount(async () => {
               v-else
               @click="handleUnsave"
               type="button"
-              class="gradient-action-button cursor-pointer rounded-3xl px-6 py-2 text-xl leading-tight font-medium text-white hover:outline-1 hover:outline-black"
+              class="gradient-action-button cursor-pointer rounded-3xl px-6 py-2 text-xl leading-tight font-medium text-white hover:outline-1 hover:outline-black dark:hover:outline-white"
             >
               Unsave
             </button>
@@ -331,7 +331,7 @@ onBeforeMount(async () => {
             <li
               v-for="step in recipe.steps"
               :key="step"
-              class="rounded-3xl bg-white/10 px-8 py-6 leading-loose shadow-xl backdrop-blur-lg"
+              class="rounded-3xl bg-white/10 px-8 py-6 leading-loose shadow-xl backdrop-blur-lg dark:text-white"
             >
               {{ step }}
             </li>

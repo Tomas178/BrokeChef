@@ -19,7 +19,7 @@ defineEmits<{
   >
     <WelcomeText v-if="welcomeText" />
     <div
-      class="bg-background-form mt-4 h-full flex-1 overflow-hidden rounded-tl-4xl rounded-tr-4xl lg:overflow-visible lg:rounded-4xl"
+      class="bg-background-form-light dark:bg-background-form-dark mt-4 h-full flex-1 overflow-hidden rounded-tl-4xl rounded-tr-4xl lg:overflow-visible lg:rounded-4xl"
     >
       <div class="mx-4 flex flex-col gap-4 py-8 pt-10">
         <FwbHeading tag="h2">{{ heading }}</FwbHeading>

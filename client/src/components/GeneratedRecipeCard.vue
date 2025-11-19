@@ -33,7 +33,7 @@ const handleImageError = () => {
       />
     </div>
 
-    <h3 class="text-xl font-bold">{{ recipe.title }}</h3>
+    <h3 class="dark:text-submit-text text-xl font-bold">{{ recipe.title }}</h3>
     <p class="flex items-center text-gray-600">
       <span class="material-symbols-outlined">
         nest_clock_farsight_analog
@@ -43,12 +43,16 @@ const handleImageError = () => {
 
     <div class="flex flex-col gap-2 text-sm">
       <div>
-        <strong>Ingredients:</strong>
-        <span class="ml-1">{{ recipe.ingredients.join(', ') }}</span>
+        <strong class="dark:text-white">Ingredients:</strong>
+        <span class="dark:text-submit-text ml-1">{{
+          recipe.ingredients.join(', ')
+        }}</span>
       </div>
       <div>
-        <strong>Tools:</strong>
-        <span class="ml-1">{{ recipe.tools.join(', ') }}</span>
+        <strong class="dark:text-white">Tools:</strong>
+        <span class="dark:text-submit-text ml-1">{{
+          recipe.tools.join(', ')
+        }}</span>
       </div>
     </div>
   </div>

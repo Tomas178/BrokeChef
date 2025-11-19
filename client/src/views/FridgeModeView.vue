@@ -89,7 +89,7 @@ async function handleGenerateRecipes() {
 
     <div class="flex items-center justify-center">
       <FwbButton
-        class="text-submit-text gradient-action-button cursor-pointer rounded-4xl p-2 text-center font-bold hover:outline-1 hover:outline-black"
+        class="text-submit-text dark:text-submit-text-dark gradient-action-button cursor-pointer rounded-4xl p-2 text-center font-bold hover:outline-1 hover:outline-black"
         @click="handleGenerateRecipes"
       >
         <template #prefix>
@@ -117,7 +117,7 @@ async function handleGenerateRecipes() {
           <GeneratedRecipeCard :recipe="recipe" />
           <FwbButton
             @click="handleCreateRecipe(recipe)"
-            class="gradient-action-button text-submit-text w-full cursor-pointer rounded-3xl py-2 font-bold hover:outline-2 hover:outline-black"
+            class="gradient-action-button text-submit-text w-full cursor-pointer rounded-3xl py-2 font-bold hover:outline-2 hover:outline-black dark:hover:outline-white"
           >
             Create This Recipe
           </FwbButton>

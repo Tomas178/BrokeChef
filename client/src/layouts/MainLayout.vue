@@ -36,7 +36,9 @@ const links = computed(() => [
       </FwbNavbarLink>
     </template>
     <main>
-      <div class="bg-background-main flex min-h-screen flex-col">
+      <div
+        class="bg-background-main-light dark:bg-background-main-dark flex min-h-screen flex-col"
+      >
         <RouterView class="flex-1" />
       </div>
     </main>

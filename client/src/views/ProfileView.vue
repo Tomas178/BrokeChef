@@ -334,12 +334,12 @@ onMounted(async () => {
 <template>
   <div v-if="!isLoadingProfile && user">
     <div
-      class="bg-primary-green relative flex h-20 w-full items-start justify-start sm:h-32 xl:h-52"
+      class="bg-primary-green dark:bg-primary-green-dark relative flex h-20 w-full items-start justify-start sm:h-32 xl:h-52"
     >
       <FwbButton
         @click="goBack"
         color="green"
-        class="bg-tertiary-green hover:bg-secondary-green m-4 cursor-pointer"
+        class="bg-tertiary-green dark:bg-tertiary-green-dark dark:hover:bg-secondary-green-dark hover:bg-secondary-green m-4 cursor-pointer"
         pill
         square
       >
@@ -416,7 +416,7 @@ onMounted(async () => {
               />
 
               <span
-                class="text-header pointer-events-none z-20 text-center text-sm"
+                class="text-header-light pointer-events-none z-20 text-center text-sm"
               >
                 Upload Image
               </span>
@@ -424,7 +424,7 @@ onMounted(async () => {
 
             <template v-else>
               <span
-                class="text-header pointer-events-none z-20 text-center text-sm"
+                class="text-header-light pointer-events-none z-20 text-center text-sm"
               >
                 No Profile Picture
               </span>
@@ -438,7 +438,10 @@ onMounted(async () => {
       <div
         class="flex flex-col-reverse justify-between gap-3 sm:flex-row sm:gap-0"
       >
-        <div data-testid="user-information" class="flex flex-col gap-3">
+        <div
+          data-testid="user-information"
+          class="flex flex-col gap-3 dark:text-gray-500"
+        >
           <div class="flex gap-1 text-xs md:text-base">
             <span
               data-testid="following"
@@ -464,7 +467,8 @@ onMounted(async () => {
           <FwbButton
             data-testid="change-credentials"
             @click="navigateToUserEditProfile({ id: user.id })"
-            class="text-primary-green inline-flex cursor-pointer self-start rounded-3xl bg-white px-2 py-1 text-lg font-bold shadow-md hover:bg-white hover:outline-2 lg:px-6 lg:py-2 lg:text-3xl"
+            class="text-primary-green inline-flex cursor-pointer self-start rounded-3xl bg-white px-2 py-1 text-lg font-bold shadow-md hover:bg-white hover:outline-2 lg:px-6 lg:py-2 lg:text-3xl dark:text-white dark:hover:text-black"
+            color="light"
             pill
             square
           >
@@ -477,7 +481,8 @@ onMounted(async () => {
             v-if="!isFollowing"
             data-testid="follow"
             @click="handleFollow"
-            class="text-primary-green inline-flex cursor-pointer self-start rounded-3xl bg-white px-2 py-1 text-lg font-bold shadow-md hover:bg-white hover:outline-2 lg:px-6 lg:py-2 lg:text-3xl"
+            class="text-primary-green inline-flex cursor-pointer self-start rounded-3xl bg-white px-2 py-1 text-lg font-bold shadow-md hover:bg-white hover:outline-2 lg:px-6 lg:py-2 lg:text-3xl dark:text-white dark:hover:outline-white"
+            color="dark"
             pill
             square
           >
@@ -488,7 +493,8 @@ onMounted(async () => {
             v-else
             data-testid="unfollow"
             @click="handleUnfollow"
-            class="text-primary-green inline-flex cursor-pointer self-start rounded-3xl bg-white px-2 py-1 text-lg font-bold shadow-md hover:bg-white hover:outline-2 lg:px-6 lg:py-2 lg:text-3xl"
+            class="text-primary-green inline-flex cursor-pointer self-start rounded-3xl bg-white px-2 py-1 text-lg font-bold shadow-md hover:bg-white hover:outline-2 lg:px-6 lg:py-2 lg:text-3xl dark:text-white dark:hover:outline-white"
+            color="dark"
             pill
             square
           >
@@ -505,7 +511,8 @@ onMounted(async () => {
           <FwbButton
             data-testid="open-collections-modal"
             @click="openCollectionsModal"
-            class="text-primary-green inline-flex cursor-pointer rounded-3xl bg-white px-4 py-2 text-lg font-bold shadow-md hover:bg-white hover:outline-2"
+            class="text-primary-green inline-flex cursor-pointer rounded-3xl bg-white px-4 py-2 text-lg font-bold shadow-md hover:bg-white hover:outline-2 dark:text-white dark:hover:text-black"
+            color="light"
           >
             View Collections
           </FwbButton>
@@ -513,7 +520,8 @@ onMounted(async () => {
           <FwbButton
             data-testid="create-collection-button"
             @click="showCreateCollectionModal = true"
-            class="text-primary-green inline-flex cursor-pointer rounded-3xl bg-white px-4 py-2 text-lg font-bold shadow-md hover:bg-white hover:outline-2"
+            class="text-primary-green inline-flex cursor-pointer rounded-3xl bg-white px-4 py-2 text-lg font-bold shadow-md hover:bg-white hover:outline-2 dark:text-white dark:hover:text-black"
+            color="light"
             pill
             square
           >
@@ -524,7 +532,7 @@ onMounted(async () => {
           </FwbButton>
         </div>
 
-        <div class="flex flex-col gap-10">
+        <div class="flex flex-col gap-10 dark:mt-2">
           <RecipesList
             data-testid="saved-recipes"
             title="Saved Recipes"
@@ -698,7 +706,7 @@ onMounted(async () => {
 
           <div v-else>
             <FwbButton
-              class="mb-4 cursor-pointer"
+              class="mb-4 cursor-pointer dark:text-white dark:hover:text-black"
               color="light"
               @click="selectedCollection = undefined"
             >

@@ -1,18 +1,33 @@
 @theme {
   --font-primary: 'Poppins', ui-sans-serif, system-ui, sans-serif;
 
-  --color-header: #170f49;
-  --color-background-form: #f1fdf5;
-  --color-background-main: #f7f8f9;
+  --color-header-light: #170f49;
+  --color-header-dark: #efeff1;
+
+  --color-background-form-light: #f1fdf5;
+  --color-background-form-dark: #565151;
+
+  --color-background-recipe-card-dark: #1e2939;
+
+  --color-background-main-light: #f7f8f9;
+  --color-background-main-dark: #0e0e10;
+
+  --color-background-navbar-dark: #18181b;
+
   --color-welcome-dark: #1c232d;
 
   --color-input-background: #ffffff;
 
   --color-submit-text: #556987;
+  --color-submit-text-dark: #463b45;
 
   --color-rating: #fcc800;
 
   --color-primary-green: #10b981;
   --color-secondary-green: #3aef73;
   --color-tertiary-green: #7bed9f;
+
+  --color-primary-green-dark: #1e4a3a;
+  --color-secondary-green-dark: #2cc15b;
+  --color-tertiary-green-dark: #2d6853;
 }
