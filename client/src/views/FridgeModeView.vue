@@ -47,7 +47,9 @@ async function handleCreateRecipe(recipe: GeneratedRecipe) {
 const [fetchRecipesFromFridgeImage, errorMessage] = useErrorMessage(
   async () => {
     if (!fridgeImageFile.value) {
-      return undefined;
+      throw new Error(
+        'Please upload an image (Supported types: .jpeg, .jpg, .png)'
+      );
     }
 
     errorMessage.value = '';

@@ -34,7 +34,12 @@ const handleImageError = () => {
     </div>
 
     <h3 class="text-xl font-bold">{{ recipe.title }}</h3>
-    <p class="text-gray-600">⏱️ {{ recipe.duration }} minutes</p>
+    <p class="flex items-center text-gray-600">
+      <span class="material-symbols-outlined">
+        nest_clock_farsight_analog
+      </span>
+      {{ recipe.duration }} minutes
+    </p>
 
     <div class="flex flex-col gap-2 text-sm">
       <div>
