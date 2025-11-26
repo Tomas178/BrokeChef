@@ -24,6 +24,7 @@ import { useUserStore } from '@/stores/user';
 import { computed } from 'vue';
 import { MODAL_TYPES, type ModalType } from '@/types/profile';
 import CreateCollectionModal from '@/components/Modals/CreateCollectionModal.vue';
+import Dialog from '@/components/Dialog.vue';
 
 const { showLoading, updateToast } = useToast();
 const userStore = useUserStore();
@@ -33,6 +34,14 @@ const route = useRoute();
 const props = defineProps<{
   id?: string;
 }>();
+
+const dialogRef = ref<InstanceType<typeof Dialog> | null>(null);
+const collectionIdToDelete = ref<number | undefined>(undefined);
+
+function openDeleteDialog(collectionId: number) {
+  collectionIdToDelete.value = collectionId;
+  dialogRef.value?.open();
+}
 
 const isLoadingProfile = ref(true);
 const user = ref<UsersPublic>();
@@ -272,6 +281,13 @@ const [removeCollection, removeCollectionErrorMessage] = useErrorMessage(
   }) as (...args: unknown[]) => unknown,
   true
 );
+
+async function handleConfirmDeleteCollection() {
+  if (collectionIdToDelete.value === undefined) return;
+
+  await handleRemoveCollection(collectionIdToDelete.value);
+  collectionIdToDelete.value = undefined;
+}
 
 async function handleRemoveCollection(collectionId: number) {
   const id = showLoading('Removing collection...');
@@ -688,12 +704,19 @@ onMounted(async () => {
 
                 <button
                   class="cursor-pointer text-red-600 hover:underline"
-                  @click.stop="handleRemoveCollection(collection.id)"
+                  @click.stop="openDeleteDialog(collection.id)"
                 >
                   Remove
                 </button>
               </li>
             </ul>
+
+            <Dialog
+              ref="dialogRef"
+              description="Are you sure you want to delete this collection? This action cannot be undone."
+              action-name="Delete"
+              @confirm="handleConfirmDeleteCollection"
+            />
           </div>
 
           <div v-else>
