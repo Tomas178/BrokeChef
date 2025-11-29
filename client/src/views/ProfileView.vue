@@ -297,7 +297,7 @@ async function handleRemoveCollection(collectionId: number) {
 
     collections.value = collections.value.filter((c) => c.id !== collectionId);
 
-    updateToast(id, 'success', 'Collection removed successfully');
+    updateToast(id, 'success', 'Collection removed successfully!');
   } catch {
     updateToast(
       id,
