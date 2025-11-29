@@ -8,7 +8,6 @@ import {
 import { toNodeHandler } from 'better-auth/node';
 import cors from 'cors';
 import { StatusCodes } from 'http-status-codes';
-import { renderTrpcPanel } from 'trpc-ui';
 import type { Database } from './database';
 import { auth } from './auth';
 import type { Context } from './trpc/index';
@@ -55,17 +54,6 @@ export default function createApp(database: Database) {
       router: appRouter,
     })
   );
-
-  if (config.env === 'development') {
-    app.use('/api/v1/trpc-panel', (_, res) =>
-      res.send(
-        renderTrpcPanel(appRouter, {
-          url: `http://localhost:${config.port}/api/v1/trpc`,
-          transformer: 'superjson',
-        })
-      )
-    );
-  }
 
   return app;
 }
