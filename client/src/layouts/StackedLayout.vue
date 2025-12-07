@@ -22,15 +22,15 @@ const navigation = computed(() =>
 </script>
 
 <template>
-  <FwbNavbar class="relative z-50 dark:bg-white">
+  <FwbNavbar class="dark:bg-background-navbar-dark relative z-50">
     <template #logo>
       <RouterLink
         :to="{ name: ROUTE_NAMES.HOME }"
         class="flex items-center space-x-2 hover:scale-105"
       >
-        <img src="@/assets/logo.svg" alt="BrokChef Logo" class="h-12 w-auto" />
+        <img src="@/assets/logo.svg" alt="BrokeChef Logo" class="h-12 w-auto" />
         <span
-          class="text-header md:text-extrabold font-bold md:text-2xl dark:text-black"
+          class="text-header-light md:text-extrabold dark:text-header-dark font-bold md:text-2xl"
           >BrokeChef</span
         >
       </RouterLink>
@@ -64,7 +64,7 @@ const navigation = computed(() =>
 @reference "../assets/index.css";
 
 :deep(ul > a) {
-  @apply bg-background-form dark:bg-inherit;
+  @apply bg-background-form-light dark:bg-inherit;
 }
 
 :deep(ul .router-link-exact-active) {

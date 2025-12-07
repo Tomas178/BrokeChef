@@ -72,9 +72,10 @@ async function handleCreate() {
         <div class="flex flex-col gap-2">
           <label
             for="collection-title"
-            class="text-sm font-medium text-gray-700"
+            class="text-sm font-medium text-gray-700 dark:text-gray-200"
           >
-            Collection Title <span class="text-red-500">*</span>
+            Collection Title
+            <span class="text-red-500">*</span>
           </label>
           <FwbInput
             id="collection-title"

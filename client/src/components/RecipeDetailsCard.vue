@@ -10,9 +10,10 @@ defineProps<{
 <template>
   <div class="rounded-4xl bg-white/50 p-10 lg:flex-1">
     <div class="flex flex-col md:gap-6">
-      <span class="text-3xl leading-12 font-bold break-words text-gray-500">{{
-        title
-      }}</span>
+      <span
+        class="text-3xl leading-12 font-bold break-words text-gray-500 dark:text-white"
+        >{{ title }}</span
+      >
       <ul :data-testid="title" class="flex list-inside list-disc flex-col">
         <li
           v-for="item in items"

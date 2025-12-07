@@ -89,12 +89,12 @@ onMounted(async () => {
 <template>
   <div v-if="user">
     <div
-      class="bg-primary-green relative flex h-20 w-full items-start justify-start sm:h-32 xl:h-52"
+      class="bg-primary-green dark:bg-primary-green-dark relative flex h-20 w-full items-start justify-start sm:h-32 xl:h-52"
     >
       <FwbButton
         @click="goBack"
         color="green"
-        class="bg-tertiary-green hover:bg-secondary-green m-4 cursor-pointer"
+        class="bg-tertiary-green dark:bg-tertiary-green-dark dark:hover:bg-secondary-green-dark hover:bg-secondary-green m-4 cursor-pointer"
         pill
         square
       >
@@ -117,10 +117,10 @@ onMounted(async () => {
         class="flex w-full flex-col items-center justify-around gap-10 px-4 py-10 sm:px-36 lg:flex-row lg:items-start"
       >
         <form
-          class="flex w-full max-w-md flex-col gap-4 rounded-4xl bg-white p-12 md:gap-10"
+          class="dark:bg-background-recipe-card-dark flex w-full max-w-md flex-col gap-4 rounded-4xl bg-white p-12 md:gap-10"
           @submit.prevent="handleChangeEmail"
         >
-          <span class="text-xl font-bold">Change Email</span>
+          <span class="text-xl font-bold dark:text-white">Change Email</span>
           <div class="flex flex-col gap-4">
             <FwbInput
               data-testid="email"
@@ -130,6 +130,7 @@ onMounted(async () => {
               placeholder="Enter new email"
               v-model="email"
               class="bg-white"
+              wrapperClass="dark:text-white"
             />
             <FwbButton
               data-testid="save-email"
@@ -143,10 +144,10 @@ onMounted(async () => {
         </form>
 
         <form
-          class="flex w-full max-w-md flex-col gap-4 rounded-4xl bg-white p-12 md:gap-10"
+          class="dark:bg-background-recipe-card-dark flex w-full max-w-md flex-col gap-4 rounded-4xl bg-white p-12 md:gap-10"
           @submit.prevent="handleChangePassword"
         >
-          <span class="text-xl font-bold">Change Password</span>
+          <span class="text-xl font-bold dark:text-white">Change Password</span>
           <div class="flex flex-col gap-4">
             <FwbInput
               data-testid="current-password"
@@ -155,6 +156,7 @@ onMounted(async () => {
               placeholder="Enter current password"
               v-model="currentPassword"
               class="bg-white"
+              wrapperClass="dark:text-white"
             />
             <FwbInput
               data-testid="new-password"
@@ -163,6 +165,7 @@ onMounted(async () => {
               placeholder="Enter new password"
               v-model="newPassword"
               class="bg-white"
+              wrapperClass="dark:text-white"
             />
             <FwbInput
               data-testid="repeat-password"
@@ -171,6 +174,7 @@ onMounted(async () => {
               placeholder="Repeat your password"
               v-model="repeatPassword"
               class="bg-white"
+              wrapperClass="dark:text-white"
             />
             <FwbButton
               data-testid="save-password"

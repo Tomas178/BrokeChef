@@ -31,7 +31,7 @@ function removeInput(index: number) {
 <template>
   <div :data-testid="testId" class="flex flex-col gap-6 md:flex-1">
     <FwbHeading tag="h2">{{ heading }}</FwbHeading>
-    <div class="rounded-4xl bg-white">
+    <div class="dark:bg-background-recipe-card-dark rounded-4xl bg-white">
       <div class="m-4 flex flex-col gap-4 md:m-16">
         <div
           v-for="(_input, index) in inputs"
@@ -44,7 +44,7 @@ function removeInput(index: number) {
             v-model="inputs[index]"
             :placeholder="`${props.placeholder} #${index + 1}`"
             class="bg-white"
-            wrapper-class="flex-1"
+            wrapper-class="flex-1 dark:text-white"
             :minlength="1"
             :maxlength="props.heading !== 'Steps' ? 100 : undefined"
             :required="true"
@@ -83,7 +83,7 @@ function removeInput(index: number) {
         </div>
         <FwbButton
           type="button"
-          class="border-primary-green mt-6 cursor-pointer border-2"
+          class="border-primary-green mt-6 cursor-pointer border-2 hover:text-black"
           @click="addInput"
           color="light"
         >

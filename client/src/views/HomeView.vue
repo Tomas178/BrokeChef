@@ -13,7 +13,7 @@ import { RECIPE_CARD_VARIANT } from '@/types/recipeCard';
 const route = useRoute();
 const router = useRouter();
 
-const RECIPES_PER_PAGE = 36;
+const RECIPES_PER_PAGE = 5;
 
 const recipes = ref<RecipesPublic[]>([]);
 const totalCount = ref(0);
@@ -122,9 +122,9 @@ onMounted(async () => {
     >
       <div class="flex flex-col text-center text-3xl font-bold lg:text-6xl">
         <span class="text-primary-green">Explore Simple &</span>
-        <span class="text-header">Tasty Recipes</span>
+        <span class="text-header-light">Tasty Recipes</span>
       </div>
-      <span class="text-center font-medium text-wrap lg:mx-9">
+      <span class="text-center font-medium text-wrap lg:mx-9 dark:text-white">
         Dive into our recipes, where every dish is a memory in the making. Come,
         cook, and create with us!
       </span>

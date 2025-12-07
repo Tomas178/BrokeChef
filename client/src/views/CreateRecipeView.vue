@@ -27,7 +27,7 @@ const { recipeForm, recipeImageFile, durationString, handleCreateRecipe } =
       <div class="flex items-end justify-end">
         <FwbButton
           type="submit"
-          class="gradient-action-button text-submit-text cursor-pointer rounded-3xl px-6 py-2 hover:scale-105"
+          class="gradient-action-button text-submit-text dark:text-submit-text-dark cursor-pointer rounded-3xl px-6 py-2 hover:scale-105"
         >
           <template #prefix>
             <svg
@@ -68,7 +68,7 @@ const { recipeForm, recipeImageFile, durationString, handleCreateRecipe } =
           <FwbHeading tag="h2" class="lg:text-nowrap"
             >General Recipe Information
           </FwbHeading>
-          <div class="rounded-4xl bg-white">
+          <div class="dark:bg-background-recipe-card-dark rounded-4xl bg-white">
             <div class="m-4 flex flex-col gap-4 md:m-16">
               <FwbInput
                 data-testid="recipe-title"
@@ -77,7 +77,7 @@ const { recipeForm, recipeImageFile, durationString, handleCreateRecipe } =
                 v-model="recipeForm.title"
                 placeholder="eg: Savory Stuffed Bell Peppers"
                 class="bg-white"
-                wrapper-class="flex-1"
+                wrapper-class="flex-1 dark:text-white"
                 :minlength="MIN_RECIPE_TITLE_LENGTH"
                 :maxlength="MAX_RECIPE_TITLE_LENGTH"
                 :required="true"
@@ -89,7 +89,7 @@ const { recipeForm, recipeImageFile, durationString, handleCreateRecipe } =
                 v-model="durationString"
                 placeholder="30"
                 class="bg-white"
-                wrapper-class="flex-1"
+                wrapper-class="flex-1 dark:text-white"
                 :min="MIN_DURATION"
                 :max="MAX_DURATION"
                 :required="true"
