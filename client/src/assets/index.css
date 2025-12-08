@@ -8,6 +8,8 @@
 /* import Flowbite Vue styles */
 @import 'flowbite-vue/index.css';
 
+@variant dark (&:where(.dark, .dark *));
+
 /* import Flowbite plugin */
 @plugin "flowbite/plugin";
 
