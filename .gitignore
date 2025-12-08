@@ -2,3 +2,4 @@ node_modules
 /local
 containers.json
 public-endpoint.json
+redeploy
