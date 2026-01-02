@@ -62,6 +62,7 @@ describe('create', () => {
       ...pick(recipe, recipesKeysPublic),
       author: pick(authorOne, usersKeysPublicWithoutId),
       rating: null,
+      embedding: null,
     });
   });
 });

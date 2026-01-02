@@ -28,6 +28,7 @@ export const recipesSchema = z.object({
     .max(MAX_DURATION, 'Too long duration'),
   steps: z.array(z.string().nonempty().trim()),
   imageUrl: z.string().trim().optional(),
+  embedding: z.array(z.number()),
   createdAt: createdAtSchema,
 });
 
