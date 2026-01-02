@@ -72,6 +72,7 @@ export interface Ratings {
 export interface Recipes {
   createdAt: Generated<Timestamp>;
   duration: number;
+  embedding: string | null;
   id: Generated<number>;
   imageUrl: string;
   steps: string;
