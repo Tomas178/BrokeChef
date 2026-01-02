@@ -6,7 +6,6 @@ import {
   withIngredients,
   withTools,
 } from '@server/repositories/recipesRepository';
-import { joinStepsToArray } from '@server/repositories/utils/joinStepsToArray';
 import { openai } from '@server/utils/OpenAI/client';
 import { formatRecipeForEmbedding } from '@server/utils/OpenAI/formatRecipeForEmbedding';
 import { getEmbedding } from '@server/utils/OpenAI/getEmbedding';
@@ -18,7 +17,7 @@ async function fillNonEmbeddedRecipes() {
   try {
     const recipesWithoutEmbeddings = await database
       .selectFrom(TABLES.RECIPES)
-      .select(['id', 'duration', 'title', 'steps'])
+      .select(['id', 'duration', 'title'])
       .select(withIngredients)
       .select(withTools)
       .where('embedding', 'is', null)
@@ -33,11 +32,7 @@ async function fillNonEmbeddedRecipes() {
 
     for (const recipe of recipesWithoutEmbeddings) {
       try {
-        const stepsAsArray = joinStepsToArray(recipe.steps);
-        const text = formatRecipeForEmbedding({
-          ...recipe,
-          steps: stepsAsArray,
-        });
+        const text = formatRecipeForEmbedding(recipe);
         const embedding = await getEmbedding(openai, text);
 
         await database
