@@ -21,9 +21,13 @@ export async function up(database: Kysely<any>) {
 }
 
 export async function down(database: Kysely<any>) {
-  await database.schema.dropIndex(IDX_RECIPES_USER_ID_RECIPE_ID_DESC).execute();
+  await database.schema
+    .alterTable(TABLES.RECIPES)
+    .dropIndex(IDX_RECIPES_USER_ID_RECIPE_ID_DESC)
+    .execute();
 
   await database.schema
+    .alterTable(TABLES.SAVED_RECIPES)
     .dropIndex(IDX_SAVED_RECIPES_USER_ID_RECIPE_ID)
     .execute();
 }

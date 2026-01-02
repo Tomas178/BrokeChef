@@ -35,7 +35,10 @@ export async function up(database: Kysely<any>) {
 }
 
 export async function down(database: Kysely<any>) {
-  await database.schema.dropIndex(IDX_FOLLOWS_FOLLOWED_ID).execute();
+  await database.schema
+    .alterTable(TABLES.FOLLOWS)
+    .dropIndex(IDX_FOLLOWS_FOLLOWED_ID)
+    .execute();
 
   await database.schema.dropTable(TABLES.FOLLOWS).execute();
 }
