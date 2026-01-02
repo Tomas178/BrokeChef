@@ -222,7 +222,7 @@ function withAuthor(eb: ExpressionBuilder<DB, 'recipes'>) {
   ).as('author') as AliasedRawBuilder<UsersPublicWithoutId, 'author'>;
 }
 
-function withIngredients(eb: ExpressionBuilder<DB, 'recipes'>) {
+export function withIngredients(eb: ExpressionBuilder<DB, 'recipes'>) {
   return eb
     .selectFrom('ingredients')
     .innerJoin(
@@ -235,7 +235,7 @@ function withIngredients(eb: ExpressionBuilder<DB, 'recipes'>) {
     .as('ingredients') as unknown as AliasedRawBuilder<string[], 'ingredients'>;
 }
 
-function withTools(eb: ExpressionBuilder<DB, 'recipes'>) {
+export function withTools(eb: ExpressionBuilder<DB, 'recipes'>) {
   return eb
     .selectFrom('tools')
     .innerJoin('recipesTools', 'recipesTools.toolId', 'tools.id')

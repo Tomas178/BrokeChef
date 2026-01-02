@@ -112,7 +112,6 @@ export const fakeRecipeWithAuthor = <
   },
   ...overrides,
   createdAt: new Date(),
-  updatedAt: new Date(),
 });
 
 export const fakeRecipeAllInfo = <T extends Partial<RecipesPublicAllInfo>>(
@@ -134,7 +133,6 @@ export const fakeRecipeAllInfo = <T extends Partial<RecipesPublicAllInfo>>(
   rating: randomRating(),
   ...overrides,
   createdAt: new Date(),
-  updatedAt: new Date(),
 });
 
 export const fakeIngredient = <T extends Partial<Insertable<Ingredients>>>(
