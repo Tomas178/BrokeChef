@@ -6,10 +6,11 @@ import {
   fakeCollectionRecipe,
   fakeRating,
   fakeRecipe,
+  fakeRecipeDB,
   fakeSavedRecipe,
   fakeUser,
 } from '@server/entities/tests/fakes';
-import { pick } from 'lodash-es';
+import { omit, pick } from 'lodash-es';
 import {
   recipesKeysPublic,
   type RecipesPublicWithoutRating,
@@ -21,6 +22,8 @@ import {
 import { initialPage, initialPageWithSort } from '@server/entities/shared';
 import { SortingTypes } from '@server/enums/SortingTypes';
 import { NoResultError } from 'kysely';
+import { OPENAI_EMBEDDING_DIMENSIONS } from '@server/database/migrations/20260102T092811Z-addVectorEmbedding';
+import pgvector from 'pgvector/kysely';
 import { recipesRepository } from '../recipesRepository';
 
 const database = await wrapInRollbacks(createTestDatabase());
@@ -35,25 +38,22 @@ const [authorOne, authorTwo, userRater] = await insertAll(database, 'users', [
 ]);
 
 const defaultRecipes = await insertAll(database, 'recipes', [
-  fakeRecipe({
+  fakeRecipeDB({
     userId: authorOne.id,
   }),
-  fakeRecipe({
+  fakeRecipeDB({
     userId: authorTwo.id,
   }),
 ]);
 
 const [recipeOne, recipeTwo] = defaultRecipes;
 
-const fakeRecipeDefault = (recipe: Parameters<typeof fakeRecipe>[0] = {}) =>
-  fakeRecipe({
-    userId: authorOne.id,
-    ...recipe,
-  });
+const getVector = (fillValue: number) =>
+  Array.from<number>({ length: OPENAI_EMBEDDING_DIMENSIONS }).fill(fillValue);
 
 describe('create', () => {
   it('Should create a new recipe', async () => {
-    const recipe = fakeRecipeDefault();
+    const recipe = fakeRecipe({ userId: authorOne.id });
 
     const createdRecipe = await repository.create(recipe);
 
@@ -62,8 +62,24 @@ describe('create', () => {
       ...pick(recipe, recipesKeysPublic),
       author: pick(authorOne, usersKeysPublicWithoutId),
       rating: null,
-      embedding: null,
     });
+  });
+});
+
+describe('search', () => {
+  it('Should return recipes closest to the provided vector', async () => {
+    const vectorA = getVector(0.1);
+    const vectorB = getVector(0.11);
+    const vectorC = getVector(0.9);
+
+    const [recipeClose] = await insertAll(database, 'recipes', [
+      fakeRecipe({ userId: authorOne.id, embedding: pgvector.toSql(vectorB) }),
+      fakeRecipe({ userId: authorOne.id, embedding: pgvector.toSql(vectorC) }),
+    ]);
+
+    const recipes = await repository.search(vectorA, initialPage);
+
+    expect(recipes[0].id).toBe(recipeClose.id);
   });
 });
 
@@ -120,7 +136,7 @@ describe('findCreatedByUser', () => {
     const [createdRecipes] = await insertAll(
       database,
       'recipes',
-      fakeRecipe({ userId: userRater.id })
+      fakeRecipeDB({ userId: userRater.id })
     );
 
     const [createdRecipesByUser] = await repository.findCreatedByUser(
@@ -139,7 +155,7 @@ describe('findCreatedByUser', () => {
     const [createdRecipes] = await insertAll(
       database,
       'recipes',
-      fakeRecipe({ userId: userRater.id })
+      fakeRecipeDB({ userId: userRater.id })
     );
 
     const [ratingOne, ratingTwo] = await insertAll(database, 'ratings', [
@@ -166,8 +182,8 @@ describe('totalCreatedByUser', () => {
 
   it('Should return the amount that was created', async () => {
     const created = await insertAll(database, 'recipes', [
-      fakeRecipe({ userId: userRater.id }),
-      fakeRecipe({ userId: userRater.id }),
+      fakeRecipeDB({ userId: userRater.id }),
+      fakeRecipeDB({ userId: userRater.id }),
     ]);
 
     await expect(repository.totalCreatedByUser(userRater.id)).resolves.toBe(
@@ -269,7 +285,7 @@ describe('findByCollectionId', () => {
     const [recipe] = await insertAll(
       database,
       'recipes',
-      fakeRecipe({ userId: authorOne.id })
+      fakeRecipeDB({ userId: authorOne.id })
     );
 
     await insertAll(database, 'collectionsRecipes', [
@@ -299,7 +315,7 @@ describe('findByCollectionId', () => {
     const [recipe] = await insertAll(
       database,
       'recipes',
-      fakeRecipe({ userId: authorOne.id })
+      fakeRecipeDB({ userId: authorOne.id })
     );
 
     await insertAll(database, 'collectionsRecipes', [
@@ -333,9 +349,9 @@ describe('findByCollectionId', () => {
       database,
       'recipes',
       [
-        fakeRecipe({ userId: authorOne.id }),
-        fakeRecipe({ userId: authorTwo.id }),
-        fakeRecipe({ userId: authorOne.id }),
+        fakeRecipeDB({ userId: authorOne.id }),
+        fakeRecipeDB({ userId: authorTwo.id }),
+        fakeRecipeDB({ userId: authorOne.id }),
       ]
     );
 
@@ -378,8 +394,8 @@ describe('findByCollectionId', () => {
       database,
       'recipes',
       [
-        fakeRecipe({ userId: authorOne.id }),
-        fakeRecipe({ userId: authorTwo.id }),
+        fakeRecipeDB({ userId: authorOne.id }),
+        fakeRecipeDB({ userId: authorTwo.id }),
       ]
     );
 
@@ -412,16 +428,16 @@ describe('findAll', () => {
 
   it('Should return 5 recipes newest recipes', async () => {
     await insertAll(database, 'recipes', [
-      fakeRecipe({
+      fakeRecipeDB({
         userId: authorOne.id,
       }),
-      fakeRecipe({
+      fakeRecipeDB({
         userId: authorOne.id,
       }),
-      fakeRecipe({
+      fakeRecipeDB({
         userId: authorOne.id,
       }),
-      fakeRecipe({
+      fakeRecipeDB({
         userId: authorOne.id,
       }),
     ]);
@@ -438,7 +454,7 @@ describe('findAll', () => {
     recipesNotFromRepo.sort((a, b) => b.id - a.id);
 
     const recipesNotFromRepoWithAuthor = recipesNotFromRepo.map(recipe => ({
-      ...recipe,
+      ...omit(recipe, 'embedding'),
       author: pick(
         usersNotFromRepo.find(user => user.id === recipe.userId),
         usersKeysPublicWithoutId
@@ -454,16 +470,16 @@ describe('findAll', () => {
 
   it('Should return 5 oldest recipes', async () => {
     await insertAll(database, 'recipes', [
-      fakeRecipe({
+      fakeRecipeDB({
         userId: authorOne.id,
       }),
-      fakeRecipe({
+      fakeRecipeDB({
         userId: authorOne.id,
       }),
-      fakeRecipe({
+      fakeRecipeDB({
         userId: authorOne.id,
       }),
-      fakeRecipe({
+      fakeRecipeDB({
         userId: authorOne.id,
       }),
     ]);
@@ -480,7 +496,7 @@ describe('findAll', () => {
     recipesNotFromRepo.sort((a, b) => a.id - b.id);
 
     const recipesNotFromRepoWithAuthor = recipesNotFromRepo.map(recipe => ({
-      ...recipe,
+      ...omit(recipe, 'embedding'),
       author: pick(
         usersNotFromRepo.find(user => user.id === recipe.userId),
         usersKeysPublicWithoutId
@@ -502,10 +518,10 @@ describe('findAll', () => {
       database,
       'recipes',
       [
-        fakeRecipe({ userId: authorOne.id }),
-        fakeRecipe({ userId: authorOne.id }),
-        fakeRecipe({ userId: authorOne.id }),
-        fakeRecipe({ userId: authorOne.id }),
+        fakeRecipe({ userId: authorOne.id, embedding: null }),
+        fakeRecipe({ userId: authorOne.id, embedding: null }),
+        fakeRecipe({ userId: authorOne.id, embedding: null }),
+        fakeRecipe({ userId: authorOne.id, embedding: null }),
       ]
     );
 
@@ -539,22 +555,22 @@ describe('findAll', () => {
 
     expect(recipesFromRepo).toHaveLength(initialPageWithSort.limit);
     expect(recipesFromRepo[0]).toMatchObject({
-      ...recipeThree,
+      ...omit(recipeThree, 'embedding'),
       rating: ratedThree.rating,
     });
 
     expect(recipesFromRepo[1]).toMatchObject({
-      ...recipeFour,
+      ...omit(recipeFour, 'embedding'),
       rating: ratedFour.rating,
     });
 
     expect(recipesFromRepo[2]).toMatchObject({
-      ...recipeFive,
+      ...omit(recipeFive, 'embedding'),
       rating: ratedFive.rating,
     });
 
     expect(recipesFromRepo[3]).toMatchObject({
-      ...recipeSix,
+      ...omit(recipeSix, 'embedding'),
       rating: ratedSix.rating,
     });
 
@@ -568,10 +584,10 @@ describe('findAll', () => {
       database,
       'recipes',
       [
-        fakeRecipe({ userId: authorOne.id }),
-        fakeRecipe({ userId: authorOne.id }),
-        fakeRecipe({ userId: authorOne.id }),
-        fakeRecipe({ userId: authorOne.id }),
+        fakeRecipe({ userId: authorOne.id, embedding: null }),
+        fakeRecipe({ userId: authorOne.id, embedding: null }),
+        fakeRecipe({ userId: authorOne.id, embedding: null }),
+        fakeRecipe({ userId: authorOne.id, embedding: null }),
       ]
     );
 
@@ -605,22 +621,22 @@ describe('findAll', () => {
 
     expect(recipesFromRepo).toHaveLength(initialPageWithSort.limit);
     expect(recipesFromRepo[0]).toMatchObject({
-      ...recipeThree,
+      ...omit(recipeThree, 'embedding'),
       rating: ratedThree.rating,
     });
 
     expect(recipesFromRepo[1]).toMatchObject({
-      ...recipeFour,
+      ...omit(recipeFour, 'embedding'),
       rating: ratedFour.rating,
     });
 
     expect(recipesFromRepo[2]).toMatchObject({
-      ...recipeFive,
+      ...omit(recipeFive, 'embedding'),
       rating: ratedFive.rating,
     });
 
     expect(recipesFromRepo[3]).toMatchObject({
-      ...recipeSix,
+      ...omit(recipeSix, 'embedding'),
       rating: ratedSix.rating,
     });
 

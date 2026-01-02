@@ -29,6 +29,8 @@ const {
   mockLoggerError,
   mockInsertIngredients,
   mockInsertTools,
+  mockFormatRecipeForEmbedding,
+  mockGetEmbedding,
 } = vi.hoisted(() => ({
   mockDeleteFile: vi.fn(),
   mockGenerateRecipeImage: vi.fn(() => Buffer.from('image')),
@@ -41,6 +43,8 @@ const {
   mockLoggerError: vi.fn(),
   mockInsertIngredients: vi.fn(),
   mockInsertTools: vi.fn(),
+  mockFormatRecipeForEmbedding: vi.fn(),
+  mockGetEmbedding: vi.fn(),
 }));
 
 vi.mock('@server/utils/signImages', () => ({
@@ -78,6 +82,14 @@ vi.mock('@server/repositories/utils/joinStepsToArray', () => ({
 vi.mock('@server/services/utils/inserts', () => ({
   insertIngredients: mockInsertIngredients,
   insertTools: mockInsertTools,
+}));
+
+vi.mock('@server/utils/OpenAI/formatRecipeForEmbedding', () => ({
+  formatRecipeForEmbedding: mockFormatRecipeForEmbedding,
+}));
+
+vi.mock('@server/utils/OpenAI/getEmbedding', () => ({
+  getEmbedding: mockGetEmbedding,
 }));
 
 const mockRecipesRepoCreate = vi.fn();

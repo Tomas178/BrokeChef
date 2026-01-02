@@ -4,7 +4,7 @@ import { insertAll } from '@tests/utils/record';
 import {
   fakeCollection,
   fakeCollectionRecipe,
-  fakeRecipe,
+  fakeRecipeDB,
   fakeUser,
 } from '@server/entities/tests/fakes';
 import { collectionsRecipesRepository } from '../collectionsRecipesRepository';
@@ -17,7 +17,7 @@ const [user] = await insertAll(database, 'users', fakeUser());
 const [recipe] = await insertAll(
   database,
   'recipes',
-  fakeRecipe({ userId: user.id })
+  fakeRecipeDB({ userId: user.id })
 );
 
 const [collection] = await insertAll(

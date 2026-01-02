@@ -3,7 +3,7 @@ import { wrapInRollbacks } from '@tests/utils/transactions';
 import { insertAll } from '@tests/utils/record';
 import {
   fakeIngredient,
-  fakeRecipe,
+  fakeRecipeDB,
   fakeUser,
 } from '@server/entities/tests/fakes';
 import { recipesIngredientsRepository } from '../recipesIngredientsRepository';
@@ -13,7 +13,7 @@ const repository = recipesIngredientsRepository(database);
 
 const [user] = await insertAll(database, 'users', [fakeUser()]);
 const [recipe] = await insertAll(database, 'recipes', [
-  fakeRecipe({ userId: user.id }),
+  fakeRecipeDB({ userId: user.id }),
 ]);
 const [ingredientOne, ingredientTwo] = await insertAll(
   database,

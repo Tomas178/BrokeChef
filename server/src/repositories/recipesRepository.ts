@@ -1,4 +1,4 @@
-import type { Database, DB, Recipes } from '@server/database';
+import type { Database, DB } from '@server/database';
 import {
   recipesKeysPublic,
   type RecipesPublicAllInfo,
@@ -13,7 +13,6 @@ import { prefixTable } from '@server/utils/strings';
 import {
   type AliasedRawBuilder,
   type ExpressionBuilder,
-  type Insertable,
   type OrderByDirection,
 } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
@@ -21,12 +20,18 @@ import {
   SortingTypes,
   type SortingTypesValues,
 } from '@server/enums/SortingTypes';
+import pgvector, { cosineDistance } from 'pgvector/kysely';
+import type { CreateRecipeData } from '@server/services/recipesService';
 import { joinStepsToArray } from './utils/joinStepsToArray';
 
 const TABLE = 'recipes';
 
 export interface RecipesRepository {
-  create: (recipe: Insertable<Recipes>) => Promise<RecipesPublic>;
+  create: (recipe: CreateRecipeData) => Promise<RecipesPublic>;
+  search: (
+    vector: number[],
+    { offset, limit }: Pagination
+  ) => Promise<RecipesPublic[]>;
   findById: (id: number) => Promise<RecipesPublicAllInfo | undefined>;
   findCreatedByUser: (
     userId: string,
@@ -61,13 +66,32 @@ function normalizeRating<T extends { rating: number | string | null }>(
 export function recipesRepository(database: Database): RecipesRepository {
   return {
     async create(recipe) {
+      const { embedding, ...rest } = recipe;
+
       return database
         .insertInto(TABLE)
-        .values(recipe)
+        .values({
+          ...rest,
+          embedding: pgvector.toSql(embedding),
+        })
         .returning(recipesKeysPublic)
         .returning(withAuthor)
         .returning(withRatings)
         .executeTakeFirstOrThrow();
+    },
+
+    async search(vector, { offset, limit }) {
+      const recipes = await database
+        .selectFrom(TABLE)
+        .select(recipesKeysPublic)
+        .select(withAuthor)
+        .select(withRatings)
+        .orderBy(cosineDistance('embedding', vector))
+        .offset(offset)
+        .limit(limit)
+        .execute();
+
+      return recipes.map(recipe => normalizeRating(recipe));
     },
 
     async findById(id) {

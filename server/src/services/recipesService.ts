@@ -25,10 +25,23 @@ import { signImages } from '@server/utils/signImages';
 import type { PaginationWithSort } from '@server/shared/pagination';
 import RecipeAlreadyCreated from '@server/utils/errors/recipes/RecipeAlreadyCreated';
 import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
+import { getEmbedding } from '@server/utils/OpenAI/getEmbedding';
+import { openai } from '@server/utils/OpenAI/client';
+import { formatRecipeForEmbedding } from '@server/utils/OpenAI/formatRecipeForEmbedding';
 import { joinStepsToSingleString } from './utils/joinStepsToSingleString';
 import { insertIngredients, insertTools } from './utils/inserts';
 import { validateRecipeExists } from './utils/recipeValidations';
 import { rollbackImageUpload } from './utils/rollbackImageUpload';
+
+export type CreateRecipeData = Omit<
+  CreateRecipeInput,
+  'steps' | 'imageUrl' | 'ingredients' | 'tools'
+> & {
+  steps: string;
+  userId: string;
+  imageUrl: string;
+  embedding: number[];
+};
 
 export interface RecipesService {
   createRecipe: (
@@ -67,7 +80,14 @@ export function recipesService(database: Database): RecipesService {
 
   return {
     async createRecipe(recipe, userId) {
-      const { ingredients, tools, ...recipeData } = recipe;
+      const { ingredients, tools, steps, ...recipeData } = recipe;
+
+      const formattedText = formatRecipeForEmbedding({
+        ...recipeData,
+        ingredients,
+        tools,
+      });
+      const embedding = await getEmbedding(openai, formattedText);
 
       let imageUrl: string;
       let isImageGenerated = false;
@@ -85,13 +105,14 @@ export function recipesService(database: Database): RecipesService {
         throw error;
       }
 
-      const stepsAsSingleString = joinStepsToSingleString(recipeData.steps);
+      const stepsAsSingleString = joinStepsToSingleString(steps);
 
-      const recipeToInsert = {
+      const recipeToInsert: CreateRecipeData = {
         ...recipeData,
         steps: stepsAsSingleString,
         userId,
         imageUrl,
+        embedding,
       };
 
       return await database.transaction().execute(async tx => {

@@ -1,7 +1,11 @@
 import { createTestDatabase } from '@tests/utils/database';
 import { wrapInRollbacks } from '@tests/utils/transactions';
 import { insertAll } from '@tests/utils/record';
-import { fakeRating, fakeRecipe, fakeUser } from '@server/entities/tests/fakes';
+import {
+  fakeRating,
+  fakeRecipeDB,
+  fakeUser,
+} from '@server/entities/tests/fakes';
 import { ratingsRepository } from '../ratingsRepository';
 
 const database = await wrapInRollbacks(createTestDatabase());
@@ -13,8 +17,8 @@ const [userOne, userTwo] = await insertAll(database, 'users', [
 ]);
 
 const [recipeOne, recipeTwo] = await insertAll(database, 'recipes', [
-  fakeRecipe({ userId: userOne.id }),
-  fakeRecipe({ userId: userOne.id }),
+  fakeRecipeDB({ userId: userOne.id }),
+  fakeRecipeDB({ userId: userOne.id }),
 ]);
 
 const nonExistantUserId = userOne.id + userTwo.id;
