@@ -38,6 +38,10 @@ const schema = z
         geminiApiKey: z.string(),
       }),
 
+      openai: z.object({
+        apiKey: z.string(),
+      }),
+
       github: z.object({
         clientId: z.string(),
         clientSecret: z.string(),
@@ -98,6 +102,10 @@ const config = schema.parse({
       clientId: env.CLIENT_ID_GOOGLE,
       clientSecret: env.CLIENT_SECRET_GOOGLE,
       geminiApiKey: env.GEMINI_API_KEY,
+    },
+
+    openai: {
+      apiKey: env.OPENAI_API_KEY,
     },
 
     github: {
