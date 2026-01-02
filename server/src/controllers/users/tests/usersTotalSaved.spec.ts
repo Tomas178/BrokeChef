@@ -1,42 +1,49 @@
 import { createCallerFactory } from '@server/trpc';
-import { wrapInRollbacks } from '@tests/utils/transactions';
-import { createTestDatabase } from '@tests/utils/database';
-import { insertAll } from '@tests/utils/record';
-import {
-  fakeRecipe,
-  fakeSavedRecipe,
-  fakeUser,
-} from '@server/entities/tests/fakes';
+import { fakeUser } from '@server/entities/tests/fakes';
 import { authContext, requestContext } from '@tests/utils/context';
+import type { RecipesRepository } from '@server/repositories/recipesRepository';
+import type { Database } from '@server/database';
 import usersRouter from '..';
 
+const mockTotalSavedByUser = vi.fn();
+
+const mockRecipesRepo: Partial<RecipesRepository> = {
+  totalSavedByUser: mockTotalSavedByUser,
+};
+
+vi.mock('@server/repositories/recipesRepository', () => ({
+  recipesRepository: () => mockRecipesRepo,
+}));
+
 const createCaller = createCallerFactory(usersRouter);
-const database = await wrapInRollbacks(createTestDatabase());
+const database = {} as Database;
 
-const [user] = await insertAll(database, 'users', fakeUser());
+const user = fakeUser();
 
-const { totalSaved } = createCaller(authContext({ database }, user));
+beforeEach(() => vi.resetAllMocks());
 
-it('Should throw an error if user is not authenticated', async () => {
+describe('Unauthenticated tests', () => {
   const { totalSaved } = createCaller(requestContext({ database }));
 
-  await expect(totalSaved()).rejects.toThrow(/unauthenticated/i);
+  it('Should throw an error if user is not authenticated', async () => {
+    await expect(totalSaved()).rejects.toThrow(/unauthenticated/i);
+    expect(mockTotalSavedByUser).not.toHaveBeenCalled();
+  });
 });
 
-it('Should return 0', async () => {
-  await expect(totalSaved()).resolves.toBe(0);
-});
+describe('Authenticated tests', () => {
+  const { totalSaved } = createCaller(authContext({ database }, user));
 
-it('Should return the same number that was saved', async () => {
-  const created = await insertAll(database, 'recipes', [
-    fakeRecipe({ userId: user.id }),
-    fakeRecipe({ userId: user.id }),
-  ]);
+  it('Should return 0', async () => {
+    mockTotalSavedByUser.mockResolvedValueOnce(0);
 
-  const saved = await insertAll(database, 'savedRecipes', [
-    fakeSavedRecipe({ recipeId: created[0].id, userId: user.id }),
-    fakeSavedRecipe({ recipeId: created[1].id, userId: user.id }),
-  ]);
+    await expect(totalSaved()).resolves.toBe(0);
+  });
 
-  await expect(totalSaved()).resolves.toBe(saved.length);
+  it('Should return the same number that was created', async () => {
+    const totalRecipes = 5;
+    mockTotalSavedByUser.mockResolvedValueOnce(totalRecipes);
+
+    await expect(totalSaved()).resolves.toBe(totalRecipes);
+  });
 });

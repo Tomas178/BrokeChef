@@ -1,65 +1,52 @@
 import { createCallerFactory } from '@server/trpc';
-import { wrapInRollbacks } from '@tests/utils/transactions';
-import { createTestDatabase } from '@tests/utils/database';
-import { insertAll } from '@tests/utils/record';
 import { fakeRecipe, fakeUser } from '@server/entities/tests/fakes';
 import { authContext, requestContext } from '@tests/utils/context';
-import { pick } from 'lodash-es';
-import { recipesKeysPublic } from '@server/entities/recipes';
-import { usersKeysPublicWithoutId } from '@server/entities/users';
+import type { UsersService } from '@server/services/usersService';
+import type { Database } from '@server/database';
 import usersRouter from '..';
 
-const fakeImageUrl = 'https://signed-url.com/folder/image.png';
+const mockGetCreatedRecipes = vi.fn();
 
-vi.mock('@server/utils/signImages', () => ({
-  signImages: vi.fn((images: string | string[]) => {
-    if (Array.isArray(images)) {
-      return images.map(() => fakeImageUrl);
-    }
-    return fakeImageUrl;
-  }),
+const mockUsersService: Partial<UsersService> = {
+  getCreatedRecipes: mockGetCreatedRecipes,
+};
+
+vi.mock('@server/services/usersService', () => ({
+  usersService: () => mockUsersService,
 }));
 
 const createCaller = createCallerFactory(usersRouter);
-const database = await wrapInRollbacks(createTestDatabase());
+const database = {} as Database;
 
-const [user] = await insertAll(database, 'users', fakeUser());
+const user = fakeUser();
 
-const { getCreatedRecipes } = createCaller(authContext({ database }, user));
+beforeEach(() => vi.resetAllMocks());
 
-it('Should throw an error if user is not authenticated', async () => {
+describe('Unauthenticated tests', () => {
   const { getCreatedRecipes } = createCaller(requestContext({ database }));
 
-  await expect(getCreatedRecipes({})).rejects.toThrow(/unauthenticated/i);
+  it('Should throw an error if user is not authenticated', async () => {
+    await expect(getCreatedRecipes({})).rejects.toThrow(/unauthenticated/i);
+    expect(mockGetCreatedRecipes).not.toHaveBeenCalled();
+  });
 });
 
-it('Should return empty array if user has no created recipes', async () => {
-  await expect(getCreatedRecipes({})).resolves.toEqual([]);
-});
+describe('Authenticated tests', () => {
+  const { getCreatedRecipes } = createCaller(authContext({ database }, user));
 
-it('Should return created recipes', async () => {
-  const createdRecipes = await insertAll(database, 'recipes', [
-    fakeRecipe({ userId: user.id }),
-    fakeRecipe({ userId: user.id }),
-  ]);
+  it('Should return empty array if user has no created recipes', async () => {
+    mockGetCreatedRecipes.mockResolvedValueOnce([]);
 
-  const retrievedCreatedRecipes = await getCreatedRecipes({});
-
-  expect(retrievedCreatedRecipes).toHaveLength(createdRecipes.length);
-
-  const [createdNew, createdOld] = retrievedCreatedRecipes;
-
-  expect(createdOld).toEqual({
-    ...pick(createdRecipes[0], recipesKeysPublic),
-    author: pick(user, usersKeysPublicWithoutId),
-    imageUrl: fakeImageUrl,
-    rating: null,
+    await expect(getCreatedRecipes({})).resolves.toEqual([]);
   });
 
-  expect(createdNew).toEqual({
-    ...pick(createdRecipes[1], recipesKeysPublic),
-    author: pick(user, usersKeysPublicWithoutId),
-    imageUrl: fakeImageUrl,
-    rating: null,
+  it('Should return created recipes', async () => {
+    const createdRecipes = [fakeRecipe(), fakeRecipe()];
+    mockGetCreatedRecipes.mockResolvedValueOnce(createdRecipes);
+
+    const retrievedCreatedRecipes = await getCreatedRecipes({});
+
+    expect(retrievedCreatedRecipes).toHaveLength(createdRecipes.length);
+    expect(retrievedCreatedRecipes).toBe(createdRecipes);
   });
 });

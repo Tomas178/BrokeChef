@@ -1,39 +1,49 @@
 import { createCallerFactory } from '@server/trpc';
-import { createTestDatabase } from '@tests/utils/database';
-import { insertAll } from '@tests/utils/record';
-import { fakeRecipe, fakeUser } from '@server/entities/tests/fakes';
-import { wrapInRollbacks } from '@tests/utils/transactions';
+import { fakeUser } from '@server/entities/tests/fakes';
 import { authContext, requestContext } from '@tests/utils/context';
+import type { Database } from '@server/database';
+import type { RecipesRepository } from '@server/repositories/recipesRepository';
 import recipesRouter from '..';
 
+const mockIsAuthor = vi.fn();
+
+const mockRecipesRepo: Partial<RecipesRepository> = {
+  isAuthor: mockIsAuthor,
+};
+
+vi.mock('@server/repositories/recipesRepository', () => ({
+  recipesRepository: () => mockRecipesRepo,
+}));
+
 const createCaller = createCallerFactory(recipesRouter);
-const database = await wrapInRollbacks(createTestDatabase());
+const database = {} as Database;
 
-const [userAuthor, userNotAuthor] = await insertAll(database, 'users', [
-  fakeUser(),
-  fakeUser(),
-]);
+const user = fakeUser();
+const recipeId = 123;
 
-const [recipe] = await insertAll(
-  database,
-  'recipes',
-  fakeRecipe({ userId: userAuthor.id })
-);
+beforeEach(() => vi.resetAllMocks());
 
-it('Should throw an error if user is not authenticated', async () => {
+describe('Unauthenticated tests', () => {
   const { isAuthor } = createCaller(requestContext({ database }));
 
-  await expect(isAuthor(recipe.id)).rejects.toThrow(/unauthenticated/i);
+  it('Should throw an error if user is not authenticated', async () => {
+    await expect(isAuthor(recipeId)).rejects.toThrow(/unauthenticated/i);
+    expect(mockIsAuthor).not.toHaveBeenCalled();
+  });
 });
 
-it('Should return false if user is not an author', async () => {
-  const { isAuthor } = createCaller(authContext({ database }, userNotAuthor));
+describe('Authenticated tests', () => {
+  const { isAuthor } = createCaller(authContext({ database }, user));
 
-  await expect(isAuthor(recipe.id)).resolves.toBeFalsy();
-});
+  it('Should return false if user is not an author', async () => {
+    mockIsAuthor.mockResolvedValueOnce(false);
 
-it('Should return true if user is an author', async () => {
-  const { isAuthor } = createCaller(authContext({ database }, userAuthor));
+    await expect(isAuthor(recipeId)).resolves.toBeFalsy();
+  });
 
-  await expect(isAuthor(recipe.id)).resolves.toBeTruthy();
+  it('Should return true if user is an author', async () => {
+    mockIsAuthor.mockResolvedValueOnce(true);
+
+    await expect(isAuthor(recipeId)).resolves.toBeTruthy();
+  });
 });

@@ -159,6 +159,18 @@ describe('create', () => {
       createdAt: expect.any(Date),
     });
   });
+
+  it('Should return the raw ratings if the recipe cannot be fetched after creation', async () => {
+    mockRecipesFindById.mockResolvedValueOnce(undefined);
+
+    const ratedRecipe = await ratingsService.create(fakeRecipeToRate);
+
+    expect(ratedRecipe).toEqual({
+      ...fakeRecipeToRate,
+      rating: fakeRecipeToRate.rating,
+      createdAt: expect.any(Date),
+    });
+  });
 });
 
 describe('update', () => {
@@ -171,6 +183,14 @@ describe('update', () => {
   });
 
   it('Should update the rating', async () => {
+    const updatedRating = await ratingsService.update(fakeRecipeToUpdate);
+
+    expect(updatedRating).toBe(fakeRecipeToUpdate.rating);
+  });
+
+  it('Should return the raw rating if the recipe cannot be fetched after update', async () => {
+    mockRecipesFindById.mockResolvedValueOnce(undefined);
+
     const updatedRating = await ratingsService.update(fakeRecipeToUpdate);
 
     expect(updatedRating).toBe(fakeRecipeToUpdate.rating);

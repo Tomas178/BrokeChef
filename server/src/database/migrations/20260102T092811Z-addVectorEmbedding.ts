@@ -1,7 +1,7 @@
 import { sql, type Kysely } from 'kysely';
 import { TABLES } from '../tables';
 
-const OPENAI_EMBEDDING_DIMENSIONS = '1536';
+export const OPENAI_EMBEDDING_DIMENSIONS = 1536;
 
 const COLUMN_EMBEDDING = 'embedding';
 const IDX_EMBEDDING = 'idx_embedding';
@@ -13,7 +13,7 @@ export async function up(database: Kysely<any>) {
     .alterTable(TABLES.RECIPES)
     .addColumn(
       COLUMN_EMBEDDING,
-      sql`vector(${sql.raw(OPENAI_EMBEDDING_DIMENSIONS)})`,
+      sql`vector(${sql.raw(OPENAI_EMBEDDING_DIMENSIONS.toString())})`,
       c => c
     )
     .execute();

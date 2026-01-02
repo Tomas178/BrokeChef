@@ -1,60 +1,46 @@
 import { createCallerFactory } from '@server/trpc';
-import {
-  fakeRating,
-  fakeRecipeAllInfo,
-  fakeUser,
-} from '@server/entities/tests/fakes';
+import { fakeRating, fakeUser } from '@server/entities/tests/fakes';
 import { authContext, requestContext } from '@tests/utils/context';
-import type { RatingsRepository } from '@server/repositories/ratingsRepository';
-import type { RecipesRepository } from '@server/repositories/recipesRepository';
-import { PostgresError } from 'pg-error-enum';
 import type { Database } from '@server/database';
+import type { RatingsService } from '@server/services/ratingsService';
+import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
+import RecipeAlreadyRated from '@server/utils/errors/recipes/RecipeAlreadyRated';
+import CannotRateOwnRecipe from '@server/utils/errors/recipes/CannotRateOwnRecipe';
 import ratingsRouter from '..';
 
-const mockRatingsRepositoryCreate = vi.fn();
-const mockRecipesRepositoryFindById = vi.fn();
+const mockCreate = vi.fn();
 
-const mockRatingsRepository: Partial<RatingsRepository> = {
-  create: mockRatingsRepositoryCreate,
+const mockRatingsService: Partial<RatingsService> = {
+  create: mockCreate,
 };
 
-const mockRecipesRepository: Partial<RecipesRepository> = {
-  findById: mockRecipesRepositoryFindById,
-};
-
-vi.mock('@server/repositories/ratingsRepository', () => ({
-  ratingsRepository: () => mockRatingsRepository,
-}));
-
-vi.mock('@server/repositories/recipesRepository', () => ({
-  recipesRepository: () => mockRecipesRepository,
+vi.mock('@server/services/ratingsService', () => ({
+  ratingsService: () => mockRatingsService,
 }));
 
 const createCaller = createCallerFactory(ratingsRouter);
 const database = {} as Database;
 
-const [userAuthor, userRater] = [fakeUser(), fakeUser()];
+const user = fakeUser();
 
 const recipeId = 123;
 
-beforeEach(() => {
-  mockRatingsRepositoryCreate.mockReset();
-  mockRecipesRepositoryFindById.mockReset();
-});
+beforeEach(() => vi.resetAllMocks());
 
 describe('Unauthenticated tests', () => {
   const { rate } = createCaller(requestContext({ database }));
 
   it('Should throw an error if user is not authenticated', async () => {
     await expect(rate(fakeRating())).rejects.toThrow(/unauthenticated/i);
+    expect(mockCreate).not.toHaveBeenCalled();
   });
 });
 
 describe('Authenticated tests', () => {
-  const { rate } = createCaller(authContext({ database }, userRater));
+  const { rate } = createCaller(authContext({ database }, user));
 
   it('Should throw an error if recipe is not found', async () => {
-    mockRecipesRepositoryFindById.mockResolvedValueOnce(undefined);
+    mockCreate.mockRejectedValueOnce(new RecipeNotFound());
 
     await expect(rate(fakeRating({ recipeId }))).rejects.toThrow(/not found/i);
   });
@@ -64,21 +50,13 @@ describe('Authenticated tests', () => {
       assertPostgresError: vi.fn(),
     }));
 
-    mockRecipesRepositoryFindById.mockResolvedValueOnce(
-      fakeRecipeAllInfo({ id: recipeId, userId: userAuthor.id })
-    );
-
-    mockRatingsRepositoryCreate.mockRejectedValueOnce({
-      code: PostgresError.UNIQUE_VIOLATION,
-    });
+    mockCreate.mockRejectedValueOnce(new RecipeAlreadyRated());
 
     await expect(rate(fakeRating())).rejects.toThrow(/exists|created|already/i);
   });
 
   it('Should throw an error if author is trying to rate the recipe', async () => {
-    mockRecipesRepositoryFindById.mockResolvedValueOnce(
-      fakeRecipeAllInfo({ id: recipeId, userId: userRater.id })
-    );
+    mockCreate.mockRejectedValueOnce(new CannotRateOwnRecipe());
 
     await expect(rate(fakeRating({ recipeId }))).rejects.toThrow(
       /rate own|own/i
@@ -87,25 +65,16 @@ describe('Authenticated tests', () => {
 
   it('Should create the rating', async () => {
     const ratingInput = {
-      userId: userRater.id,
+      userId: user.id,
       recipeId,
       rating: 4,
     };
 
-    const mockedRating = fakeRating({ ...ratingInput });
-
-    mockRecipesRepositoryFindById.mockResolvedValueOnce(
-      fakeRecipeAllInfo({ id: recipeId })
-    );
-
-    mockRatingsRepositoryCreate.mockResolvedValueOnce(mockedRating);
+    mockCreate.mockResolvedValueOnce(ratingInput);
 
     const rating = await rate(ratingInput);
 
-    expect(rating).toEqual(mockedRating);
-    expect(mockRecipesRepositoryFindById).toHaveBeenCalledWith(
-      ratingInput.recipeId
-    );
-    expect(mockRatingsRepositoryCreate).toHaveBeenCalledWith(ratingInput);
+    expect(mockCreate).toHaveBeenCalledExactlyOnceWith(ratingInput);
+    expect(rating).toEqual(ratingInput);
   });
 });

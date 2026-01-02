@@ -8,6 +8,7 @@ vi.mock('@server/auth', () => ({
 
 const { auth } = await import('@server/auth');
 import { authContext, requestContext } from '@tests/utils/context';
+import type { Database } from '@server/database';
 import { createCallerFactory, router } from '..';
 import { authenticatedProcedure } from '.';
 
@@ -19,7 +20,7 @@ const routes = router({
 
 const createCaller = createCallerFactory(routes);
 
-const database = {} as any;
+const database = {} as Database;
 
 const authenticated = createCaller(authContext({ database }));
 

@@ -28,7 +28,7 @@ export const recipesSchema = z.object({
     .max(MAX_DURATION, 'Too long duration'),
   steps: z.array(z.string().nonempty().trim()),
   imageUrl: z.string().trim().optional(),
-  embedding: z.array(z.number()),
+  embedding: z.array(z.number().nullable()).optional(),
   createdAt: createdAtSchema,
 });
 
@@ -36,7 +36,9 @@ export const recipesKeysAll = Object.keys(
   recipesSchema.shape
 ) as (keyof Recipes)[];
 
-export const recipesKeysPublic = recipesKeysAll;
+export const recipesKeysPublic = recipesKeysAll.filter(
+  key => key !== 'embedding'
+) as Exclude<keyof Recipes, 'embedding'>[];
 
 export type RecipesPublic = Pick<
   Selectable<Recipes>,

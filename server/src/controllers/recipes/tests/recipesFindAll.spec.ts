@@ -1,64 +1,37 @@
 import { createCallerFactory } from '@server/trpc';
-import { wrapInRollbacks } from '@tests/utils/transactions';
-import { createTestDatabase } from '@tests/utils/database';
-import { clearTables, insertAll } from '@tests/utils/record';
-import { fakeRecipe, fakeUser } from '@server/entities/tests/fakes';
+import { fakeRecipe } from '@server/entities/tests/fakes';
+import type { RecipesService } from '@server/services/recipesService';
+import type { Database } from '@server/database';
 import recipesRouter from '..';
 
-const fakeImageUrl = 'https://signed-url.com/folder/image.png';
+const mockFindAll = vi.fn();
 
-vi.mock('@server/utils/signImages', () => ({
-  signImages: vi.fn((images: string | string[]) => {
-    if (Array.isArray(images)) {
-      return images.map(() => fakeImageUrl);
-    }
-    return fakeImageUrl;
-  }),
+const mockRecipesService: Partial<RecipesService> = {
+  findAll: mockFindAll,
+};
+
+vi.mock('@server/services/recipesService', () => ({
+  recipesService: () => mockRecipesService,
 }));
 
 const createCaller = createCallerFactory(recipesRouter);
-const database = await wrapInRollbacks(createTestDatabase());
-
-await clearTables(database, ['recipes']);
-const [user] = await insertAll(database, 'users', fakeUser());
+const database = {} as Database;
 
 const { findAll } = createCaller({ database });
 
+beforeEach(() => vi.resetAllMocks());
+
 it('Should return an empty list if there are no recipes', async () => {
+  mockFindAll.mockResolvedValueOnce([]);
   const recipes = await findAll({});
 
   expect(recipes).toHaveLength(0);
 });
 
 it('Should return a list of recipes', async () => {
-  await insertAll(database, 'recipes', fakeRecipe({ userId: user.id }));
+  mockFindAll.mockResolvedValueOnce([fakeRecipe()]);
 
   const recipes = await findAll({});
 
   expect(recipes).toHaveLength(1);
-});
-
-it('Should return the latest recipe first', async () => {
-  const [recipeOld] = await insertAll(
-    database,
-    'recipes',
-    fakeRecipe({ userId: user.id })
-  );
-
-  const [recipeNew] = await insertAll(
-    database,
-    'recipes',
-    fakeRecipe({ userId: user.id })
-  );
-
-  const recipes = await findAll({});
-
-  expect(recipes[0]).toMatchObject({
-    ...recipeNew,
-    imageUrl: fakeImageUrl,
-  });
-  expect(recipes[1]).toMatchObject({
-    ...recipeOld,
-    imageUrl: fakeImageUrl,
-  });
 });

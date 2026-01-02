@@ -20,7 +20,7 @@ interface RatingInputFull {
   rating: number;
 }
 
-interface RatingsService {
+export interface RatingsService {
   getUserRatingForRecipe: (recipeId: number, userId: string) => Promise<Rating>;
   create: (recipeToRate: RatingInputFull) => Promise<RatingsPublic | undefined>;
   update: (recipeToUpdate: RatingInputFull) => Promise<Rating>;

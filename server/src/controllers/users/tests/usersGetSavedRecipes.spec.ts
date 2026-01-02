@@ -1,79 +1,52 @@
-import {
-  fakeRecipe,
-  fakeSavedRecipe,
-  fakeUser,
-} from '@server/entities/tests/fakes';
 import { createCallerFactory } from '@server/trpc';
+import { fakeSavedRecipe, fakeUser } from '@server/entities/tests/fakes';
 import { authContext, requestContext } from '@tests/utils/context';
-import { createTestDatabase } from '@tests/utils/database';
-import { insertAll } from '@tests/utils/record';
-import { wrapInRollbacks } from '@tests/utils/transactions';
-import { pick } from 'lodash-es';
-import { recipesKeysPublic } from '@server/entities/recipes';
-import { usersKeysPublicWithoutId } from '@server/entities/users';
+import type { UsersService } from '@server/services/usersService';
+import type { Database } from '@server/database';
 import usersRouter from '..';
 
-const fakeImageUrl = 'https://signed-url.com/folder/image.png';
+const mockGetSavedRecipes = vi.fn();
 
-vi.mock('@server/utils/signImages', () => ({
-  signImages: vi.fn((images: string | string[]) => {
-    if (Array.isArray(images)) {
-      return images.map(() => fakeImageUrl);
-    }
-    return fakeImageUrl;
-  }),
+const mockUsersService: Partial<UsersService> = {
+  getSavedRecipes: mockGetSavedRecipes,
+};
+
+vi.mock('@server/services/usersService', () => ({
+  usersService: () => mockUsersService,
 }));
 
 const createCaller = createCallerFactory(usersRouter);
-const database = await wrapInRollbacks(createTestDatabase());
+const database = {} as Database;
 
-const [userCreator, userSaver] = await insertAll(database, 'users', [
-  fakeUser(),
-  fakeUser(),
-]);
+const user = fakeUser();
 
-const saverId = userSaver.id;
+beforeEach(() => vi.resetAllMocks());
 
-const [recipeOne, recipeTwo] = await insertAll(database, 'recipes', [
-  fakeRecipe({ userId: userCreator.id }),
-  fakeRecipe({ userId: userCreator.id }),
-]);
-
-const { getSavedRecipes } = createCaller(authContext({ database }, userSaver));
-
-it('Should throw an error if user is not authenticated', async () => {
+describe('Unauthenticated tests', () => {
   const { getSavedRecipes } = createCaller(requestContext({ database }));
 
-  await expect(getSavedRecipes({})).rejects.toThrow(/unauthenticated/i);
+  it('Should throw an error if user is not authenticated', async () => {
+    await expect(getSavedRecipes({})).rejects.toThrow(/unauthenticated/i);
+    expect(mockGetSavedRecipes).not.toHaveBeenCalled();
+  });
 });
 
-it('Should return empty array if user has no saved recipes', async () => {
-  await expect(getSavedRecipes({})).resolves.toEqual([]);
-});
+describe('Authenticated tests', () => {
+  const { getSavedRecipes } = createCaller(authContext({ database }, user));
 
-it('Should return saved recipes', async () => {
-  const savedRecipes = await insertAll(database, 'savedRecipes', [
-    fakeSavedRecipe({ userId: saverId, recipeId: recipeOne.id }),
-    fakeSavedRecipe({ userId: saverId, recipeId: recipeTwo.id }),
-  ]);
+  it('Should return empty array if user has no created recipes', async () => {
+    mockGetSavedRecipes.mockResolvedValueOnce([]);
 
-  const retrievedSavedRecipes = await getSavedRecipes({ userId: saverId });
-
-  expect(retrievedSavedRecipes).toHaveLength(savedRecipes.length);
-
-  const [savedNew, savedOld] = retrievedSavedRecipes;
-
-  expect(savedOld).toEqual({
-    ...pick(recipeOne, recipesKeysPublic),
-    author: pick(userCreator, usersKeysPublicWithoutId),
-    imageUrl: fakeImageUrl,
-    rating: null,
+    await expect(getSavedRecipes({})).resolves.toEqual([]);
   });
 
-  expect(savedNew).toEqual({
-    ...pick(recipeTwo, recipesKeysPublic),
-    author: pick(userCreator, usersKeysPublicWithoutId),
-    imageUrl: fakeImageUrl,
-    rating: null,
+  it('Should return saved recipes', async () => {
+    const createdRecipes = [fakeSavedRecipe(), fakeSavedRecipe()];
+    mockGetSavedRecipes.mockResolvedValueOnce(createdRecipes);
+
+    const retrievedCreatedRecipes = await getSavedRecipes({});
+
+    expect(retrievedCreatedRecipes).toHaveLength(createdRecipes.length);
+    expect(retrievedCreatedRecipes).toBe(createdRecipes);
   });
 });

@@ -19,6 +19,7 @@ import {
   MAX_RECIPE_TITLE_LENGTH,
   MIN_DURATION,
 } from '@server/shared/consts';
+import { OPENAI_EMBEDDING_DIMENSIONS } from '@server/database/migrations/20260102T092811Z-addVectorEmbedding';
 import type { AuthUser, UsersPublic } from '../users';
 import type {
   RecipesPublicWithoutRating,
@@ -47,6 +48,16 @@ const randomRecipeTitle = () =>
 
 const randomCollectionTitle = () =>
   random.string({ length: MAX_COLLECTION_TITLE_LENGTH });
+
+const randomVector = (dimensions = OPENAI_EMBEDDING_DIMENSIONS) => {
+  const vector = Array.from({ length: dimensions }, () =>
+    random.floating({ min: -1, max: 1, fixed: 7 })
+  );
+
+  return vector;
+};
+
+const randomVectorString = () => `[${randomVector().join(',')}]`;
 
 export const fakeUser = <T extends Partial<UsersPublic>>(
   overrides: T = {} as T
@@ -78,8 +89,17 @@ export const fakeRecipe = <T extends Partial<Insertable<Recipes>>>(
   duration: randomDuration(),
   steps: random.paragraph(),
   imageUrl: random.url(),
+  embedding: randomVector(),
   ...overrides,
   createdAt: new Date(),
+});
+
+export const fakeRecipeDB = <T extends Partial<Insertable<Recipes>>>(
+  overrides: T = {} as T
+) => ({
+  ...fakeRecipe(),
+  embedding: randomVectorString(),
+  ...overrides,
 });
 
 export const fakeRecipeWithRating = <T extends Partial<RecipesPublic>>(

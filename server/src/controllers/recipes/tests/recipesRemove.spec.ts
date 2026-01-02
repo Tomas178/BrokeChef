@@ -41,6 +41,7 @@ describe('Unauthenticated tests', () => {
 
   it('Should throw an error if user is not authenticated', async () => {
     await expect(remove(recipeId)).rejects.toThrow(/unauthenticated/i);
+    expect(mockRemove).not.toHaveBeenCalled();
   });
 });
 

@@ -1,95 +1,63 @@
 import { createCallerFactory } from '@server/trpc';
-import { wrapInRollbacks } from '@tests/utils/transactions';
-import { createTestDatabase } from '@tests/utils/database';
-import { insertAll } from '@tests/utils/record';
 import {
   fakeIngredient,
   fakeRecipe,
   fakeTool,
   fakeUser,
 } from '@server/entities/tests/fakes';
-import { joinStepsToArray } from '@server/repositories/utils/joinStepsToArray';
 import { authContext, requestContext } from '@tests/utils/context';
+import type { RecipesService } from '@server/services/recipesService';
+import type { Database } from '@server/database';
+import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import recipesRouter from '..';
 
-const fakeImageUrl = 'https://signed-url.com/folder/image.png';
+const mockFindById = vi.fn();
 
-vi.mock('@server/utils/signImages', () => ({
-  signImages: vi.fn((images: string | string[]) => {
-    if (Array.isArray(images)) {
-      return images.map(() => fakeImageUrl);
-    }
-    return fakeImageUrl;
-  }),
+const mockRecipesService: Partial<RecipesService> = {
+  findById: mockFindById,
+};
+
+vi.mock('@server/services/recipesService', () => ({
+  recipesService: () => mockRecipesService,
 }));
 
 const createCaller = createCallerFactory(recipesRouter);
-const database = await wrapInRollbacks(createTestDatabase());
+const database = {} as Database;
 
-const [user, userOther] = await insertAll(database, 'users', [
-  fakeUser(),
-  fakeUser(),
-]);
+const user = fakeUser();
+const recipeId = 123;
 
-const [recipeOne, recipeTwo] = await insertAll(database, 'recipes', [
-  fakeRecipe({ userId: user.id, imageUrl: fakeImageUrl }),
-  fakeRecipe({ userId: userOther.id, imageUrl: fakeImageUrl }),
-]);
+beforeEach(() => vi.resetAllMocks());
 
-const [ingredientOne, ingredientTwo] = await insertAll(
-  database,
-  'ingredients',
-  [fakeIngredient(), fakeIngredient()]
-);
-
-const [toolOne, toolTwo] = await insertAll(database, 'tools', [
-  fakeTool(),
-  fakeTool(),
-]);
-
-await insertAll(database, 'recipesIngredients', [
-  {
-    recipeId: recipeOne.id,
-    ingredientId: ingredientOne.id,
-  },
-  {
-    recipeId: recipeOne.id,
-    ingredientId: ingredientTwo.id,
-  },
-]);
-
-await insertAll(database, 'recipesTools', [
-  {
-    recipeId: recipeOne.id,
-    toolId: toolOne.id,
-  },
-  {
-    recipeId: recipeOne.id,
-    toolId: toolTwo.id,
-  },
-]);
-
-const { findById } = createCaller(authContext({ database }, user));
-
-it('Should throw an error if user is not authenticated', async () => {
+describe('Unauthenticated tests', () => {
   const { findById } = createCaller(requestContext({ database }));
 
-  await expect(findById(1)).rejects.toThrow(/unauthenticated/i);
-});
-
-it('Should return a recipe', async () => {
-  const recipeResponse = await findById(recipeOne.id);
-
-  expect(recipeResponse).toMatchObject({
-    ...recipeOne,
-    steps: joinStepsToArray(recipeOne.steps),
-    ingredients: [ingredientOne.name, ingredientTwo.name],
-    tools: [toolOne.name, toolTwo.name],
+  it('Should throw an error if user is not authenticated', async () => {
+    await expect(findById(1)).rejects.toThrow(/unauthenticated/i);
   });
 });
 
-it('Should throw an error if the recipe does not exist', async () => {
-  const nonExistantId = recipeOne.id + recipeTwo.id;
+describe('Authenticated tests', () => {
+  const { findById } = createCaller(authContext({ database }, user));
 
-  await expect(findById(nonExistantId)).rejects.toThrow(/not found/i);
+  it('Should return a recipe', async () => {
+    const fakeRecipeData = {
+      ...fakeRecipe(),
+      steps: ['stepOne', 'stepTwo'],
+      ingredients: [fakeIngredient(), fakeIngredient()],
+      tools: [fakeTool(), fakeTool()],
+    };
+
+    mockFindById.mockResolvedValueOnce(fakeRecipeData);
+
+    const recipeResponse = await findById(recipeId);
+
+    expect(recipeResponse).toBe(fakeRecipeData);
+  });
+
+  it('Should throw an error if the recipe does not exist', async () => {
+    mockFindById.mockRejectedValueOnce(new RecipeNotFound());
+
+    await expect(findById(recipeId)).rejects.toThrow(/not found/i);
+  });
 });

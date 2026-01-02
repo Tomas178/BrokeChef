@@ -1,8 +1,7 @@
-import { wrapInRollbacks } from '@tests/utils/transactions';
-import { createTestDatabase } from '@tests/utils/database';
-import { insertAll } from '@tests/utils/record';
-import { fakeRecipe, fakeUser } from '@server/entities/tests/fakes';
+import { fakeUser } from '@server/entities/tests/fakes';
 import { authContext } from '@tests/utils/context';
+import type { Database } from '@server/database';
+import type { RecipesRepository } from '@server/repositories/recipesRepository';
 import { createCallerFactory, router } from '..';
 import { recipeAuthorProcedure } from '.';
 
@@ -10,23 +9,27 @@ const routes = router({
   testCall: recipeAuthorProcedure.query(() => 'passed'),
 });
 
-const database = await wrapInRollbacks(createTestDatabase());
+const mockIsAuthor = vi.fn();
 
-const [userOne, userTwo] = await insertAll(database, 'users', [
-  fakeUser(),
-  fakeUser(),
-]);
+const mockRecipesRepo: Partial<RecipesRepository> = {
+  isAuthor: mockIsAuthor,
+};
 
-const [recipeOne, recipeTwo] = await insertAll(database, 'recipes', [
-  fakeRecipe({ userId: userOne.id }),
-  fakeRecipe({ userId: userTwo.id }),
-]);
+vi.mock('@server/repositories/recipesRepository', () => ({
+  recipesRepository: () => mockRecipesRepo,
+}));
+
+const database = {} as Database;
+
+const userOne = fakeUser();
+const recipeId = 123;
 
 const createCaller = createCallerFactory(routes);
 const authenticated = createCaller(authContext({ database }, userOne));
 
 it('Should pass if recipe belongs to the user', async () => {
-  const response = await authenticated.testCall(recipeOne.id);
+  mockIsAuthor.mockResolvedValueOnce(true);
+  const response = await authenticated.testCall(recipeId);
 
   expect(response).toEqual('passed');
 });
@@ -36,11 +39,7 @@ it('Should throw an error if recipeId is not provided', async () => {
 });
 
 it('Should throw an error if user provides a non-existing recipeId', async () => {
-  const nonExistantRecipeId = recipeOne.id + recipeTwo.id;
-
-  await expect(authenticated.testCall(nonExistantRecipeId)).rejects.toThrow(
-    /recipe/i
-  );
+  await expect(authenticated.testCall(recipeId)).rejects.toThrow(/recipe/i);
 });
 
 it('Should throw an error if user provides undefined recipeId', async () => {
@@ -50,5 +49,7 @@ it('Should throw an error if user provides undefined recipeId', async () => {
 });
 
 it('Should throw an error if recipe does not belong to the user', async () => {
-  await expect(authenticated.testCall(recipeTwo.id)).rejects.toThrow(/recipe/i);
+  mockIsAuthor.mockResolvedValueOnce(false);
+
+  await expect(authenticated.testCall(recipeId + 1)).rejects.toThrow(/recipe/i);
 });

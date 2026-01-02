@@ -1,8 +1,5 @@
 import { createCallerFactory } from '@server/trpc';
-import { wrapInRollbacks } from '@tests/utils/transactions';
-import { createTestDatabase } from '@tests/utils/database';
 import { authContext, requestContext } from '@tests/utils/context';
-import { insertAll } from '@tests/utils/record';
 import { fakeCreateRecipeData, fakeUser } from '@server/entities/tests/fakes';
 import { pick } from 'lodash-es';
 import { recipesKeysPublic } from '@server/entities/recipes';
@@ -10,97 +7,91 @@ import { joinStepsToSingleString } from '@server/services/utils/joinStepsToSingl
 import UserNotFound from '@server/utils/errors/users/UserNotFound';
 import type { Database } from '@server/database';
 import RecipeAlreadyCreated from '@server/utils/errors/recipes/RecipeAlreadyCreated';
+import type { RecipesService } from '@server/services/recipesService';
 import recipesRouter from '..';
 
 const mockCreateRecipe = vi.fn();
 
-// MOCK THIS LIKE I MOCK REPOSITORIES IN RATINGS SERVICE
+const mockRecipesService: Partial<RecipesService> = {
+  createRecipe: mockCreateRecipe,
+};
 
-vi.mock('@server/services/recipesService', async importActual => {
-  const actual =
-    await importActual<typeof import('@server/services/recipesService')>();
-
-  return {
-    ...actual,
-    recipesService: (database_: Database) => ({
-      ...actual.recipesService(database_),
-      createRecipe: mockCreateRecipe,
-    }),
-  };
-});
+vi.mock('@server/services/recipesService', () => ({
+  recipesService: () => mockRecipesService,
+}));
 
 const createCaller = createCallerFactory(recipesRouter);
-const database = await wrapInRollbacks(createTestDatabase());
+const database = {} as Database;
 
-const [user] = await insertAll(database, 'users', fakeUser());
+const user = fakeUser();
 
-beforeEach(() => mockCreateRecipe.mockReset());
+beforeEach(() => vi.resetAllMocks());
 
-it('Should throw an error if user is not authenticated', async () => {
+describe('Unauthenticated tests', () => {
   const { create } = createCaller(requestContext({ database }));
 
-  await expect(create(fakeCreateRecipeData())).rejects.toThrow(
-    /unauthenticated/i
-  );
-});
-
-it('Should create a persisted recipe', async () => {
-  const createRecipeData = fakeCreateRecipeData();
-  const stepsInASingleString = joinStepsToSingleString(createRecipeData.steps);
-
-  mockCreateRecipe.mockResolvedValueOnce({
-    ...createRecipeData,
-    id: 1,
-    steps: stepsInASingleString,
-  });
-
-  const { create } = createCaller(authContext({ database }, user));
-
-  const recipeCreated = await create(createRecipeData);
-
-  expect(mockCreateRecipe).toHaveBeenCalledWith(createRecipeData, user.id);
-  expect(mockCreateRecipe).toHaveBeenCalledTimes(1);
-
-  expect(recipeCreated).toMatchObject({
-    ...pick(createRecipeData, recipesKeysPublic),
-    steps: stepsInASingleString,
+  it('Should throw an error if user is not authenticated', async () => {
+    await expect(create(fakeCreateRecipeData())).rejects.toThrow(
+      /unauthenticated/i
+    );
+    expect(mockCreateRecipe).not.toHaveBeenCalled();
   });
 });
 
-it('Should throw an error on failure to create recipe when userId is not found', async () => {
-  mockCreateRecipe.mockRejectedValueOnce(new UserNotFound());
-
-  const { create } = createCaller(
-    authContext(
-      { database },
-      { ...user, id: user.id.replaceAll(/[a-z]/gi, 'a') }
-    )
-  );
-
-  await expect(create(fakeCreateRecipeData())).rejects.toThrow(/not found/i);
-});
-
-it('Should throw a general error when insertion to database fails', async () => {
-  mockCreateRecipe.mockRejectedValueOnce(
-    new Error('Failed to inserto into db')
-  );
-
-  const { create } = createCaller(
-    authContext(
-      { database },
-      { ...user, id: user.id.replaceAll(/[a-z]/gi, 'a') }
-    )
-  );
-
-  await expect(create(fakeCreateRecipeData())).rejects.toThrow(/failed/i);
-});
-
-it('Should throw an error if recipe with the given title is already created by the user', async () => {
-  mockCreateRecipe.mockRejectedValueOnce(new RecipeAlreadyCreated());
-
+describe('Authenticated tests', () => {
   const { create } = createCaller(authContext({ database }, user));
 
-  await expect(create(fakeCreateRecipeData())).rejects.toThrow(
-    /already|created/i
-  );
+  it('Should create a persisted recipe', async () => {
+    const createRecipeData = fakeCreateRecipeData();
+    const stepsInASingleString = joinStepsToSingleString(
+      createRecipeData.steps
+    );
+
+    mockCreateRecipe.mockResolvedValueOnce({
+      ...createRecipeData,
+      id: 1,
+      steps: stepsInASingleString,
+    });
+
+    const recipeCreated = await create(createRecipeData);
+
+    expect(mockCreateRecipe).toHaveBeenCalledExactlyOnceWith(
+      createRecipeData,
+      user.id
+    );
+
+    expect(recipeCreated).toMatchObject({
+      ...pick(createRecipeData, recipesKeysPublic),
+      steps: stepsInASingleString,
+    });
+  });
+
+  it('Should throw an error on failure to create recipe when userId is not found', async () => {
+    mockCreateRecipe.mockRejectedValueOnce(new UserNotFound());
+
+    const { create } = createCaller(
+      authContext(
+        { database },
+        { ...user, id: user.id.replaceAll(/[a-z]/gi, 'a') }
+      )
+    );
+
+    await expect(create(fakeCreateRecipeData())).rejects.toThrow(/not found/i);
+  });
+
+  it('Should throw a general error when insertion to database fails', async () => {
+    mockCreateRecipe.mockRejectedValueOnce(
+      new Error('Failed to inserto into db')
+    );
+
+    await expect(create(fakeCreateRecipeData())).rejects.toThrow(/failed/i);
+  });
+
+  it('Should throw an error if recipe with the given title is already created by the user', async () => {
+    mockCreateRecipe.mockRejectedValueOnce(new RecipeAlreadyCreated());
+
+    await expect(create(fakeCreateRecipeData())).rejects.toThrow(
+      /already|created/i
+    );
+  });
 });

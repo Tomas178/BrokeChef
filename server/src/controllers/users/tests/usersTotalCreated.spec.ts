@@ -1,33 +1,49 @@
 import { createCallerFactory } from '@server/trpc';
-import { wrapInRollbacks } from '@tests/utils/transactions';
-import { createTestDatabase } from '@tests/utils/database';
-import { insertAll } from '@tests/utils/record';
-import { fakeRecipe, fakeUser } from '@server/entities/tests/fakes';
+import { fakeUser } from '@server/entities/tests/fakes';
 import { authContext, requestContext } from '@tests/utils/context';
+import type { RecipesRepository } from '@server/repositories/recipesRepository';
+import type { Database } from '@server/database';
 import usersRouter from '..';
 
+const mockTotalCreatedByUser = vi.fn();
+
+const mockRecipesRepo: Partial<RecipesRepository> = {
+  totalCreatedByUser: mockTotalCreatedByUser,
+};
+
+vi.mock('@server/repositories/recipesRepository', () => ({
+  recipesRepository: () => mockRecipesRepo,
+}));
+
 const createCaller = createCallerFactory(usersRouter);
-const database = await wrapInRollbacks(createTestDatabase());
+const database = {} as Database;
 
-const [user] = await insertAll(database, 'users', fakeUser());
+const user = fakeUser();
 
-const { totalCreated } = createCaller(authContext({ database }, user));
+beforeEach(() => vi.resetAllMocks());
 
-it('Should throw an error if user is not authenticated', async () => {
+describe('Unauthenticated tests', () => {
   const { totalCreated } = createCaller(requestContext({ database }));
 
-  await expect(totalCreated()).rejects.toThrow(/unauthenticated/i);
+  it('Should throw an error if user is not authenticated', async () => {
+    await expect(totalCreated()).rejects.toThrow(/unauthenticated/i);
+    expect(mockTotalCreatedByUser).not.toHaveBeenCalled();
+  });
 });
 
-it('Should return 0', async () => {
-  await expect(totalCreated()).resolves.toBe(0);
-});
+describe('Authenticated tests', () => {
+  const { totalCreated } = createCaller(authContext({ database }, user));
 
-it('Should return the same number that was created', async () => {
-  const created = await insertAll(database, 'recipes', [
-    fakeRecipe({ userId: user.id }),
-    fakeRecipe({ userId: user.id }),
-  ]);
+  it('Should return 0', async () => {
+    mockTotalCreatedByUser.mockResolvedValueOnce(0);
 
-  await expect(totalCreated()).resolves.toBe(created.length);
+    await expect(totalCreated()).resolves.toBe(0);
+  });
+
+  it('Should return the same number that was created', async () => {
+    const totalRecipes = 5;
+    mockTotalCreatedByUser.mockResolvedValueOnce(totalRecipes);
+
+    await expect(totalCreated()).resolves.toBe(totalRecipes);
+  });
 });
