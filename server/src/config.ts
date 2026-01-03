@@ -77,6 +77,11 @@ const schema = z
     database: z.object({
       connectionString: z.url(),
     }),
+
+    redis: z.object({
+      host: z.string().trim().default('localhost'),
+      port: z.coerce.number().default(6379),
+    }),
   })
   .readonly();
 
@@ -134,6 +139,11 @@ const config = schema.parse({
 
   database: {
     connectionString: env.DATABASE_URL,
+  },
+
+  redis: {
+    host: env.REDIS_HOST,
+    port: env.REDIS_PORT,
   },
 });
 

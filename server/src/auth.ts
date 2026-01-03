@@ -2,14 +2,9 @@ import { betterAuth } from 'better-auth';
 import pg from 'pg';
 import { CREATED_AT, UPDATED_AT } from '@server/database/timestamps';
 import config from './config';
-import { sendMail } from './utils/sendMail/sendMail';
-import { transporter } from './utils/sendMail/client';
-import { s3Client } from './utils/AWSS3Client/client';
-import { formEmailTemplate } from './utils/sendMail/formEmailTemplate';
-import { getTemplate } from './utils/AWSS3Client/getTemplate';
 import { EmailTemplate } from './enums/EmailTemplate';
-import logger from './logger';
 import { TABLES } from './database/tables';
+import { addEmailJob } from './queues/email';
 
 const createdAndUpdated = {
   createdAt: CREATED_AT,
@@ -27,21 +22,11 @@ export const auth = betterAuth({
     changeEmail: {
       enabled: true,
       sendChangeEmailVerification: async ({ user, newEmail, url }) => {
-        const verifyEmailTemplate = await getTemplate(
-          s3Client,
-          config.auth.aws.s3.buckets.emailTemplates,
-          EmailTemplate.VERIFY_EMAIL
-        );
-
-        const htmlContent = await formEmailTemplate(verifyEmailTemplate, {
+        await addEmailJob({
+          emailType: EmailTemplate.VERIFY_EMAIL,
+          to: newEmail,
           username: user.name,
           url,
-        });
-
-        await sendMail(transporter, {
-          to: newEmail,
-          subject: 'Verify your email address',
-          html: htmlContent,
         });
       },
     },
@@ -90,42 +75,23 @@ export const auth = betterAuth({
     minPasswordLength: 8,
     requireEmailVerification: true,
     sendResetPassword: async ({ user, url }) => {
-      const resetPasswordTemplate = await getTemplate(
-        s3Client,
-        config.auth.aws.s3.buckets.emailTemplates,
-        EmailTemplate.RESET_PASSWORD
-      );
-      const htmlContent = await formEmailTemplate(resetPasswordTemplate, {
+      await addEmailJob({
+        emailType: EmailTemplate.RESET_PASSWORD,
+        to: user.email,
         username: user.name,
         url,
       });
-      await sendMail(transporter, {
-        to: user.email,
-        subject: 'Password reset',
-        html: htmlContent,
-      });
-    },
-    onPasswordReset: async ({ user }) => {
-      logger.info(`Password for the user: ${user.email} has been reset`);
     },
   },
 
   emailVerification: {
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }) => {
-      const verifyEmailTemplate = await getTemplate(
-        s3Client,
-        config.auth.aws.s3.buckets.emailTemplates,
-        EmailTemplate.VERIFY_EMAIL
-      );
-      const htmlContent = await formEmailTemplate(verifyEmailTemplate, {
+      await addEmailJob({
+        emailType: EmailTemplate.VERIFY_EMAIL,
+        to: user.email,
         username: user.name,
         url,
-      });
-      await sendMail(transporter, {
-        to: user.email,
-        subject: 'Verify your email address',
-        html: htmlContent,
       });
     },
   },

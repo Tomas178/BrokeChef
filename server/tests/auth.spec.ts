@@ -1,21 +1,15 @@
 import { fakeUser } from '@server/entities/tests/fakes';
-import * as sendMailModule from '@server/utils/sendMail/sendMail';
-
-vi.mock('@server/utils/AWSS3Client/getTemplate', async importOriginal => {
-  const actual =
-    (await importOriginal()) as typeof import('@server/utils/AWSS3Client/getTemplate');
-  return {
-    ...actual,
-    getTemplate: vi.fn(() => 'hello {{username}} click this: {{url}}'), // mock only the function
-  };
-});
-
 import { auth } from '@server/auth';
-import { getTemplate } from '@server/utils/AWSS3Client/getTemplate';
-import { formEmailTemplate } from '@server/utils/sendMail/formEmailTemplate';
-import type { S3Client } from '@aws-sdk/client-s3';
 import { EmailTemplate } from '@server/enums/EmailTemplate';
 import { CREATED_AT, UPDATED_AT } from '@server/database/timestamps';
+import type { EmailJobData } from '@server/queues/email';
+
+const mockAddEmailJob = vi.hoisted(() => vi.fn());
+
+vi.mock('@server/queues/email', () => ({
+  emailQueue: {},
+  addEmailJob: mockAddEmailJob,
+}));
 
 describe('Better-auth configuration', () => {
   it('Should be initialized with the correct model names', () => {
@@ -92,64 +86,46 @@ describe('Social sign-ins', async () => {
   });
 });
 
-it('Email verification', async () => {
-  const sendEmailSpy = vi
-    .spyOn(sendMailModule, 'sendMail')
-    .mockResolvedValueOnce();
+describe('Email sending', () => {
+  beforeEach(() => vi.resetAllMocks());
 
-  const user = fakeUser();
-  const fakeVerificationUrl = 'http://localhost:5173/verify-email';
+  it('Email verification', async () => {
+    const user = fakeUser();
+    const fakeVerificationUrl = 'http://localhost:5173/verify-email';
 
-  const template = await getTemplate(
-    {} as S3Client,
-    'random',
-    EmailTemplate.VERIFY_EMAIL
-  );
+    await auth.options.emailVerification.sendVerificationEmail({
+      user,
+      url: fakeVerificationUrl,
+      token: 'fake-token',
+    });
 
-  const expectedHtml = await formEmailTemplate(template, {
-    username: user.name,
-    url: fakeVerificationUrl,
+    const expectedCallData: EmailJobData = {
+      emailType: EmailTemplate.VERIFY_EMAIL,
+      to: user.email,
+      username: user.name,
+      url: fakeVerificationUrl,
+    };
+
+    expect(mockAddEmailJob).toHaveBeenCalledExactlyOnceWith(expectedCallData);
   });
 
-  await auth.options.emailVerification.sendVerificationEmail({
-    user,
-    url: fakeVerificationUrl,
-    token: 'fake-token',
+  it('Password reset email', async () => {
+    const user = fakeUser();
+    const fakePasswordResetUrl = 'http://localhost:5173/reset-password';
+
+    await auth.options.emailAndPassword.sendResetPassword({
+      user,
+      url: fakePasswordResetUrl,
+      token: 'fake-token',
+    });
+
+    const expectedCallData: EmailJobData = {
+      emailType: EmailTemplate.RESET_PASSWORD,
+      to: user.email,
+      username: user.name,
+      url: fakePasswordResetUrl,
+    };
+
+    expect(mockAddEmailJob).toHaveBeenCalledExactlyOnceWith(expectedCallData);
   });
-
-  expect(sendEmailSpy).toHaveBeenCalledWith(expect.any(Object), {
-    to: user.email,
-    subject: expect.stringMatching(/verify/i),
-    html: expectedHtml,
-  });
-
-  sendEmailSpy.mockRestore();
-});
-
-it('Password reset email', async () => {
-  const sendEmailSpy = vi
-    .spyOn(sendMailModule, 'sendMail')
-    .mockResolvedValueOnce();
-
-  const user = fakeUser();
-  const fakePasswordResetUrl = 'http://localhost:5173/reset-password';
-
-  const expectedHtml = await formEmailTemplate(
-    await getTemplate({} as S3Client, 'random', EmailTemplate.VERIFY_EMAIL),
-    { username: user.name, url: fakePasswordResetUrl }
-  );
-
-  await auth.options.emailAndPassword.sendResetPassword({
-    user,
-    url: fakePasswordResetUrl,
-    token: 'fake-token',
-  });
-
-  expect(sendEmailSpy).toHaveBeenCalledWith(expect.any(Object), {
-    to: user.email,
-    subject: expect.stringMatching(/reset/i),
-    html: expectedHtml,
-  });
-
-  sendEmailSpy.mockRestore();
 });
