@@ -3,6 +3,10 @@ import type { Job } from 'bullmq';
 import type { EmailJobData } from '@server/queues/email';
 import { processEmailJob } from '../email';
 
+const { eventHandlers } = vi.hoisted(() => ({
+  eventHandlers: {} as Record<string, any>,
+}));
+
 const [
   mockGetTemplate,
   mockFormEmailTemplate,
@@ -38,7 +42,9 @@ vi.mock('@server/utils/redis/connection', () => ({ redisConnection: {} }));
 
 vi.mock('bullmq', () => ({
   Worker: vi.fn(() => ({
-    on: vi.fn(),
+    on: vi.fn((event, callback) => {
+      eventHandlers[event] = callback;
+    }),
     close: vi.fn(),
   })),
   Queue: vi.fn(),
@@ -119,5 +125,31 @@ describe('Email Worker Processor', () => {
     expect(mockLoggerError).toHaveBeenCalledWith(
       expect.stringContaining('Failed to send email')
     );
+  });
+
+  describe('Event Listeners', () => {
+    it('Should log when worker is ready', () => {
+      const readyCallback = eventHandlers['ready'];
+      expect(readyCallback).toBeDefined();
+
+      readyCallback();
+
+      expect(mockLoggerInfo).toHaveBeenCalledWith(
+        expect.stringContaining('Email worker is ready')
+      );
+    });
+
+    it('Should log when worker encounters an error', () => {
+      const errorCallback = eventHandlers['error'];
+      expect(errorCallback).toBeDefined();
+
+      const fakeError = new Error('Redis died');
+      errorCallback(fakeError);
+
+      expect(mockLoggerError).toHaveBeenCalledWith(
+        'Email worker Redis connection error',
+        fakeError
+      );
+    });
   });
 });
