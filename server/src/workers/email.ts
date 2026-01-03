@@ -54,7 +54,7 @@ export async function processEmailJob(job: Job<EmailJobData>) {
 
     logger.info(`Email sent successfully to ${to}`);
   } catch (error) {
-    logger.error(`Failed to send email to ${to}`, error);
+    logger.error(`Failed to send email to ${to}`);
     throw error;
   }
 }

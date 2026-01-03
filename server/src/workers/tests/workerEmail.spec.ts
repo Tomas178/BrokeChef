@@ -36,7 +36,13 @@ vi.mock('@server/logger', () => ({
 
 vi.mock('@server/utils/redis/connection', () => ({ redisConnection: {} }));
 
-vi.mock('bullmq', () => ({ Worker: vi.fn(), Queue: vi.fn() }));
+vi.mock('bullmq', () => ({
+  Worker: vi.fn(() => ({
+    on: vi.fn(),
+    close: vi.fn(),
+  })),
+  Queue: vi.fn(),
+}));
 
 const fakeEmailTemplatesBucket = vi.hoisted(
   () => 'fake-email-templates-bucket'
