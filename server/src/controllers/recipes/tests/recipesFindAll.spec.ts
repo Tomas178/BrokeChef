@@ -29,9 +29,10 @@ it('Should return an empty list if there are no recipes', async () => {
 });
 
 it('Should return a list of recipes', async () => {
-  mockFindAll.mockResolvedValueOnce([fakeRecipe()]);
+  const fakeRecipes = [fakeRecipe(), fakeRecipe()];
+  mockFindAll.mockResolvedValueOnce(fakeRecipes);
 
   const recipes = await findAll({});
 
-  expect(recipes).toHaveLength(1);
+  expect(recipes).toHaveLength(fakeRecipes.length);
 });
