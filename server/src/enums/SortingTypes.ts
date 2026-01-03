@@ -1,8 +1,10 @@
-export enum SortingTypes {
-  NEWEST = 'newest',
-  OLDEST = 'oldest',
-  HIGHEST_RATING = 'highestRating',
-  LOWEST_RATING = 'lowestRating',
-}
+import type { ObjectValues } from '@server/shared/types';
 
-export type SortingTypesValues = `${SortingTypes}`;
+export const SortingTypes = {
+  NEWEST: 'newest',
+  OLDEST: 'oldest',
+  HIGHEST_RATING: 'highestRating',
+  LOWEST_RATING: 'lowestRating',
+} as const;
+
+export type SortingTypesValues = ObjectValues<typeof SortingTypes>;
