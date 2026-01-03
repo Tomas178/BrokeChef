@@ -123,8 +123,35 @@ jobs:
     runs-on: ubuntu-22.04
     if: github.ref == 'refs/heads/main'
     env:
-      DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      API_PROXY_PASS: '${{ vars.API_PROXY_PASS }}'
+      VITE_API_ORIGIN: '${{ vars.VITE_API_ORIGIN }}'
+      VITE_API_PATH: '${{ vars.VITE_API_PATH }}'
+      VITE_BASE_ORIGIN: '${{ vars.VITE_BASE_ORIGIN }}'
+
+      NODE_ENV: 'production'
+      PORT: '3000'
+      MAIL_HOST: ${{ vars.TEST_MAIL_HOST }}
+      MAIL_PORT: ${{ vars.TEST_MAIL_PORT }}
+      MAIL_SECURE: ${{ vars.TEST_MAIL_SECURE }}
+      EMAIL: ${{ vars.EMAIL }}
+      EMAIL_APP_PASS: ${{ secrets.EMAIL_APP_PASS }}
+      CLIENT_ID_GITHUB: '${{ secrets.CLIENT_ID_GITHUB }}'
+      CLIENT_SECRET_GITHUB: '${{ secrets.CLIENT_SECRET_GITHUB }}'
+      CLIENT_ID_GOOGLE: '${{ secrets.CLIENT_ID_GOOGLE }}'
+      CLIENT_SECRET_GOOGLE: '${{ secrets.CLIENT_SECRET_GOOGLE }}'
+      GEMINI_API_KEY: '${{ secrets.GEMINI_API_KEY }}'
+      OPENAI_API_KEY: '${{ secrets.OPENAI_API_KEY }}'
+      BETTER_AUTH_SECRET: '${{ secrets.BETTER_AUTH_SECRET }}'
+      BETTER_AUTH_URL: '${{ vars.DEV_BETTER_AUTH_URL }}'
+      AWS_S3_ACCESS_ID_KEY: '${{ secrets.AWS_S3_ACCESS_ID_KEY }}'
+      AWS_S3_SECRET_ACCESS_KEY: '${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}'
+      AWS_S3_REGION: '${{ vars.AWS_S3_REGION }}'
+      AWS_S3_EMAIL_TEMPLATES_BUCKET_NAME: '${{ secrets.AWS_S3_EMAIL_TEMPLATES_BUCKET_NAME }}'
+      AWS_S3_IMAGES_BUCKET_NAME: ${{ secrets.DEV_AWS_S3_IMAGES_BUCKET_NAME }}
+      FRONT_END_URL: '${{ vars.PROD_FRONT_END_URL }}'
+      FRONT_END_FULL_URL: '${{ vars.FRONT_END_FULL_URL }}'
+      DATABASE_URL: '${{ secrets.PROD_DATABASE_URL }}'
+
       CLIENT_IMAGE_TAG: client-${{ github.sha }}
       SERVER_IMAGE_TAG: server-${{ github.sha }}
     steps:
