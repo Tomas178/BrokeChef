@@ -38,6 +38,9 @@ jobs:
       FRONT_END_FULL_URL: ${{ vars.FRONT_END_FULL_URL }}
 
       DATABASE_URL: ${{ vars.DEV_DATABASE_URL }}
+
+      REDIS_HOST: ${{ vars.DEV_REDIS_HOST }}
+      REDIS_PORT: ${{ vars.DEV_REDIS_PORT }}
     services:
       postgres:
         image: pgvector/pgvector:pg17
@@ -53,6 +56,15 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+      redis:
+        image: redis:7-alpine
+        ports: '6379:6379'
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
       mailhog:
         image: mailhog/mailhog
         ports:
@@ -61,7 +73,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
@@ -225,7 +237,15 @@ jobs:
                 "AWS_S3_IMAGES_BUCKET_NAME": "${{ secrets.AWS_S3_IMAGES_BUCKET_NAME }}",
                 "FRONT_END_URL": "${{ vars.PROD_FRONT_END_URL }}",
                 "FRONT_END_FULL_URL": "${{ vars.FRONT_END_FULL_URL }}",
-                "DATABASE_URL": "${{ secrets.PROD_DATABASE_URL }}"
+                "DATABASE_URL": "${{ secrets.PROD_DATABASE_URL }}",
+                "REDIS_HOST": "${{ vars.DEV_REDIS_HOST }}",
+                "REDIS_PORT": ${{ vars.DEV_REDIS_PORT }}
+              }
+            },
+            "redis": {
+              "image": "redis:7-alpine",
+              "ports": {
+                "6379": "TCP"
               }
             }
           }' > containers.json
