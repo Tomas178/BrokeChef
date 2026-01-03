@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import RecipeCard from '@/components/RecipeCard.vue';
-import { FwbDropdown, FwbPagination } from 'flowbite-vue';
+import { FwbDropdown, FwbPagination, FwbInput } from 'flowbite-vue';
 import { trpc } from '@/trpc';
 import type { PaginationWithSort } from '@server/shared/pagination';
 import type { RecipesPublic } from '@server/shared/types';
@@ -18,6 +18,8 @@ const RECIPES_PER_PAGE = 5;
 const recipes = ref<RecipesPublic[]>([]);
 const totalCount = ref(0);
 const isLoading = ref(false);
+const searchQuery = ref('');
+
 const isRecipes = computed(() => recipes.value.length > 0);
 const errorMessage = 'Failed to load recipes. Please try again.';
 
@@ -48,12 +50,22 @@ const fetchPage = async (page: number) => {
 
   try {
     currentPage.value = page;
-    pagination.offset = (page - 1) * RECIPES_PER_PAGE;
+    const offset = (page - 1) * RECIPES_PER_PAGE;
 
-    const [fetchedRecipes] = await Promise.all([
-      trpc.recipes.findAll.query(pagination),
-      updateQueryParams(page, pagination.sort),
-    ]);
+    await updateQueryParams(page, pagination.sort, searchQuery.value);
+
+    let fetchedRecipes: RecipesPublic[] = [];
+
+    if (searchQuery.value.trim()) {
+      fetchedRecipes = await trpc.recipes.search.query({
+        userInput: searchQuery.value,
+        offset,
+        limit: RECIPES_PER_PAGE,
+      });
+    } else {
+      pagination.offset = offset;
+      fetchedRecipes = await trpc.recipes.findAll.query(pagination);
+    }
 
     recipes.value = fetchedRecipes;
 
@@ -63,15 +75,29 @@ const fetchPage = async (page: number) => {
   }
 };
 
-const updateQueryParams = async (pageNumber: number, sort?: SortingTypes) => {
-  const newQuery = { page: pageNumber.toString(), sort };
+const handleSearch = async () => {
+  await fetchPage(1);
+};
 
-  if (
-    route.query.page !== newQuery.page ||
-    route.query.sort !== newQuery.sort
-  ) {
-    await router.replace({ query: newQuery });
+const clearSearch = () => {
+  searchQuery.value = '';
+};
+
+const updateQueryParams = async (
+  pageNumber: number,
+  sort?: SortingTypes,
+  search?: string
+) => {
+  const newQuery: Record<string, string | undefined> = {
+    page: pageNumber.toString(),
+    sort,
+  };
+
+  if (search) {
+    newQuery.search = search;
   }
+
+  await router.replace({ query: newQuery });
 };
 
 const isValidPage = (pageNumber: string | number): boolean => {
@@ -96,8 +122,14 @@ const getSortFromRoute = (): SortingTypes => {
     : SortingTypes.NEWEST;
 };
 
+const getSearchFromRoute = (): string => {
+  const rawSearch = route.query.search;
+  return (Array.isArray(rawSearch) ? rawSearch[0] : rawSearch) || '';
+};
+
 const onSortChange = async (newSort: SortingTypes) => {
   if (pagination.sort === newSort) return;
+  clearSearch();
 
   pagination.sort = newSort;
   await fetchPage(1);
@@ -108,8 +140,10 @@ onMounted(async () => {
 
   const pageNumber = getPageFromRoute();
   const sort = getSortFromRoute();
+  const search = getSearchFromRoute();
 
   pagination.sort = sort;
+  searchQuery.value = search;
 
   await fetchPage(pageNumber);
 });
@@ -128,7 +162,39 @@ onMounted(async () => {
         Dive into our recipes, where every dish is a memory in the making. Come,
         cook, and create with us!
       </span>
+
+      <div class="mt-4">
+        <FwbInput
+          v-model="searchQuery"
+          placeholder="What would you like to cook? (e.g., 'Spicy pasta')"
+          @keydown.enter="handleSearch"
+        >
+          <template #suffix>
+            <button
+              v-if="searchQuery"
+              @click="clearSearch"
+              class="material-symbols-outlined mr-2 cursor-pointer text-red-500 hover:text-red-700"
+            >
+              Close
+            </button>
+            <FwbButton
+              @click="handleSearch"
+              :disabled="isLoading"
+              class="material-symbols-outlined cursor-pointer hover:text-gray-300"
+            >
+              Search
+            </FwbButton>
+          </template>
+        </FwbInput>
+        <p
+          v-if="searchQuery"
+          class="dark:text-primary-green mt-2 text-center text-sm text-gray-500"
+        >
+          Using Semantic Search. Sorting by relevance.
+        </p>
+      </div>
     </div>
+
     <div class="flex flex-col">
       <FwbDropdown
         color="light"
