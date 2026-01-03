@@ -169,8 +169,8 @@ export function recipesService(database: Database): RecipesService {
       });
     },
 
-    async search(input, pagination) {
-      const embedding = await getEmbedding(openai, input);
+    async search(userInput, pagination) {
+      const embedding = await getEmbedding(openai, userInput);
 
       const recipes = await recipesRepository.search(embedding, pagination);
 

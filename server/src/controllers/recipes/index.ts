@@ -5,9 +5,11 @@ import findById from './findById';
 import remove from './remove';
 import isAuthor from './isAuthor';
 import totalCount from './totalCount';
+import search from './search';
 
 export default router({
   create,
+  search,
   findAll,
   findById,
   remove,

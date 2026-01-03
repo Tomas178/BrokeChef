@@ -24,6 +24,10 @@ export const paginationWithSortSchema = paginationSchema.extend({
   sort: z.enum(SortingTypes).default(SortingTypes.NEWEST),
 });
 
+export const paginationWithUserInput = paginationSchema.extend({
+  userInput: z.string().nonempty(),
+});
+
 export const initialPage = {
   offset: 0,
   limit: 5,
@@ -40,3 +44,4 @@ export const userWithPaginationSchema = paginationSchema.extend({
 
 export type PaginationWithSort = z.infer<typeof paginationWithSortSchema>;
 export type UserWithPagination = z.infer<typeof userWithPaginationSchema>;
+export type PaginationWithUserInput = z.infer<typeof paginationWithUserInput>;
