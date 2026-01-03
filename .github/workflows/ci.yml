@@ -58,7 +58,8 @@ jobs:
 
       redis:
         image: redis:7-alpine
-        ports: '6379:6379'
+        ports:
+          - 6379:6379
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
@@ -239,7 +240,7 @@ jobs:
                 "FRONT_END_FULL_URL": "${{ vars.FRONT_END_FULL_URL }}",
                 "DATABASE_URL": "${{ secrets.PROD_DATABASE_URL }}",
                 "REDIS_HOST": "${{ vars.DEV_REDIS_HOST }}",
-                "REDIS_PORT": ${{ vars.DEV_REDIS_PORT }}
+                "REDIS_PORT": "${{ vars.DEV_REDIS_PORT }}"
               }
             },
             "redis": {
