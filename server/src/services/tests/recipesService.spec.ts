@@ -5,7 +5,7 @@ import {
   fakeRecipeAllInfo,
   fakeRecipeWithRating,
 } from '@server/entities/tests/fakes';
-import { initialPageWithSort } from '@server/entities/shared';
+import { initialPage, initialPageWithSort } from '@server/entities/shared';
 import { type RecipesRepository } from '@server/repositories/recipesRepository';
 import type { IngredientsRepository } from '@server/repositories/ingredientsRepository';
 import type { ToolsRepository } from '@server/repositories/toolsRepository';
@@ -93,12 +93,14 @@ vi.mock('@server/utils/OpenAI/getEmbedding', () => ({
 }));
 
 const mockRecipesRepoCreate = vi.fn();
+const mockRecipesRepoSearch = vi.fn();
 const mockRecipesRepoFindById = vi.fn();
 const mockRecipesRepoFindAll = vi.fn();
 const mockRecipesRepoRemove = vi.fn();
 
 const mockRecipesRepository = {
   create: mockRecipesRepoCreate,
+  search: mockRecipesRepoSearch,
   findById: mockRecipesRepoFindById,
   findAll: mockRecipesRepoFindAll,
   remove: mockRecipesRepoRemove,
@@ -284,6 +286,63 @@ describe('createRecipe', () => {
       'Failed to generate recipe image:',
       expect.any(Error)
     );
+  });
+});
+
+describe('search', () => {
+  const userInput = 'Something very delicious';
+  const embeddedInput = [0.1, 0.2, 0.3];
+
+  beforeEach(() => mockGetEmbedding.mockResolvedValueOnce(embeddedInput));
+
+  afterEach(() =>
+    expect(mockRecipesRepoSearch).toHaveBeenCalledExactlyOnceWith(
+      embeddedInput,
+      initialPage
+    )
+  );
+
+  it('Should return an empty list if no recipes found', async () => {
+    mockRecipesRepoSearch.mockResolvedValueOnce([]);
+
+    expect(service.search(userInput, initialPage));
+  });
+
+  it('Should return recipe with signed images', async () => {
+    const fakeRecipes = [fakeRecipe(), fakeRecipe()];
+    mockRecipesRepoSearch.mockResolvedValueOnce(fakeRecipes);
+
+    const recipes = await service.search(userInput, initialPage);
+    expect(recipes).toHaveLength(fakeRecipes.length);
+    expect(recipes).toEqual(fakeRecipes);
+
+    expect(mockSignImages).toHaveBeenCalledOnce();
+  });
+
+  it('Should return recipes with ratings included as undefined when no ratings exist', async () => {
+    const fakeRecipes = [
+      fakeRecipeWithRating({ rating: undefined }),
+      fakeRecipeWithRating({ rating: undefined }),
+    ];
+    mockRecipesRepoSearch.mockResolvedValueOnce(fakeRecipes);
+
+    const recipes = await service.search(userInput, initialPage);
+    expect(recipes).toHaveLength(fakeRecipes.length);
+    expect(recipes).toEqual(fakeRecipes);
+
+    expect(recipes[0]).toHaveProperty('rating', undefined);
+    expect(recipes[1]).toHaveProperty('rating', undefined);
+  });
+
+  it('Should return recipes with ratings included as real ratings when ratings exist', async () => {
+    const fakeRecipes = [fakeRecipeWithRating(), fakeRecipeWithRating()];
+    mockRecipesRepoSearch.mockResolvedValueOnce(fakeRecipes);
+
+    const recipes = await service.search(userInput, initialPage);
+    expect(recipes).toHaveLength(fakeRecipes.length);
+
+    expect(recipes[0]).toHaveProperty('rating', fakeRecipes[0].rating);
+    expect(recipes[1]).toHaveProperty('rating', fakeRecipes[1].rating);
   });
 });
 

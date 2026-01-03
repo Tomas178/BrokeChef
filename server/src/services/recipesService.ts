@@ -22,7 +22,7 @@ import { deleteFile } from '@server/utils/AWSS3Client/deleteFile';
 import config from '@server/config';
 import logger from '@server/logger';
 import { signImages } from '@server/utils/signImages';
-import type { PaginationWithSort } from '@server/shared/pagination';
+import type { Pagination, PaginationWithSort } from '@server/shared/pagination';
 import RecipeAlreadyCreated from '@server/utils/errors/recipes/RecipeAlreadyCreated';
 import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import { getEmbedding } from '@server/utils/OpenAI/getEmbedding';
@@ -48,6 +48,7 @@ export interface RecipesService {
     recipe: CreateRecipeInput,
     userId: string
   ) => Promise<RecipesPublic | undefined>;
+  search: (input: string, pagination: Pagination) => Promise<RecipesPublic[]>;
   findById: (recipeId: number) => Promise<RecipesPublicAllInfo | undefined>;
   findAll: (pagination: PaginationWithSort) => Promise<RecipesPublic[]>;
   remove: (recipeId: number) => Promise<RecipesPublic>;
@@ -166,6 +167,27 @@ export function recipesService(database: Database): RecipesService {
           }
         }
       });
+    },
+
+    async search(input, pagination) {
+      const embedding = await getEmbedding(openai, input);
+
+      const recipes = await recipesRepository.search(embedding, pagination);
+
+      if (recipes.length > 0) {
+        const imageUrls = recipes.map(recipe => recipe.imageUrl);
+        const signedUrls = await signImages(imageUrls);
+
+        for (const [index, recipe] of recipes.entries()) {
+          recipe.imageUrl = signedUrls[index];
+
+          if (!recipe.rating) {
+            recipe.rating = undefined;
+          }
+        }
+      }
+
+      return recipes;
     },
 
     async findById(recipeId) {
