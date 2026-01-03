@@ -6,7 +6,7 @@ import type { PaginationWithSort } from '@server/shared/pagination';
 import type { RecipesPublic } from '@server/shared/types';
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { SortingTypes } from '@server/shared/enums';
+import { SortingTypes, type SortingTypesValues } from '@server/shared/enums';
 import Spinner from '@/components/Spinner.vue';
 import { RECIPE_CARD_VARIANT } from '@/types/recipeCard';
 
@@ -85,7 +85,7 @@ const clearSearch = () => {
 
 const updateQueryParams = async (
   pageNumber: number,
-  sort?: SortingTypes,
+  sort?: SortingTypesValues,
   search?: string
 ) => {
   const newQuery: Record<string, string | undefined> = {
@@ -114,11 +114,11 @@ const getPageFromRoute = (): number => {
   return pageStr && isValidPage(pageStr) ? Number(pageStr) : 1;
 };
 
-const getSortFromRoute = (): SortingTypes => {
+const getSortFromRoute = (): SortingTypesValues => {
   const rawSort = route.query.sort;
   const sortStr = Array.isArray(rawSort) ? rawSort[0] : rawSort;
   return sortOptions.some((o) => o.value === sortStr)
-    ? (sortStr as SortingTypes)
+    ? (sortStr as SortingTypesValues)
     : SortingTypes.NEWEST;
 };
 
@@ -127,7 +127,7 @@ const getSearchFromRoute = (): string => {
   return (Array.isArray(rawSearch) ? rawSearch[0] : rawSearch) || '';
 };
 
-const onSortChange = async (newSort: SortingTypes) => {
+const onSortChange = async (newSort: SortingTypesValues) => {
   if (pagination.sort === newSort) return;
   clearSearch();
 
