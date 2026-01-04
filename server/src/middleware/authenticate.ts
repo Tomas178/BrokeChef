@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/prevent-abbreviations */
 import { type Request, type Response, type NextFunction } from 'express';
 import { auth } from '@server/auth';
 import logger from '@server/logger';
@@ -7,7 +6,7 @@ import { fromNodeHeaders } from 'better-auth/node';
 
 export async function authenticate(
   request: Request,
-  res: Response,
+  _: Response,
   next: NextFunction
 ) {
   try {

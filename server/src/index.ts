@@ -12,6 +12,7 @@ process.on('unhandledRejection', reason => {
 });
 
 import '@server/workers/email';
+import '@server/workers/recipe';
 
 const database = createDatabase(config.database);
 const app = createApp(database);

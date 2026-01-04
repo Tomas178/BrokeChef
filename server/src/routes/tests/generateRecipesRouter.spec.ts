@@ -1,17 +1,13 @@
 import supertest from 'supertest';
 import { StatusCodes } from 'http-status-codes';
 import createApp from '@server/app';
-import {
-  FAKE_FRIDGE_IMAGE,
-  RESPONSE_IMAGES_OF_THREE,
-  VALID_RESPONSE_SCHEMA_OF_THREE,
-} from '@server/utils/GoogleGenAiClient/tests/utils/generateRecipesFromImage';
+import { FAKE_FRIDGE_IMAGE } from '@server/utils/GoogleGenAiClient/tests/utils/generateRecipesFromImage';
 import type { Database } from '@server/database';
+import { sseManager } from '@server/utils/SSE';
+import type { Response } from 'express';
 
-const [mockGenerateRecipesFromImage, mockResizeImage] = vi.hoisted(() => [
-  vi.fn(),
-  vi.fn(),
-]);
+const [mockGenerateRecipesFromImage, mockResizeImage, mockAddRecipeJob] =
+  vi.hoisted(() => [vi.fn(), vi.fn(), vi.fn()]);
 
 vi.mock('@server/utils/GoogleGenAiClient/generateRecipesFromImage', () => ({
   generateRecipesFromImage: mockGenerateRecipesFromImage,
@@ -19,50 +15,77 @@ vi.mock('@server/utils/GoogleGenAiClient/generateRecipesFromImage', () => ({
 
 vi.mock('@server/utils/resizeImage', () => ({ resizeImage: mockResizeImage }));
 
+vi.mock('@server/queues/recipe', () => ({
+  addRecipeJob: mockAddRecipeJob,
+}));
+
+const userId = 'a'.repeat(32);
 vi.mock('@server/middleware/authenticate', () => ({
   authenticate: (request: any, _: any, next: any) => {
-    request.user = { id: 'test-user' };
+    request.user = { id: userId };
     next();
   },
 }));
 
+const addClientSpy = vi.spyOn(sseManager, 'addClient');
+const removeClientSpy = vi.spyOn(sseManager, 'removeClient');
+
 const database = {} as Database;
 const app = createApp(database);
 
-const endpoint = '/api/recipe/generate';
+const getEndpoint = `/api/recipe/events/${userId}`;
+const postEndpoint = '/api/recipe/generate';
 
-describe(`POST ${endpoint}`, () => {
-  beforeEach(() => {
-    vi.resetAllMocks();
+beforeEach(() => {
+  vi.resetAllMocks();
+});
+
+describe(`GET ${getEndpoint}`, () => {
+  it('Should establish SSE connection and register the client', async () => {
+    addClientSpy.mockImplementationOnce((id: string, res: Response) => {
+      res.end();
+    });
+
+    await supertest(app)
+      .get(getEndpoint)
+      .expect('Content-Type', 'text/event-stream')
+      .expect('Connection', 'keep-alive')
+      .expect('Cache-Control', 'no-cache');
+
+    expect(addClientSpy).toHaveBeenCalledWith(userId, expect.anything());
   });
 
-  it('Should generate recipes successfully', async () => {
-    const recipesCount = VALID_RESPONSE_SCHEMA_OF_THREE.recipes.length;
+  it('Should remove client when connection closes', async () => {
+    addClientSpy.mockImplementationOnce((_id: string, res: Response) => {
+      setTimeout(() => {
+        res.req.emit('close');
 
+        res.end();
+      }, 20);
+    });
+
+    await supertest(app).get(getEndpoint).expect(StatusCodes.OK);
+
+    expect(removeClientSpy).toHaveBeenCalledWith(userId);
+  });
+});
+
+describe(`POST ${postEndpoint}`, () => {
+  it('Should queue recipes generations job successfully', async () => {
     mockResizeImage.mockResolvedValue(FAKE_FRIDGE_IMAGE);
-    mockGenerateRecipesFromImage.mockResolvedValue([
-      {
-        ...VALID_RESPONSE_SCHEMA_OF_THREE.recipes[0],
-        image: RESPONSE_IMAGES_OF_THREE[0],
-      },
-      {
-        ...VALID_RESPONSE_SCHEMA_OF_THREE.recipes[1],
-        image: RESPONSE_IMAGES_OF_THREE[1],
-      },
-      {
-        ...VALID_RESPONSE_SCHEMA_OF_THREE.recipes[2],
-        image: RESPONSE_IMAGES_OF_THREE[2],
-      },
-    ]);
 
     const { body } = await supertest(app)
-      .post(endpoint)
+      .post(postEndpoint)
       .attach('file', FAKE_FRIDGE_IMAGE, 'fridge.jpg')
-      .expect(StatusCodes.OK);
+      .expect(StatusCodes.ACCEPTED);
 
-    expect(body).toHaveLength(recipesCount);
-    expect(body[0].title).toBe(VALID_RESPONSE_SCHEMA_OF_THREE.recipes[0].title);
-    expect(body[1].title).toBe(VALID_RESPONSE_SCHEMA_OF_THREE.recipes[1].title);
-    expect(body[2].title).toBe(VALID_RESPONSE_SCHEMA_OF_THREE.recipes[2].title);
+    expect(mockAddRecipeJob).toHaveBeenCalledWith({
+      imageBase64: FAKE_FRIDGE_IMAGE.toString('base64'),
+      userId,
+    });
+
+    expect(body).toMatchObject({
+      message: 'Your recipes are being prepared!',
+    });
   });
 });

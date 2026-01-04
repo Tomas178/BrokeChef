@@ -78,6 +78,7 @@ export default tseslint.config(
         {
           replacements: {
             res: false,
+            req: false,
           },
         },
       ],

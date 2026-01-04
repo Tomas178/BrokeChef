@@ -23,7 +23,6 @@ vi.mock('nodemailer', () => ({
   createTransport: vi.fn(),
 }));
 
-// Mock logger to avoid clutter
 vi.mock('@server/logger', () => ({
   default: {
     info: vi.fn(),
