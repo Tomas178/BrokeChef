@@ -1,6 +1,7 @@
 import { EmailTemplate } from '@server/enums/EmailTemplate';
 import type { Job } from 'bullmq';
 import type { EmailJobData } from '@server/queues/email';
+import { EmailSubject } from '@server/enums/EmailSubject';
 import { processEmailJob } from '../email';
 
 const { eventHandlers } = vi.hoisted(() => ({
@@ -99,7 +100,7 @@ describe('Email Worker Processor', () => {
       expect.anything(),
       expect.objectContaining({
         to: fakeEmail,
-        subject: 'Verify your email address',
+        subject: EmailSubject.VERIFY_EMAIL,
         html: fakeFormEmailTemplate,
       })
     );

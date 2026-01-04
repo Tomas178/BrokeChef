@@ -1,4 +1,5 @@
 import config from '@server/config';
+import { EmailSubject } from '@server/enums/EmailSubject';
 import {
   EmailTemplate,
   type EmailTemplateValues,
@@ -19,11 +20,11 @@ function getSubject(emailType: EmailTemplateValues) {
   let subject = '';
 
   if (emailType === EmailTemplate.VERIFY_EMAIL) {
-    subject = 'Verify your email address';
+    subject = EmailSubject.VERIFY_EMAIL;
   }
 
   if (emailType === EmailTemplate.RESET_PASSWORD) {
-    subject = 'Password reset';
+    subject = EmailSubject.RESET_PASSWORD;
   }
 
   return subject;
