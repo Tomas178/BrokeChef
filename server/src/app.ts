@@ -1,5 +1,3 @@
-/* eslint-disable unicorn/prevent-abbreviations */
-
 import express from 'express';
 import {
   createExpressMiddleware,

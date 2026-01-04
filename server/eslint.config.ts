@@ -72,6 +72,15 @@ export default tseslint.config(
           argsIgnorePattern: '^_',
         },
       ],
+
+      'unicorn/prevent-abbreviations': [
+        'error',
+        {
+          replacements: {
+            res: false,
+          },
+        },
+      ],
     },
   },
 
