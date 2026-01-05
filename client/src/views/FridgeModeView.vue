@@ -1,22 +1,19 @@
 <script setup lang="ts">
 import GeneratedRecipeCard from '@/components/GeneratedRecipeCard.vue';
 import Spinner from '@/components/Spinner.vue';
-import useErrorMessage from '@/composables/useErrorMessage';
 import { useRecipesService } from '@/composables/useRecipesService';
-import { apiOrigin } from '@/config';
-import { useUserStore } from '@/stores/user';
-import { type GeneratedRecipe, type RecipeSSEData } from '@server/shared/types';
-import axios from 'axios';
+import type { GeneratedRecipe } from '@server/shared/types';
 import { FwbButton, FwbFileInput } from 'flowbite-vue';
-import { onUnmounted, ref } from 'vue';
-import { RecipeGenerationStatus } from '@server/shared/enums';
+import { ref } from 'vue';
+import { useRecipeGeneratorStore } from '@/stores/recipeGenerator';
+import { storeToRefs } from 'pinia';
 
 const fridgeImageFile = ref<File | undefined>(undefined);
-const recipes = ref<GeneratedRecipe[]>([]);
-const isGeneratingRecipes = ref(false);
-const eventSource = ref<EventSource | undefined>(undefined);
 
-const { id: userId } = useUserStore();
+const recipeGeneratorStore = useRecipeGeneratorStore();
+
+const { recipes, isGenerating, errorMessage } =
+  storeToRefs(recipeGeneratorStore);
 
 const {
   recipeForm,
@@ -49,72 +46,10 @@ async function handleCreateRecipe(recipe: GeneratedRecipe) {
   await createRecipe();
 }
 
-function closeEventSource() {
-  if (eventSource.value) {
-    eventSource.value.close();
-    eventSource.value = undefined;
+function handleGenerateRecipes() {
+  if (fridgeImageFile.value) {
+    recipeGeneratorStore.generateRecipes(fridgeImageFile.value);
   }
-}
-
-onUnmounted(() => closeEventSource());
-
-const [startRecipeGeneration, errorMessage] = useErrorMessage(async () => {
-  if (!fridgeImageFile.value) {
-    throw new Error(
-      'Please upload an image (Supported types: .jpeg, .jpg, .png)'
-    );
-  }
-
-  if (!userId) {
-    throw new Error('User not authenticated!');
-  }
-
-  errorMessage.value = '';
-  recipes.value = [];
-  isGeneratingRecipes.value = true;
-  closeEventSource();
-
-  const sseUrl = `${apiOrigin}/api/recipe/events/${userId}`;
-  eventSource.value = new EventSource(sseUrl, { withCredentials: true });
-
-  eventSource.value.onmessage = (event) => {
-    try {
-      const data: RecipeSSEData = JSON.parse(event.data);
-
-      if (data.status === RecipeGenerationStatus.ERROR) {
-        throw new Error(data.message);
-      }
-
-      if (data.status === RecipeGenerationStatus.SUCCESS) {
-        recipes.value = data.recipes;
-        isGeneratingRecipes.value = false;
-        closeEventSource();
-      }
-    } catch (error) {
-      console.error(`Error parsing SSE data`, error);
-      errorMessage.value = 'Received invalid data from server';
-      isGeneratingRecipes.value = false;
-      closeEventSource();
-    }
-  };
-
-  eventSource.value.onerror = (err) => {
-    console.error('SSE Error:', err);
-    if (eventSource.value?.readyState === EventSource.CLOSED) {
-      errorMessage.value = 'Connection lost. Please try again.';
-      isGeneratingRecipes.value = false;
-    }
-  };
-
-  const formData = new FormData();
-  formData.append('file', fridgeImageFile.value);
-  const uploadEndpoint = `${apiOrigin}/api/recipe/generate`;
-
-  await axios.post(uploadEndpoint, formData, { withCredentials: true });
-});
-
-async function handleGenerateRecipes() {
-  await startRecipeGeneration();
 }
 </script>
 
@@ -131,11 +66,12 @@ async function handleGenerateRecipes() {
       <FwbButton
         class="text-submit-text dark:text-submit-text-dark gradient-action-button cursor-pointer rounded-4xl p-2 text-center font-bold hover:outline-1 hover:outline-black"
         @click="handleGenerateRecipes"
+        :disabled="isGenerating"
       >
         <template #prefix>
-          <Spinner v-if="isGeneratingRecipes" />
+          <Spinner v-if="isGenerating" />
         </template>
-        Generate Recipes
+        {{ isGenerating ? 'Generating...' : 'Generate Recipes' }}
       </FwbButton>
     </div>
 

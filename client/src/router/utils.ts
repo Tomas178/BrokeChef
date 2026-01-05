@@ -116,3 +116,11 @@ export const navigateToUserEditProfile = async (
     });
   }, delay);
 };
+
+export const navigateToFridgeMode = async (delay?: number) => {
+  return delayedNavigate(async () => {
+    await router.push({
+      name: ROUTE_NAMES.FRIDGE_MODE,
+    });
+  }, delay);
+};
