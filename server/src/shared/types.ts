@@ -17,4 +17,6 @@ export type * from '@server/entities/shared';
 export type * from '@server/controllers/recipes/create';
 export type * from '@server/controllers/ratings/create';
 
+export type * from '@server/utils/SSE';
+
 export type ObjectValues<T> = T[keyof T];

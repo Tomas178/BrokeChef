@@ -177,13 +177,14 @@ onMounted(async () => {
             >
               Close
             </button>
-            <FwbButton
+            <button
+              type="button"
               @click="handleSearch"
               :disabled="isLoading"
               class="material-symbols-outlined cursor-pointer hover:text-gray-300"
             >
               Search
-            </FwbButton>
+            </button>
           </template>
         </FwbInput>
         <p

@@ -4,14 +4,19 @@ import Spinner from '@/components/Spinner.vue';
 import useErrorMessage from '@/composables/useErrorMessage';
 import { useRecipesService } from '@/composables/useRecipesService';
 import { apiOrigin } from '@/config';
-import type { GeneratedRecipe } from '@server/shared/types';
+import { useUserStore } from '@/stores/user';
+import { type GeneratedRecipe, type RecipeSSEData } from '@server/shared/types';
 import axios from 'axios';
 import { FwbButton, FwbFileInput } from 'flowbite-vue';
-import { ref } from 'vue';
+import { onUnmounted, ref } from 'vue';
+import { RecipeGenerationStatus } from '@server/shared/enums';
 
 const fridgeImageFile = ref<File | undefined>(undefined);
 const recipes = ref<GeneratedRecipe[]>([]);
 const isGeneratingRecipes = ref(false);
+const eventSource = ref<EventSource | undefined>(undefined);
+
+const { id: userId } = useUserStore();
 
 const {
   recipeForm,
@@ -44,37 +49,72 @@ async function handleCreateRecipe(recipe: GeneratedRecipe) {
   await createRecipe();
 }
 
-const [fetchRecipesFromFridgeImage, errorMessage] = useErrorMessage(
-  async () => {
-    if (!fridgeImageFile.value) {
-      throw new Error(
-        'Please upload an image (Supported types: .jpeg, .jpg, .png)'
-      );
-    }
+function closeEventSource() {
+  if (eventSource.value) {
+    eventSource.value.close();
+    eventSource.value = undefined;
+  }
+}
 
-    errorMessage.value = '';
-    isGeneratingRecipes.value = true;
+onUnmounted(() => closeEventSource());
 
-    const formData = new FormData();
-    formData.append('file', fridgeImageFile.value);
-    const uploadEndpoint = `${apiOrigin}/api/recipe/generate`;
+const [startRecipeGeneration, errorMessage] = useErrorMessage(async () => {
+  if (!fridgeImageFile.value) {
+    throw new Error(
+      'Please upload an image (Supported types: .jpeg, .jpg, .png)'
+    );
+  }
 
+  if (!userId) {
+    throw new Error('User not authenticated!');
+  }
+
+  errorMessage.value = '';
+  recipes.value = [];
+  isGeneratingRecipes.value = true;
+  closeEventSource();
+
+  const sseUrl = `${apiOrigin}/api/recipe/events/${userId}`;
+  eventSource.value = new EventSource(sseUrl, { withCredentials: true });
+
+  eventSource.value.onmessage = (event) => {
     try {
-      const { data: generatedRecipes } = await axios.post<GeneratedRecipe[]>(
-        uploadEndpoint,
-        formData,
-        { withCredentials: true }
-      );
-      return generatedRecipes;
-    } finally {
+      const data: RecipeSSEData = JSON.parse(event.data);
+
+      if (data.status === RecipeGenerationStatus.ERROR) {
+        throw new Error(data.message);
+      }
+
+      if (data.status === RecipeGenerationStatus.SUCCESS) {
+        recipes.value = data.recipes;
+        isGeneratingRecipes.value = false;
+        closeEventSource();
+      }
+    } catch (error) {
+      console.error(`Error parsing SSE data`, error);
+      errorMessage.value = 'Received invalid data from server';
+      isGeneratingRecipes.value = false;
+      closeEventSource();
+    }
+  };
+
+  eventSource.value.onerror = (err) => {
+    console.error('SSE Error:', err);
+    if (eventSource.value?.readyState === EventSource.CLOSED) {
+      errorMessage.value = 'Connection lost. Please try again.';
       isGeneratingRecipes.value = false;
     }
-  }
-);
+  };
+
+  const formData = new FormData();
+  formData.append('file', fridgeImageFile.value);
+  const uploadEndpoint = `${apiOrigin}/api/recipe/generate`;
+
+  await axios.post(uploadEndpoint, formData, { withCredentials: true });
+});
 
 async function handleGenerateRecipes() {
-  const generated = await fetchRecipesFromFridgeImage();
-  if (generated) recipes.value = generated;
+  await startRecipeGeneration();
 }
 </script>
 
