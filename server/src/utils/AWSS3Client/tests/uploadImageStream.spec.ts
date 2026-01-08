@@ -1,7 +1,6 @@
 import { Readable } from 'node:stream';
 import type { S3Client } from '@aws-sdk/client-s3';
 import { AllowedMimeType } from '@server/enums/AllowedMimetype';
-import { ImageFolder } from '@server/enums/ImageFolder';
 import { Upload } from '@aws-sdk/lib-storage';
 import { uploadImageStream } from '../uploadImageStream';
 
@@ -17,10 +16,7 @@ vi.mock('@aws-sdk/lib-storage', () => {
   };
 });
 
-const fakeUniqueFileName = vi.hoisted(() => 'formed-name');
-vi.mock('@server/utils/formUniqueFilename', () => ({
-  formUniqueFilename: vi.fn(() => fakeUniqueFileName),
-}));
+const fakeKey = 'fake-key';
 
 const fakeImagesBucket = vi.hoisted(() => 'fake-bucket');
 vi.mock('@server/config', () => ({
@@ -39,46 +35,34 @@ vi.mock('@server/config', () => ({
 
 const s3Client = {} as S3Client;
 
-const folder = ImageFolder.PROFILES;
 const contentType = AllowedMimeType.JPEG;
 
 beforeEach(() => vi.clearAllMocks());
 
+const createDummyStream = () =>
+  Readable.from([Buffer.from('chunk1'), Buffer.from('chunk2')]);
+
 describe('uploadImageStream', () => {
-  const dummyStream = Readable.from([
-    Buffer.from('chunk1'),
-    Buffer.from('chunk2'),
-  ]);
-
-  const expectedKey = `${folder}/${fakeUniqueFileName}`;
-
   it('Should call the Upload class with correct parameters', async () => {
-    await uploadImageStream(s3Client, folder, dummyStream, contentType);
+    const dummyStream = createDummyStream();
+
+    await uploadImageStream(s3Client, fakeKey, dummyStream, contentType);
 
     expect(Upload).toHaveBeenCalledExactlyOnceWith({
       client: s3Client,
       params: {
         Bucket: fakeImagesBucket,
-        Key: expectedKey,
+        Key: fakeKey,
         Body: dummyStream,
         ContentType: contentType,
       },
     });
   });
 
-  it('Should successfully upload the image while streaming and return the key', async () => {
-    const key = await uploadImageStream(
-      s3Client,
-      folder,
-      dummyStream,
-      contentType
-    );
-
-    expect(key).toBe(expectedKey);
-  });
-
   it('Should await until the upload is done', async () => {
-    await uploadImageStream(s3Client, folder, dummyStream, contentType);
+    const dummyStream = createDummyStream();
+
+    await uploadImageStream(s3Client, fakeKey, dummyStream, contentType);
 
     expect(mockDone).toHaveBeenCalledOnce();
   });

@@ -3,19 +3,13 @@ import type { S3Client } from '@aws-sdk/client-s3';
 import type { AllowedMimetypeValues } from '@server/enums/AllowedMimetype';
 import { Upload } from '@aws-sdk/lib-storage';
 import config from '@server/config';
-import type { ImageFolderValues } from '@server/enums/ImageFolder';
-import { formUniqueFilename } from '../formUniqueFilename';
 
 export async function uploadImageStream(
   s3Client: S3Client,
-  folderName: ImageFolderValues,
+  key: string,
   bodyStream: Readable,
   contentType: AllowedMimetypeValues
 ) {
-  const uniqueFilename = formUniqueFilename();
-
-  const key = `${folderName}/${uniqueFilename}`;
-
   const parallelUpload = new Upload({
     client: s3Client,
     params: {
@@ -27,5 +21,4 @@ export async function uploadImageStream(
   });
 
   await parallelUpload.done();
-  return key;
 }

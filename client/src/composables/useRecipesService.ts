@@ -54,14 +54,14 @@ export function useRecipesService(recipeId?: number) {
       return undefined;
     }
 
-    const formData = new FormData();
-    formData.append('file', recipeImageFile.value);
-
     const { data } = await axios.post<Pick<RecipesPublic, 'imageUrl'>>(
       uploadEndpoint,
-      formData,
+      recipeImageFile.value,
       {
         withCredentials: true,
+        headers: {
+          'Content-Type': recipeImageFile.value.type,
+        },
       }
     );
 

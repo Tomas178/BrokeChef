@@ -1,16 +1,27 @@
-/* eslint-disable unicorn/consistent-function-scoping */
+import { PassThrough } from 'node:stream';
 import createApp from '@server/app';
 import supertest from 'supertest';
 import { StatusCodes } from 'http-status-codes';
-import type { Request } from 'express';
-import { upload } from '@server/utils/upload';
-import type { Mock } from 'vitest';
 import type { Database } from '@server/database';
+import { ImageFolder, type ImageFolderValues } from '@server/enums/ImageFolder';
 
-vi.mock('@server/utils/upload', () => ({
-  upload: {
-    single: vi.fn(() => (_request: any, _response: any, next: any) => next()),
-  },
+vi.mock('sharp', () => {
+  return {
+    default: vi.fn(() => ({
+      resize: vi.fn(() => ({
+        jpeg: vi.fn(() => new PassThrough()),
+      })),
+    })),
+  };
+});
+
+const fakeUniqueName = 'unique-file-id';
+vi.mock('@server/utils/formUniqueFilename', () => ({
+  formUniqueFilename: vi.fn(() => fakeUniqueName),
+}));
+
+vi.mock('@server/utils/AWSS3Client/uploadImageStream', () => ({
+  uploadImageStream: vi.fn(async () => undefined),
 }));
 
 vi.mock('@server/middleware/authenticate', () => ({
@@ -20,93 +31,49 @@ vi.mock('@server/middleware/authenticate', () => ({
   },
 }));
 
-const fakeBuffer = Buffer.from('fake');
-const fakeKey = 'fakeKey';
-
-vi.mock('@server/utils/resizeImage', () => ({
-  resizeImage: vi.fn(async (_file: any, _folder: any) => fakeBuffer),
-}));
-
-vi.mock('@server/utils/AWSS3Client/uploadImage', () => ({
-  uploadImage: vi.fn(() => fakeKey),
-}));
-
 const database = {} as Database;
 
 describe('Server health check', () => {
   it('can launch the app', async () => {
     const app = createApp(database);
-
     await supertest(app).get('/api/health').expect(StatusCodes.OK);
   });
 });
 
-describe('Image uploading', () => {
-  beforeEach(() => {
-    (upload.single as unknown as Mock).mockReset();
-  });
-
-  const testUploadError = (endpoint: string) => async () => {
-    (upload.single as Mock<(field: string) => any>).mockImplementation(
-      (_field: string) =>
-        (request: Request, _response: any, next: () => void) => {
-          next();
-        }
-    );
-
-    const app = createApp(database);
-
-    const { body } = await supertest(app)
-      .post(endpoint)
-      .attach('file', Buffer.from('test'), 'document.pdf')
-      .expect(StatusCodes.BAD_REQUEST);
-
-    expect(body.error.message).toEqual(
-      'Supported types for image are .png, .jpg or .jpeg'
-    );
-  };
+describe('Image uploading (Streaming)', () => {
+  const fakeBuffer = Buffer.from('fake-image-data');
 
   const testUploadSuccess =
-    (endpoint: string, responseKey: string) => async () => {
-      (upload.single as unknown as Mock).mockImplementation(
-        () => (request: any, _response: any, next: () => void) => {
-          request.file = {};
-          next();
-        }
-      );
-
+    (endpoint: string, folder: ImageFolderValues, responseKey: string) =>
+    async () => {
       const app = createApp(database);
+      const expectedKey = `${folder}/${fakeUniqueName}`;
 
       const { body } = await supertest(app)
         .post(endpoint)
-        .attach('file', Buffer.from('test'), 'file.png')
+
+        .set('Content-Type', 'image/jpeg')
+        .send(fakeBuffer)
         .expect(StatusCodes.OK);
 
-      expect(body).toEqual({ [responseKey]: fakeKey });
+      expect(body).toEqual({ [responseKey]: expectedKey });
     };
 
   describe('Recipes', () => {
     const ENDPOINT = '/api/upload/recipe';
 
     it(
-      'Should throw an error when an invalid file is given',
-      testUploadError(ENDPOINT)
+      'Uploads recipe image successfully',
+      testUploadSuccess(ENDPOINT, ImageFolder.RECIPES, 'imageUrl')
     );
-
-    it('Uploads image successfully', testUploadSuccess(ENDPOINT, 'imageUrl'));
   });
 
   describe('Profiles', () => {
     const ENDPOINT = '/api/upload/profile';
 
     it(
-      'Should throw an error when an invalid file is given',
-      testUploadError(ENDPOINT)
-    );
-
-    it(
       'Uploads profile image successfully',
-      testUploadSuccess(ENDPOINT, 'image')
+      testUploadSuccess(ENDPOINT, ImageFolder.PROFILES, 'image')
     );
   });
 
@@ -114,13 +81,8 @@ describe('Image uploading', () => {
     const ENDPOINT = '/api/upload/collection';
 
     it(
-      'Should throw an error when an invalid file is given',
-      testUploadError(ENDPOINT)
-    );
-
-    it(
       'Uploads collection image successfully',
-      testUploadSuccess(ENDPOINT, 'imageUrl')
+      testUploadSuccess(ENDPOINT, ImageFolder.COLLECTIONS, 'imageUrl')
     );
   });
 });

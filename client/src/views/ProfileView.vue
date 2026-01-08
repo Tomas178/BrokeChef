@@ -104,16 +104,18 @@ const goBack = async () => {
 };
 
 const [uploadImage, errorMessage] = useErrorMessage(async () => {
-  if (!profileImageFile.value) return null;
-
-  const formData = new FormData();
-  formData.append('file', profileImageFile.value);
+  if (!profileImageFile.value) {
+    return null;
+  }
 
   const { data } = await axios.post<Pick<UsersPublic, 'image'>>(
     fullEndpoint,
-    formData,
+    profileImageFile.value,
     {
       withCredentials: true,
+      headers: {
+        'Content-Type': profileImageFile.value.type,
+      },
     }
   );
 
