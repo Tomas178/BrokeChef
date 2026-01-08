@@ -6,5 +6,12 @@
   "workspaces": [
     "client",
     "server"
-  ]
+  ],
+  "dependencies": {
+    "@aws-sdk/lib-storage": "^3.965.0",
+    "busboy": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/busboy": "^1.5.4"
+  }
 }
