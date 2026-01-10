@@ -36,7 +36,7 @@ export function useCollectionsService() {
     }
 
     const formData = new FormData();
-    formData.append('image', collectionImageFile.value);
+    formData.append('file', collectionImageFile.value);
 
     const { data } = await axios.post<Pick<CollectionsPublicBasic, 'imageUrl'>>(
       uploadEndpoint,

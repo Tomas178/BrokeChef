@@ -114,14 +114,8 @@ const [uploadImage, errorMessage] = useErrorMessage(async () => {
     );
   }
 
-  if (profileImageFile.value.size > MAX_FILE_SIZE) {
-    throw new Error(
-      `Image too large please upload image <= ${(MAX_FILE_SIZE / 1024 / 1024).toFixed(0)}MB`
-    );
-  }
-
   const formData = new FormData();
-  formData.append('image', profileImageFile.value);
+  formData.append('file', profileImageFile.value);
 
   const { data } = await axios.post<Pick<UsersPublic, 'image'>>(
     fullEndpoint,
