@@ -115,9 +115,12 @@ const [uploadImage, errorMessage] = useErrorMessage(async () => {
     );
   }
 
+  const formData = new FormData();
+  formData.append('image', profileImageFile.value);
+
   const { data } = await axios.post<Pick<UsersPublic, 'image'>>(
     fullEndpoint,
-    profileImageFile.value,
+    formData,
     {
       withCredentials: true,
     }
