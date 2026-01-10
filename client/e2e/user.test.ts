@@ -168,6 +168,8 @@ test.describe.serial('Signup and login sequence', () => {
 });
 
 test.describe.serial('Request and reset password sequence', () => {
+  test.beforeAll(async () => await clearEmails());
+
   test.describe('Request reset password link', () => {
     test('Visitor should be shown that link was sent when given non-exisiting email', async ({
       page,
