@@ -6,7 +6,7 @@ import { uploadImageStream } from '@server/utils/AWSS3Client/uploadImageStream';
 import { createTransformStream } from '@server/utils/createTransformStream';
 import { formUniqueFilename } from '@server/utils/formUniqueFilename';
 import type { Request } from 'express';
-import { createFileSizeValidator } from './createFileSizeValidator';
+import { FileSizeValidator } from './FileSizeValidator';
 
 export async function handleStreamUpload(
   req: Request,
@@ -17,9 +17,9 @@ export async function handleStreamUpload(
 
   const transformStream = createTransformStream();
 
-  const validateFileSize = createFileSizeValidator(req, transformStream);
+  const validateFileSize = new FileSizeValidator(req, transformStream);
 
-  req.on('data', validateFileSize);
+  req.on('data', validateFileSize.process);
 
   const uploadPromise = uploadImageStream(
     s3Client,
@@ -36,7 +36,7 @@ export async function handleStreamUpload(
     logger.error(`Upload failed for ${key}`);
     throw error;
   } finally {
-    req.removeListener('data', validateFileSize);
+    req.removeListener('data', validateFileSize.process);
   }
 
   logger.info(`Object created in S3: ${key}`);

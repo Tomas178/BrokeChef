@@ -10,7 +10,7 @@ const [
   mockLoggerInfo,
   mockLoggerError,
   mockCreateTransformStream,
-  mockCreateFileSizeValidator,
+  mockFileValidatorProcess,
 ] = vi.hoisted(() => [vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn()]);
 
 vi.mock('@server/utils/formUniqueFilename', () => ({
@@ -34,11 +34,11 @@ vi.mock('@server/utils/createTransformStream', () => ({
     mockCreateTransformStream.mockReturnValue(mockTransformStream),
 }));
 
-const mockValidatorFunction = vi.hoisted(() => vi.fn());
-vi.mock('@server/routes/utils/createFileSizeValidator', () => ({
-  createFileSizeValidator: mockCreateFileSizeValidator.mockReturnValue(
-    mockValidatorFunction
-  ),
+const mockFileSizeValidatorClass = vi.hoisted(() => vi.fn());
+vi.mock('@server/routes/utils/FileSizeValidator', () => ({
+  FileSizeValidator: mockFileSizeValidatorClass.mockImplementation(() => ({
+    process: mockFileValidatorProcess,
+  })),
 }));
 
 const mockS3Client = vi.hoisted(() => ({})) as S3Client;
@@ -64,12 +64,15 @@ describe('handleStreamUpload', () => {
   it('Should attach the file size validator', async () => {
     await handleStreamUpload(mockRequest, defaultFolder);
 
-    expect(mockCreateFileSizeValidator).toHaveBeenCalledWith(
+    expect(mockFileSizeValidatorClass).toHaveBeenCalledWith(
       mockRequest,
       mockTransformStream
     );
 
-    expect(mockRequest.on).toHaveBeenCalledWith('data', mockValidatorFunction);
+    expect(mockRequest.on).toHaveBeenCalledWith(
+      'data',
+      mockFileValidatorProcess
+    );
   });
 
   it('Should call the uploadImageStream with correct params', async () => {
@@ -105,7 +108,7 @@ describe('handleStreamUpload', () => {
 
     expect(mockRequest.removeListener).toHaveBeenCalledWith(
       'data',
-      mockValidatorFunction
+      mockFileValidatorProcess
     );
   });
 

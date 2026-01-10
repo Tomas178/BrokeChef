@@ -100,7 +100,11 @@ export default tseslint.config(
   },
 
   {
-    files: ['**/src/utils/errors/**', 'src/enums/**'],
+    files: [
+      '**/src/utils/errors/**',
+      'src/enums/**',
+      'src/routes/utils/FileSizeValidator.ts',
+    ],
     rules: {
       'unicorn/filename-case': [
         'error',
