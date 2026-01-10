@@ -1,10 +1,10 @@
+import { RecipeGenerationStatus } from '@server/enums/RecipeGenerationStatus';
 import logger from '@server/logger';
 import { RECIPE_QUEUE_NAME, type RecipeJobData } from '@server/queues/recipe';
 import { ai } from '@server/utils/GoogleGenAiClient/client';
 import { generateRecipesFromImage } from '@server/utils/GoogleGenAiClient/generateRecipesFromImage';
 import { redisConnection } from '@server/utils/redis/connection';
 import {
-  RecipeGenerationStatus,
   sseManager,
   type ErrorRecipeData,
   type SuccessRecipeData,

@@ -1,15 +1,6 @@
 import type { GeneratedRecipe } from '@server/entities/generatedRecipe';
-import type { ObjectValues } from '@server/shared/types';
+import type { RecipeGenerationStatus } from '@server/enums/RecipeGenerationStatus';
 import type { Response } from 'express';
-
-export const RecipeGenerationStatus = {
-  SUCCESS: 'success',
-  ERROR: 'error',
-} as const;
-
-export type RecipeGenerationStatusValues = ObjectValues<
-  typeof RecipeGenerationStatus
->;
 
 export interface SuccessRecipeData {
   status: typeof RecipeGenerationStatus.SUCCESS;

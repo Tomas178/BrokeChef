@@ -1,5 +1,6 @@
 import type { Response } from 'express';
-import { SSEManager, RecipeGenerationStatus } from '.';
+import { RecipeGenerationStatus } from '@server/enums/RecipeGenerationStatus';
+import { SSEManager } from '.';
 
 describe('SSEManager', () => {
   let sseManager: SSEManager;
@@ -18,7 +19,7 @@ describe('SSEManager', () => {
   });
 
   describe('Client Management', () => {
-    it('should add a client and be able to send data to it', () => {
+    it('Should add a client and be able to send data to it', () => {
       const userId = 'user-123';
       const data = {
         status: RecipeGenerationStatus.SUCCESS,
@@ -31,7 +32,7 @@ describe('SSEManager', () => {
       expect(mockRes.write).toHaveBeenCalledTimes(1);
     });
 
-    it('should remove a client and stop sending data', () => {
+    it('Should remove a client and stop sending data', () => {
       const userId = 'user-to-remove';
       const data = {
         status: RecipeGenerationStatus.ERROR,
@@ -49,7 +50,7 @@ describe('SSEManager', () => {
       expect(mockRes.write).toHaveBeenCalledTimes(1);
     });
 
-    it('should handle sending data to a non-existent user gracefully', () => {
+    it('Should handle sending data to a non-existent user gracefully', () => {
       sseManager.sendToClient('ghost-user', {
         status: RecipeGenerationStatus.ERROR,
         message: 'Boo',
@@ -60,7 +61,7 @@ describe('SSEManager', () => {
   });
 
   describe('Data Formatting', () => {
-    it('should format success data correctly according to SSE standard', () => {
+    it('Should format success data correctly according to SSE standard', () => {
       const userId = 'valid-user';
       sseManager.addClient(userId, mockRes);
 
@@ -76,7 +77,7 @@ describe('SSEManager', () => {
       expect(mockRes.write).toHaveBeenCalledWith(expectedString);
     });
 
-    it('should format error data correctly', () => {
+    it('Should format error data correctly', () => {
       const userId = 'error-user';
       sseManager.addClient(userId, mockRes);
 
@@ -94,7 +95,7 @@ describe('SSEManager', () => {
   });
 
   describe('Multiple Clients', () => {
-    it('should send data only to the specific targeted client', () => {
+    it('Should send data only to the specific targeted client', () => {
       const user1 = 'user-1';
       const user2 = 'user-2';
 
