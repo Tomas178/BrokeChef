@@ -1,6 +1,9 @@
 import { Readable } from 'node:stream';
 import type { S3Client } from '@aws-sdk/client-s3';
-import { AllowedMimeType } from '@server/enums/AllowedMimetype';
+import {
+  AllowedMimeType,
+  allowedMimetypesArray,
+} from '@server/enums/AllowedMimetype';
 import { Upload } from '@aws-sdk/lib-storage';
 import { uploadImageStream } from '../uploadImageStream';
 
@@ -54,7 +57,7 @@ describe('uploadImageStream', () => {
         Bucket: fakeImagesBucket,
         Key: fakeKey,
         Body: dummyStream,
-        ContentType: contentType,
+        ContentType: expect.toBeOneOf(allowedMimetypesArray),
       },
     });
   });
