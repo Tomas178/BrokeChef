@@ -25,6 +25,7 @@ import { computed } from 'vue';
 import { MODAL_TYPES, type ModalType } from '@/types/profile';
 import CreateCollectionModal from '@/components/Modals/CreateCollectionModal.vue';
 import Dialog from '@/components/Dialog.vue';
+import { DEFAULT_MAX_FILE_SIZE } from '@server/shared/consts';
 
 const { showLoading, updateToast } = useToast();
 const userStore = useUserStore();
@@ -108,14 +109,17 @@ const [uploadImage, errorMessage] = useErrorMessage(async () => {
     return null;
   }
 
+  if (profileImageFile.value.size > DEFAULT_MAX_FILE_SIZE) {
+    throw new Error(
+      `Image too large please upload image <= ${(DEFAULT_MAX_FILE_SIZE / 1024 / 1024).toFixed(0)}MB`
+    );
+  }
+
   const { data } = await axios.post<Pick<UsersPublic, 'image'>>(
     fullEndpoint,
     profileImageFile.value,
     {
       withCredentials: true,
-      headers: {
-        'Content-Type': profileImageFile.value.type,
-      },
     }
   );
 

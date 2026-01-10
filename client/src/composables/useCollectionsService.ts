@@ -9,6 +9,7 @@ import { apiOrigin } from '@/config';
 import axios from 'axios';
 import useErrorMessage from './useErrorMessage';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
+import { DEFAULT_MAX_FILE_SIZE } from '@server/shared/consts';
 
 export function useCollectionsService() {
   const { showLoading, updateToast } = useToast();
@@ -28,14 +29,17 @@ export function useCollectionsService() {
       return undefined;
     }
 
+    if (collectionImageFile.value.size > DEFAULT_MAX_FILE_SIZE) {
+      throw new Error(
+        `Image too large please upload image <= ${(DEFAULT_MAX_FILE_SIZE / 1024 / 1024).toFixed(0)}MB`
+      );
+    }
+
     const { data } = await axios.post<Pick<CollectionsPublicBasic, 'imageUrl'>>(
       uploadEndpoint,
       collectionImageFile.value,
       {
         withCredentials: true,
-        headers: {
-          'Content-Type': collectionImageFile.value.type,
-        },
       }
     );
 
