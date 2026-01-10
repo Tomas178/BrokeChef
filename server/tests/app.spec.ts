@@ -2,15 +2,20 @@
 import createApp from '@server/app';
 import supertest from 'supertest';
 import { StatusCodes } from 'http-status-codes';
-import type { Request } from 'express';
-import { upload } from '@server/utils/upload';
-import type { Mock } from 'vitest';
 import type { Database } from '@server/database';
+import { ImageFolder, type ImageFolderValues } from '@server/enums/ImageFolder';
 
-vi.mock('@server/utils/upload', () => ({
-  upload: {
-    single: vi.fn(() => (_request: any, _response: any, next: any) => next()),
-  },
+const [mockHandleFile, mockHandleStreamUpload] = vi.hoisted(() => [
+  vi.fn(),
+  vi.fn(),
+]);
+
+vi.mock('@server/utils/handleFile', () => ({
+  handleFile: mockHandleFile,
+}));
+
+vi.mock('@server/routes/utils/handleStreamUpload', () => ({
+  handleStreamUpload: mockHandleStreamUpload,
 }));
 
 vi.mock('@server/middleware/authenticate', () => ({
@@ -20,16 +25,8 @@ vi.mock('@server/middleware/authenticate', () => ({
   },
 }));
 
-const fakeBuffer = Buffer.from('fake');
-const fakeKey = 'fakeKey';
-
-vi.mock('@server/utils/resizeImage', () => ({
-  resizeImage: vi.fn(async (_file: any, _folder: any) => fakeBuffer),
-}));
-
-vi.mock('@server/utils/AWSS3Client/uploadImage', () => ({
-  uploadImage: vi.fn(() => fakeKey),
-}));
+const fakeBuffer = Buffer.from('fake image');
+const fakeKey = 'uploads/test-image.jpg';
 
 const database = {} as Database;
 
@@ -43,16 +40,17 @@ describe('Server health check', () => {
 
 describe('Image uploading', () => {
   beforeEach(() => {
-    (upload.single as unknown as Mock).mockReset();
+    vi.clearAllMocks();
+    mockHandleStreamUpload.mockResolvedValue(fakeKey);
   });
 
   const testUploadError = (endpoint: string) => async () => {
-    (upload.single as Mock<(field: string) => any>).mockImplementation(
-      (_field: string) =>
-        (request: Request, _response: any, next: () => void) => {
-          next();
-        }
-    );
+    const errorMessage = 'Supported types for image are .png, .jpg or .jpeg';
+
+    mockHandleFile.mockRejectedValueOnce({
+      message: errorMessage,
+      status: StatusCodes.BAD_REQUEST,
+    });
 
     const app = createApp(database);
 
@@ -61,19 +59,17 @@ describe('Image uploading', () => {
       .attach('file', Buffer.from('test'), 'document.pdf')
       .expect(StatusCodes.BAD_REQUEST);
 
-    expect(body.error.message).toEqual(
-      'Supported types for image are .png, .jpg or .jpeg'
-    );
+    expect(body.error.message).toEqual(errorMessage);
   };
 
   const testUploadSuccess =
-    (endpoint: string, responseKey: string) => async () => {
-      (upload.single as unknown as Mock).mockImplementation(
-        () => (request: any, _response: any, next: () => void) => {
-          request.file = {};
-          next();
-        }
-      );
+    (
+      endpoint: string,
+      responseKey: string,
+      expectedFolder: ImageFolderValues
+    ) =>
+    async () => {
+      mockHandleFile.mockResolvedValueOnce({ buffer: fakeBuffer });
 
       const app = createApp(database);
 
@@ -82,6 +78,11 @@ describe('Image uploading', () => {
         .attach('file', Buffer.from('test'), 'file.png')
         .expect(StatusCodes.OK);
 
+      expect(mockHandleFile).toHaveBeenCalledOnce();
+      expect(mockHandleStreamUpload).toHaveBeenCalledWith(
+        fakeBuffer,
+        expectedFolder
+      );
       expect(body).toEqual({ [responseKey]: fakeKey });
     };
 
@@ -93,7 +94,10 @@ describe('Image uploading', () => {
       testUploadError(ENDPOINT)
     );
 
-    it('Uploads image successfully', testUploadSuccess(ENDPOINT, 'imageUrl'));
+    it(
+      'Uploads image successfully',
+      testUploadSuccess(ENDPOINT, 'imageUrl', ImageFolder.RECIPES)
+    );
   });
 
   describe('Profiles', () => {
@@ -106,7 +110,7 @@ describe('Image uploading', () => {
 
     it(
       'Uploads profile image successfully',
-      testUploadSuccess(ENDPOINT, 'image')
+      testUploadSuccess(ENDPOINT, 'image', ImageFolder.PROFILES)
     );
   });
 
@@ -120,7 +124,7 @@ describe('Image uploading', () => {
 
     it(
       'Uploads collection image successfully',
-      testUploadSuccess(ENDPOINT, 'imageUrl')
+      testUploadSuccess(ENDPOINT, 'imageUrl', ImageFolder.COLLECTIONS)
     );
   });
 });

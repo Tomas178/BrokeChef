@@ -25,6 +25,7 @@ import { computed } from 'vue';
 import { MODAL_TYPES, type ModalType } from '@/types/profile';
 import CreateCollectionModal from '@/components/Modals/CreateCollectionModal.vue';
 import Dialog from '@/components/Dialog.vue';
+import { MAX_FILE_SIZE } from '@server/shared/consts';
 
 const { showLoading, updateToast } = useToast();
 const userStore = useUserStore();
@@ -105,6 +106,12 @@ const goBack = async () => {
 
 const [uploadImage, errorMessage] = useErrorMessage(async () => {
   if (!profileImageFile.value) return null;
+
+  if (profileImageFile.value.size > MAX_FILE_SIZE) {
+    throw new Error(
+      `Image too large please upload image <= ${(MAX_FILE_SIZE / 1024 / 1024).toFixed(0)}MB`
+    );
+  }
 
   const formData = new FormData();
   formData.append('file', profileImageFile.value);

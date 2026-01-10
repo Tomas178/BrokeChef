@@ -1,5 +1,6 @@
 import type { Response } from 'express';
-import { SSEManager, RecipeGenerationStatus } from '.';
+import { RecipeGenerationStatus } from '@server/enums/RecipeGenerationStatus';
+import { SSEManager } from '.';
 
 describe('SSEManager', () => {
   let sseManager: SSEManager;
