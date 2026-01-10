@@ -4,7 +4,7 @@ import type { AllowedMimetypeValues } from '@server/enums/AllowedMimetype';
 import { Upload } from '@aws-sdk/lib-storage';
 import config from '@server/config';
 
-export function uploadImageStream(
+export async function uploadImageStream(
   s3Client: S3Client,
   key: string,
   bodyStream: Readable,
@@ -20,5 +20,5 @@ export function uploadImageStream(
     },
   });
 
-  return parallelUpload.done();
+  await parallelUpload.done();
 }

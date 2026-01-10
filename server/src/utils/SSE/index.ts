@@ -1,5 +1,5 @@
 import type { GeneratedRecipe } from '@server/entities/generatedRecipe';
-import type { RecipeGenerationStatus } from '@server/enums/RecipeGenerationStatus';
+import { RecipeGenerationStatus } from '@server/enums/RecipeGenerationStatus';
 import type { Response } from 'express';
 
 export interface SuccessRecipeData {

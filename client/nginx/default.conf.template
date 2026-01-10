@@ -8,18 +8,14 @@ server {
 
   server_tokens off;
 
-  location /api/upload {
-    proxy_pass $API_PROXY_PASS;
-    proxy_request_buffering off;
-    client_max_body_size 0;
-
-    include /etc/nginx/proxy_params.conf;
-  }
-
   location /api {
     proxy_pass $API_PROXY_PASS;
 
-    include /etc/nginx/proxy_params.conf;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host $host;
+    proxy_cache_bypass $http_upgrade;
   }
 
   location / {

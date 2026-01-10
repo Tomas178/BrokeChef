@@ -1,6 +1,7 @@
 import createApp from '@server/app';
 import type { Database } from '@server/database';
 import { ImageFolder } from '@server/enums/ImageFolder';
+import { FAKE_FRIDGE_IMAGE } from '@server/utils/GoogleGenAiClient/tests/utils/generateRecipesFromImage';
 import { StatusCodes } from 'http-status-codes';
 import supertest from 'supertest';
 
@@ -30,7 +31,10 @@ beforeEach(() => vi.clearAllMocks());
 
 describe(`POST ${recipeEndpoint}`, () => {
   it('Should call handleStreamUpload with ImageFolder.RECIPES', async () => {
-    await supertest(app).post(recipeEndpoint).expect(StatusCodes.OK);
+    await supertest(app)
+      .post(recipeEndpoint)
+      .attach('file', FAKE_FRIDGE_IMAGE, 'recipe.jpg')
+      .expect(StatusCodes.OK);
 
     expect(mockHandleStreamUpload).toHaveBeenCalledExactlyOnceWith(
       expect.anything(),
@@ -44,6 +48,7 @@ describe(`POST ${recipeEndpoint}`, () => {
 
     const { body } = await supertest(app)
       .post(recipeEndpoint)
+      .attach('file', FAKE_FRIDGE_IMAGE, 'recipe.jpg')
       .expect(StatusCodes.INTERNAL_SERVER_ERROR);
 
     expect(body.error.message).toBe(errorMessage);
@@ -52,6 +57,7 @@ describe(`POST ${recipeEndpoint}`, () => {
   it('Should upload the image and return the key', async () => {
     const { body } = await supertest(app)
       .post(recipeEndpoint)
+      .attach('file', FAKE_FRIDGE_IMAGE, 'recipe.jpg')
       .expect(StatusCodes.OK);
 
     expect(body.imageUrl).toBe(fakeKey);
@@ -60,7 +66,10 @@ describe(`POST ${recipeEndpoint}`, () => {
 
 describe(`POST ${profileEndpoint}`, () => {
   it('Should call handleStreamUpload with ImageFolder.PROFILES', async () => {
-    await supertest(app).post(profileEndpoint).expect(StatusCodes.OK);
+    await supertest(app)
+      .post(profileEndpoint)
+      .attach('file', FAKE_FRIDGE_IMAGE, 'profile-picture.jpg')
+      .expect(StatusCodes.OK);
 
     expect(mockHandleStreamUpload).toHaveBeenCalledExactlyOnceWith(
       expect.anything(),
@@ -74,6 +83,7 @@ describe(`POST ${profileEndpoint}`, () => {
 
     const { body } = await supertest(app)
       .post(profileEndpoint)
+      .attach('file', FAKE_FRIDGE_IMAGE, 'profile-picture.jpg')
       .expect(StatusCodes.INTERNAL_SERVER_ERROR);
 
     expect(body.error.message).toBe(errorMessage);
@@ -82,6 +92,7 @@ describe(`POST ${profileEndpoint}`, () => {
   it('Should upload the image and return the key', async () => {
     const { body } = await supertest(app)
       .post(profileEndpoint)
+      .attach('file', FAKE_FRIDGE_IMAGE, 'profile-picture.jpg')
       .expect(StatusCodes.OK);
 
     expect(body.image).toBe(fakeKey);
@@ -90,7 +101,10 @@ describe(`POST ${profileEndpoint}`, () => {
 
 describe(`POST ${collectionEndpoint}`, () => {
   it('Should call handleStreamUpload with ImageFolder.COLLECTIONS', async () => {
-    await supertest(app).post(collectionEndpoint).expect(StatusCodes.OK);
+    await supertest(app)
+      .post(collectionEndpoint)
+      .attach('file', FAKE_FRIDGE_IMAGE, 'collection.jpg')
+      .expect(StatusCodes.OK);
 
     expect(mockHandleStreamUpload).toHaveBeenCalledExactlyOnceWith(
       expect.anything(),
@@ -104,6 +118,7 @@ describe(`POST ${collectionEndpoint}`, () => {
 
     const { body } = await supertest(app)
       .post(collectionEndpoint)
+      .attach('file', FAKE_FRIDGE_IMAGE, 'collection.jpg')
       .expect(StatusCodes.INTERNAL_SERVER_ERROR);
 
     expect(body.error.message).toBe(errorMessage);
@@ -112,6 +127,7 @@ describe(`POST ${collectionEndpoint}`, () => {
   it('Should upload the image and return the key', async () => {
     const { body } = await supertest(app)
       .post(collectionEndpoint)
+      .attach('file', FAKE_FRIDGE_IMAGE, 'collection.jpg')
       .expect(StatusCodes.OK);
 
     expect(body.imageUrl).toBe(fakeKey);

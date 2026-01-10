@@ -45,7 +45,7 @@ describe('createTransformStream', () => {
     expect(mockSharpInstance.jpeg).toHaveBeenCalledWith(customJpeg);
   });
 
-  it('Should allow partial overrides (e.g. only resizing)', () => {
+  it('Should allow partial overrides', () => {
     const customResize = { width: 100 };
 
     createTransformStream(customResize);

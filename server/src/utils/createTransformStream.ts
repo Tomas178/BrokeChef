@@ -7,15 +7,12 @@ export const DEFAULT_RESIZE_OPTIONS: ResizeOptions = {
 
 export const DEFAULT_JPEG_OPTIONS: JpegOptions = {
   quality: 80,
+  mozjpeg: true,
 };
 
 export function createTransformStream(
   resize = DEFAULT_RESIZE_OPTIONS,
   jpeg = DEFAULT_JPEG_OPTIONS
 ) {
-  return sharp({
-    sequentialRead: true,
-  })
-    .resize(resize)
-    .jpeg(jpeg);
+  return sharp().resize(resize).jpeg(jpeg);
 }

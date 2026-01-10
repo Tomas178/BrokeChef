@@ -1,20 +1,20 @@
 import { Readable } from 'node:stream';
 import type { S3Client } from '@aws-sdk/client-s3';
-import {
-  AllowedMimeType,
-  allowedMimetypesArray,
-} from '@server/enums/AllowedMimetype';
+import { AllowedMimeType } from '@server/enums/AllowedMimetype';
 import { Upload } from '@aws-sdk/lib-storage';
 import { uploadImageStream } from '../uploadImageStream';
 
-const mockDonePromise = Promise.resolve({ $metadata: {} });
-const mockDone = vi.fn(() => mockDonePromise);
+const mockDone = vi.fn().mockResolvedValueOnce({});
 
-vi.mock('@aws-sdk/lib-storage', () => ({
-  Upload: vi.fn().mockImplementation(() => ({
-    done: mockDone,
-  })),
-}));
+vi.mock('@aws-sdk/lib-storage', () => {
+  return {
+    Upload: vi.fn().mockImplementation(() => {
+      return {
+        done: mockDone,
+      };
+    }),
+  };
+});
 
 const fakeKey = 'fake-key';
 
@@ -54,23 +54,16 @@ describe('uploadImageStream', () => {
         Bucket: fakeImagesBucket,
         Key: fakeKey,
         Body: dummyStream,
-        ContentType: expect.toBeOneOf(allowedMimetypesArray),
+        ContentType: contentType,
       },
     });
   });
 
-  it('Should return the promise from .done() so the caller can await it', () => {
-    const dummyStream = Readable.from([]);
+  it('Should await until the upload is done', async () => {
+    const dummyStream = createDummyStream();
 
-    const result = uploadImageStream(
-      s3Client,
-      'key',
-      dummyStream,
-      AllowedMimeType.JPEG
-    );
+    await uploadImageStream(s3Client, fakeKey, dummyStream, contentType);
 
-    expect(result).toBeInstanceOf(Promise);
-    expect(result).toBe(mockDonePromise);
     expect(mockDone).toHaveBeenCalledOnce();
   });
 });
