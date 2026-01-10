@@ -56,7 +56,6 @@ describe('uploadImageStream', () => {
         Body: dummyStream,
         ContentType: expect.toBeOneOf(allowedMimetypesArray),
       },
-      queueSize: 1,
     });
   });
 

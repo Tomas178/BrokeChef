@@ -15,7 +15,10 @@ export async function handleStreamUpload(
   folderName: ImageFolderValues
 ) {
   return new Promise((resolve, reject) => {
-    const busboy = Busboy({ headers: req.headers });
+    const busboy = Busboy({
+      headers: req.headers,
+      highWaterMark: 5 * 1024 * 1024,
+    });
     const uniqueFilename = formUniqueFilename();
     const key = `${folderName}/${uniqueFilename}`;
     let isUploadStarted = false;

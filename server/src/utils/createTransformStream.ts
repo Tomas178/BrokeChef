@@ -13,5 +13,9 @@ export function createTransformStream(
   resize = DEFAULT_RESIZE_OPTIONS,
   jpeg = DEFAULT_JPEG_OPTIONS
 ) {
-  return sharp().resize(resize).jpeg(jpeg);
+  return sharp({
+    sequentialRead: true,
+  })
+    .resize(resize)
+    .jpeg(jpeg);
 }
