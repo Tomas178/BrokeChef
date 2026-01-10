@@ -7,7 +7,6 @@ export const DEFAULT_RESIZE_OPTIONS: ResizeOptions = {
 
 export const DEFAULT_JPEG_OPTIONS: JpegOptions = {
   quality: 80,
-  mozjpeg: true,
 };
 
 export function createTransformStream(
