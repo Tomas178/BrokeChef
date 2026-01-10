@@ -23,25 +23,35 @@ export async function handleStreamUpload(
     busboy.on('file', async (_, fileStream) => {
       isUploadStarted = true;
 
+      console.time('TOTAL_FILE_PROCESS_TIME');
+      console.time('PIPELINE_CONSUMPTION_TIME');
+
       const fileSizeValidator = new FileSizeValidator();
       const transformStream = createTransformStream();
 
+      const uploadPromise = uploadImageStream(
+        s3Client,
+        key,
+        transformStream,
+        AllowedMimeType.JPEG
+      );
+
+      const pipelinePromise = pipeline(
+        fileStream,
+        fileSizeValidator,
+        transformStream
+      );
+
       try {
-        const uploadPromise = uploadImageStream(
-          s3Client,
-          key,
-          transformStream,
-          AllowedMimeType.JPEG
-        );
-
-        const pipelinePromise = pipeline(
-          fileStream,
-          fileSizeValidator,
-          transformStream
-        );
-
         await pipelinePromise;
+        console.timeEnd('PIPELINE_CONSUMPTION_TIME');
+
+        // Await the S3 finalization.
+        console.time('S3_FINAL_FLUSH_TIME');
         await uploadPromise;
+        console.timeEnd('S3_FINAL_FLUSH_TIME');
+
+        console.timeEnd('TOTAL_FILE_PROCESS_TIME');
 
         resolve(key);
       } catch (error) {

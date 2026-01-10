@@ -7,17 +7,14 @@ import {
 import { Upload } from '@aws-sdk/lib-storage';
 import { uploadImageStream } from '../uploadImageStream';
 
-const mockDone = vi.fn().mockResolvedValueOnce({});
+const mockDonePromise = Promise.resolve({ $metadata: {} });
+const mockDone = vi.fn(() => mockDonePromise);
 
-vi.mock('@aws-sdk/lib-storage', () => {
-  return {
-    Upload: vi.fn().mockImplementation(() => {
-      return {
-        done: mockDone,
-      };
-    }),
-  };
-});
+vi.mock('@aws-sdk/lib-storage', () => ({
+  Upload: vi.fn().mockImplementation(() => ({
+    done: mockDone,
+  })),
+}));
 
 const fakeKey = 'fake-key';
 
@@ -59,20 +56,22 @@ describe('uploadImageStream', () => {
         Body: dummyStream,
         ContentType: expect.toBeOneOf(allowedMimetypesArray),
       },
+      queueSize: 1,
     });
   });
 
-  it('Should return the promise that can be awaited', async () => {
-    const dummyStream = createDummyStream();
+  it('Should return the promise from .done() so the caller can await it', () => {
+    const dummyStream = Readable.from([]);
 
-    const uploadTask = uploadImageStream(
+    const result = uploadImageStream(
       s3Client,
-      fakeKey,
+      'key',
       dummyStream,
-      contentType
+      AllowedMimeType.JPEG
     );
 
+    expect(result).toBeInstanceOf(Promise);
+    expect(result).toBe(mockDonePromise);
     expect(mockDone).toHaveBeenCalledOnce();
-    expect(uploadTask).toBeUndefined();
   });
 });

@@ -15,7 +15,9 @@ vi.mock('@server/utils/createTransformStream', () => ({
 }));
 
 vi.mock('@server/utils/AWSS3Client/uploadImageStream', () => ({
-  uploadImageStream: vi.fn(async () => undefined),
+  uploadImageStream: vi.fn(() => ({
+    done: vi.fn().mockResolvedValue(undefined),
+  })),
 }));
 
 vi.mock('@server/utils/AWSS3Client/client', () => ({

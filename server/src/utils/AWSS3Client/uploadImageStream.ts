@@ -4,6 +4,8 @@ import type { AllowedMimetypeValues } from '@server/enums/AllowedMimetype';
 import { Upload } from '@aws-sdk/lib-storage';
 import config from '@server/config';
 
+export const QUEUE_SIZE = 1;
+
 export function uploadImageStream(
   s3Client: S3Client,
   key: string,
@@ -18,6 +20,7 @@ export function uploadImageStream(
       Body: bodyStream,
       ContentType: contentType,
     },
+    queueSize: QUEUE_SIZE,
   });
 
   return parallelUpload.done();
