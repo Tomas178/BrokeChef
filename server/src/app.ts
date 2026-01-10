@@ -27,13 +27,13 @@ export default function createApp(database: Database) {
 
   app.all('/api/auth/{*splat}', toNodeHandler(auth));
 
+  app.use('/api/upload', uploadRouter);
+
   app.use(express.json());
 
   app.use('/api/health', (_, res) => {
     res.status(StatusCodes.OK).send('OK');
   });
-
-  app.use('/api/upload', uploadRouter);
 
   app.use('/api/recipe', generateRecipesRouter);
 
