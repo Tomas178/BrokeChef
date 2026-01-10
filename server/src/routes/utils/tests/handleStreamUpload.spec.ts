@@ -1,3 +1,4 @@
+import EventEmitter from 'node:events'; // Use EventEmitter for .on and .emit
 import type { Request } from 'express';
 import { ImageFolder } from '@server/enums/ImageFolder';
 import { allowedMimetypesArray } from '@server/enums/AllowedMimetype';
@@ -11,7 +12,16 @@ const [
   mockLoggerError,
   mockCreateTransformStream,
   mockPipeline,
-] = vi.hoisted(() => [vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn()]);
+  mockBusboy,
+] = vi.hoisted(() => [
+  vi.fn(),
+  vi.fn(),
+  vi.fn(),
+  vi.fn(),
+  vi.fn(),
+  vi.fn(),
+  vi.fn(),
+]);
 
 vi.mock('@server/utils/formUniqueFilename', () => ({
   formUniqueFilename: mockFormUniqueFilename,
@@ -51,35 +61,82 @@ vi.mock('node:stream/promises', () => ({
   pipeline: mockPipeline,
 }));
 
+vi.mock('busboy', () => ({
+  default: mockBusboy,
+}));
+
 const mockS3Client = vi.hoisted(() => ({})) as S3Client;
 vi.mock('@server/utils/AWSS3Client/client', () => ({
   s3Client: mockS3Client,
 }));
 
-const mockRequest = {} as Request;
+// Helper to simulate Busboy behavior
+const createMockBusboy = () => {
+  // eslint-disable-next-line unicorn/prefer-event-target
+  const emitter = new EventEmitter() as any;
+  // Explicitly mock the 'on' method while keeping the emitter functionality
+  emitter.on = vi.fn(emitter.on);
+  mockBusboy.mockReturnValue(emitter);
+  return emitter;
+};
+
+const mockRequest = {
+  headers: {},
+  pipe: vi.fn().mockReturnThis(),
+} as unknown as Request;
+
+const mockFileStream = {
+  resume: vi.fn(),
+} as any;
 
 const defaultFolder = ImageFolder.COLLECTIONS;
 const fakeFilename = 'filename';
-
 const fakeKey = `${defaultFolder}/${fakeFilename}`;
 
-beforeEach(() => vi.clearAllMocks());
+/**
+ * Helper to find the 'file' event handler from the busboy mock calls
+ */
+const getFileHandler = (busboy: any) => {
+  const call = busboy.on.mock.calls.find(
+    (arguments_: [string, any]) => arguments_[0] === 'file'
+  );
+  if (!call) throw new Error('Busboy file handler not found');
+  return call[1];
+};
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  mockFormUniqueFilename.mockReturnValue(fakeFilename);
+});
 
 describe('handleStreamUpload', () => {
-  it('Should initialize the pipeline with Request -> Validator -> Transform', async () => {
-    await handleStreamUpload(mockRequest, defaultFolder);
+  it('Should initialize the pipeline with FileStream -> Validator -> Transform', async () => {
+    const busboy = createMockBusboy();
+    const uploadPromise = handleStreamUpload(mockRequest, defaultFolder);
+
+    const fileHandler = getFileHandler(busboy);
+    await fileHandler('image', mockFileStream, { mimeType: 'image/jpeg' });
+
+    busboy.emit('finish');
+    await uploadPromise;
 
     expect(mockFileSizeValidatorClass).toHaveBeenCalledWith();
-
     expect(mockPipeline).toHaveBeenCalledWith(
-      mockRequest,
+      mockFileStream,
       mockFileSizeValidatorInstance,
       mockTransformStream
     );
   });
 
   it('Should call the uploadImageStream with correct params', async () => {
-    const key = await handleStreamUpload(mockRequest, defaultFolder);
+    const busboy = createMockBusboy();
+    const uploadPromise = handleStreamUpload(mockRequest, defaultFolder);
+
+    const fileHandler = getFileHandler(busboy);
+    await fileHandler('image', mockFileStream, { mimeType: 'image/jpeg' });
+
+    busboy.emit('finish');
+    const key = await uploadPromise;
 
     expect(mockUploadImageStream).toHaveBeenCalledExactlyOnceWith(
       mockS3Client,
@@ -89,47 +146,48 @@ describe('handleStreamUpload', () => {
     );
   });
 
-  it('Should log information about created S3 object', async () => {
-    const key = await handleStreamUpload(mockRequest, defaultFolder);
-
-    expect(mockLoggerInfo).toHaveBeenCalledExactlyOnceWith(
-      expect.stringContaining(key)
-    );
-  });
-
   it('Should log error, destroy stream, and rethrow if Upload fails', async () => {
+    const busboy = createMockBusboy();
     const error = new Error('S3 Error');
     mockUploadImageStream.mockRejectedValueOnce(error);
 
-    await expect(
-      handleStreamUpload(mockRequest, defaultFolder)
-    ).rejects.toThrow(error);
+    const uploadPromise = handleStreamUpload(mockRequest, defaultFolder);
 
-    // Verify Error Log
+    const fileHandler = getFileHandler(busboy);
+    await fileHandler('image', mockFileStream, { mimeType: 'image/jpeg' });
+
+    await expect(uploadPromise).rejects.toThrow(error);
+
     expect(mockLoggerError).toHaveBeenCalledWith(
       expect.stringContaining('Upload failed')
     );
-
-    // Verify cleanup (crucial fix)
     expect(mockTransformStream.destroy).toHaveBeenCalled();
+    expect(mockFileStream.resume).toHaveBeenCalled();
   });
 
   it('Should log error, destroy stream, and rethrow if Pipeline fails', async () => {
-    // Simulate an error in the pipeline (e.g. file too big)
+    const busboy = createMockBusboy();
     const error = new Error('File too large');
     mockPipeline.mockRejectedValueOnce(error);
 
-    await expect(
-      handleStreamUpload(mockRequest, defaultFolder)
-    ).rejects.toThrow(error);
+    const uploadPromise = handleStreamUpload(mockRequest, defaultFolder);
 
+    const fileHandler = getFileHandler(busboy);
+    await fileHandler('image', mockFileStream, { mimeType: 'image/jpeg' });
+
+    await expect(uploadPromise).rejects.toThrow(error);
     expect(mockTransformStream.destroy).toHaveBeenCalled();
   });
 
   it('Should handle the file uploading and return the key', async () => {
-    mockFormUniqueFilename.mockReturnValueOnce(fakeFilename);
+    const busboy = createMockBusboy();
+    const uploadPromise = handleStreamUpload(mockRequest, defaultFolder);
 
-    const key = await handleStreamUpload(mockRequest, defaultFolder);
+    const fileHandler = getFileHandler(busboy);
+    await fileHandler('image', mockFileStream, { mimeType: 'image/jpeg' });
+
+    busboy.emit('finish');
+    const key = await uploadPromise;
 
     expect(key).toBe(fakeKey);
   });

@@ -38,7 +38,7 @@ describe('Server health check', () => {
   });
 });
 
-describe('Image uploading (Streaming)', () => {
+describe('Image uploading (Streaming with Busboy)', () => {
   const fakeBuffer = Buffer.from('fake-image-data');
 
   const testUploadSuccess =
@@ -49,8 +49,7 @@ describe('Image uploading (Streaming)', () => {
 
       const { body } = await supertest(app)
         .post(endpoint)
-        .set('Content-Type', 'image/jpeg')
-        .send(fakeBuffer)
+        .attach('image', fakeBuffer, 'test-image.jpg')
         .expect(StatusCodes.OK);
 
       expect(body).toEqual({ [responseKey]: expectedKey });
