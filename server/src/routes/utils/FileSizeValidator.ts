@@ -1,7 +1,6 @@
 import { Transform, type TransformCallback } from 'node:stream';
 import ImageTooLarge from '@server/utils/errors/images/ImageTooLarge';
-
-export const DEFAULT_MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+import { DEFAULT_MAX_FILE_SIZE } from '@server/shared/consts';
 
 export class FileSizeValidator extends Transform {
   private maxFileSize: number;

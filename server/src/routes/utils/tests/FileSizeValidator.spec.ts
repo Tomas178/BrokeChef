@@ -1,6 +1,7 @@
 import { once } from 'node:events';
 import ImageTooLarge from '@server/utils/errors/images/ImageTooLarge';
-import { DEFAULT_MAX_FILE_SIZE, FileSizeValidator } from '../FileSizeValidator';
+import { DEFAULT_MAX_FILE_SIZE } from '@server/shared/consts';
+import { FileSizeValidator } from '../FileSizeValidator';
 
 vi.mock('@server/utils/errors/images/ImageTooLarge');
 
