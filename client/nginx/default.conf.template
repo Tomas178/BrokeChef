@@ -13,13 +13,13 @@ server {
     proxy_request_buffering off;
     client_max_body_size 0;
 
-    include etc/nginx/proxy_params.conf;
+    include /etc/nginx/proxy_params.conf;
   }
 
   location /api {
     proxy_pass $API_PROXY_PASS;
 
-    include etc/nginx/proxy_params.conf;
+    include /etc/nginx/proxy_params.conf;
   }
 
   location / {
