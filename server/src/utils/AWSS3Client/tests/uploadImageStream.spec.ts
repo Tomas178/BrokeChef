@@ -62,11 +62,17 @@ describe('uploadImageStream', () => {
     });
   });
 
-  it('Should await until the upload is done', async () => {
+  it('Should return the promise that can be awaited', async () => {
     const dummyStream = createDummyStream();
 
-    await uploadImageStream(s3Client, fakeKey, dummyStream, contentType);
+    const uploadTask = uploadImageStream(
+      s3Client,
+      fakeKey,
+      dummyStream,
+      contentType
+    );
 
     expect(mockDone).toHaveBeenCalledOnce();
+    expect(uploadTask).toBeUndefined();
   });
 });

@@ -27,20 +27,21 @@ export async function handleStreamUpload(
       const transformStream = createTransformStream();
 
       try {
-        const pipelinePromise = pipeline(
-          fileStream,
-          fileSizeValidator,
-          transformStream
-        );
-
-        await uploadImageStream(
+        const uploadPromise = uploadImageStream(
           s3Client,
           key,
           transformStream,
           AllowedMimeType.JPEG
         );
 
+        const pipelinePromise = pipeline(
+          fileStream,
+          fileSizeValidator,
+          transformStream
+        );
+
         await pipelinePromise;
+        await uploadPromise;
 
         resolve(key);
       } catch (error) {
