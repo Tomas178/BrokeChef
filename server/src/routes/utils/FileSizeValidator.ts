@@ -1,44 +1,26 @@
+import { Transform, type TransformCallback } from 'node:stream';
 import ImageTooLarge from '@server/utils/errors/images/ImageTooLarge';
-import type { Request } from 'express';
-import type { Sharp } from 'sharp';
 
 export const DEFAULT_MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
-export class FileSizeValidator {
-  private req: Request;
-  private transformStream: Sharp;
-  private maxSize = DEFAULT_MAX_FILE_SIZE;
-
+export class FileSizeValidator extends Transform {
+  private maxFileSize: number;
   private uploadedBytes = 0;
-  private isStreamDestroyed = false;
 
-  constructor(req: Request, transformStream: Sharp, maxSize?: number) {
-    this.req = req;
-    this.transformStream = transformStream;
-
-    if (maxSize) {
-      this.maxSize = maxSize;
-    }
+  constructor(maxFileSize = DEFAULT_MAX_FILE_SIZE) {
+    super();
+    this.maxFileSize = maxFileSize;
   }
 
-  private checkSize() {
-    if (this.uploadedBytes > this.maxSize) {
-      this.isStreamDestroyed = true;
+  _transform(chunk: Buffer, _: BufferEncoding, callback: TransformCallback) {
+    this.uploadedBytes += chunk.length;
 
-      this.req.unpipe(this.transformStream);
-      this.req.resume();
-
-      this.transformStream.destroy(new ImageTooLarge(this.maxSize));
-    }
-  }
-
-  process = (chunk: Buffer) => {
-    if (this.isStreamDestroyed) {
+    if (this.uploadedBytes > this.maxFileSize) {
+      callback(new ImageTooLarge(this.maxFileSize));
       return;
     }
 
-    this.uploadedBytes += chunk.length;
-
-    this.checkSize();
-  };
+    this.push(chunk);
+    callback();
+  }
 }

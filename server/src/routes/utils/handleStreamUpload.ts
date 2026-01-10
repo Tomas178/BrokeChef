@@ -1,3 +1,4 @@
+import { pipeline } from 'node:stream/promises';
 import { AllowedMimeType } from '@server/enums/AllowedMimetype';
 import type { ImageFolderValues } from '@server/enums/ImageFolder';
 import logger from '@server/logger';
@@ -15,11 +16,8 @@ export async function handleStreamUpload(
   const uniqueFilename = formUniqueFilename();
   const key = `${folderName}/${uniqueFilename}`;
 
+  const fileSizeValidator = new FileSizeValidator();
   const transformStream = createTransformStream();
-
-  const validateFileSize = new FileSizeValidator(req, transformStream);
-
-  req.on('data', validateFileSize.process);
 
   const uploadPromise = uploadImageStream(
     s3Client,
@@ -28,15 +26,15 @@ export async function handleStreamUpload(
     AllowedMimeType.JPEG
   );
 
-  req.pipe(transformStream);
+  const pipelinePromise = pipeline(req, fileSizeValidator, transformStream);
 
   try {
-    await uploadPromise;
+    await Promise.all([pipelinePromise, uploadPromise]);
   } catch (error) {
     logger.error(`Upload failed for ${key}`);
+
+    transformStream.destroy();
     throw error;
-  } finally {
-    req.removeListener('data', validateFileSize.process);
   }
 
   logger.info(`Object created in S3: ${key}`);

@@ -1,86 +1,57 @@
-import type { Request } from 'express';
-import type { Sharp } from 'sharp';
+import { once } from 'node:events';
 import ImageTooLarge from '@server/utils/errors/images/ImageTooLarge';
 import { DEFAULT_MAX_FILE_SIZE, FileSizeValidator } from '../FileSizeValidator';
 
 vi.mock('@server/utils/errors/images/ImageTooLarge');
-
-const [mockUnpipe, mockResume, mockDestroy] = vi.hoisted(() => [
-  vi.fn(),
-  vi.fn(),
-  vi.fn(),
-]);
-
-const mockRequest = {
-  unpipe: mockUnpipe,
-  resume: mockResume,
-} as unknown as Request;
-
-const mockTransformStream = {
-  destroy: mockDestroy,
-} as unknown as Sharp;
 
 describe('createFileSizeValidator', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('Should allow upload if total size is within the limit', () => {
     const maxSize = 100;
-    const validator = new FileSizeValidator(
-      mockRequest,
-      mockTransformStream,
-      maxSize
-    );
+    const validator = new FileSizeValidator(maxSize);
 
-    validator.process(Buffer.alloc(50));
-    validator.process(Buffer.alloc(50));
+    const dataSpy = vi.fn();
+    validator.on('data', dataSpy);
 
-    expect(mockDestroy).not.toHaveBeenCalled();
-    expect(mockUnpipe).not.toHaveBeenCalled();
-    expect(mockResume).not.toHaveBeenCalled();
+    const chunk1 = Buffer.alloc(50);
+    const chunk2 = Buffer.alloc(50);
+
+    validator.write(chunk1);
+    validator.write(chunk2);
+
+    expect(dataSpy).toHaveBeenCalledTimes(2);
+
+    expect(dataSpy).toHaveBeenNthCalledWith(1, chunk1);
+    expect(dataSpy).toHaveBeenNthCalledWith(2, chunk2);
   });
 
-  it('Should destroy the stream if size exceeds the limit', () => {
+  it('Should emit an error if size exceeds the limit', async () => {
     const maxSize = 100;
-    const validator = new FileSizeValidator(
-      mockRequest,
-      mockTransformStream,
-      maxSize
-    );
+    const validator = new FileSizeValidator(maxSize);
 
-    validator.process(Buffer.alloc(100));
+    const errorPromise = once(validator, 'error');
 
-    validator.process(Buffer.alloc(1));
+    validator.write(Buffer.alloc(100));
+    validator.write(Buffer.alloc(1));
 
-    expect(mockUnpipe).toHaveBeenCalledWith(mockTransformStream);
-    expect(mockResume).toHaveBeenCalledOnce();
+    const [error] = await errorPromise;
 
-    expect(mockDestroy).toHaveBeenCalledOnce();
-    expect(mockDestroy).toHaveBeenCalledWith(expect.any(ImageTooLarge));
-
+    expect(error).toBeInstanceOf(ImageTooLarge);
     expect(ImageTooLarge).toHaveBeenCalledWith(maxSize);
   });
 
-  it('Should ignore subsequent chunks after destruction', () => {
-    const maxSize = 100;
-    const validator = new FileSizeValidator(
-      mockRequest,
-      mockTransformStream,
-      maxSize
-    );
+  it('Should use DEFAULT_MAX_FILE_SIZE if no size is provided', async () => {
+    const validator = new FileSizeValidator();
 
-    validator.process(Buffer.alloc(101));
-    validator.process(Buffer.alloc(50));
-
-    expect(mockDestroy).toHaveBeenCalledOnce();
-  });
-
-  it('Should use DEFAULT_MAX_FILE_SIZE if no size is provided', () => {
-    const validator = new FileSizeValidator(mockRequest, mockTransformStream);
+    const errorPromise = once(validator, 'error');
 
     const largeChunk = Buffer.alloc(DEFAULT_MAX_FILE_SIZE + 1);
-    validator.process(largeChunk);
+    validator.write(largeChunk);
 
-    expect(mockDestroy).toHaveBeenCalledOnce();
+    const [error] = await errorPromise;
+
+    expect(error).toBeInstanceOf(ImageTooLarge);
     expect(ImageTooLarge).toHaveBeenCalledWith(DEFAULT_MAX_FILE_SIZE);
   });
 });

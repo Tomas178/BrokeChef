@@ -5,23 +5,21 @@ import { StatusCodes } from 'http-status-codes';
 import type { Database } from '@server/database';
 import { ImageFolder, type ImageFolderValues } from '@server/enums/ImageFolder';
 
-vi.mock('sharp', () => {
-  return {
-    default: vi.fn(() => ({
-      resize: vi.fn(() => ({
-        jpeg: vi.fn(() => new PassThrough()),
-      })),
-    })),
-  };
-});
-
 const fakeUniqueName = 'unique-file-id';
 vi.mock('@server/utils/formUniqueFilename', () => ({
   formUniqueFilename: vi.fn(() => fakeUniqueName),
 }));
 
+vi.mock('@server/utils/createTransformStream', () => ({
+  createTransformStream: vi.fn(() => new PassThrough()),
+}));
+
 vi.mock('@server/utils/AWSS3Client/uploadImageStream', () => ({
   uploadImageStream: vi.fn(async () => undefined),
+}));
+
+vi.mock('@server/utils/AWSS3Client/client', () => ({
+  s3Client: {},
 }));
 
 vi.mock('@server/middleware/authenticate', () => ({
@@ -51,7 +49,6 @@ describe('Image uploading (Streaming)', () => {
 
       const { body } = await supertest(app)
         .post(endpoint)
-
         .set('Content-Type', 'image/jpeg')
         .send(fakeBuffer)
         .expect(StatusCodes.OK);

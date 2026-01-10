@@ -10,7 +10,7 @@ const [
   mockLoggerInfo,
   mockLoggerError,
   mockCreateTransformStream,
-  mockFileValidatorProcess,
+  mockPipeline,
 ] = vi.hoisted(() => [vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn()]);
 
 vi.mock('@server/utils/formUniqueFilename', () => ({
@@ -28,17 +28,27 @@ vi.mock('@server/logger', () => ({
   },
 }));
 
-const mockTransformStream = vi.hoisted(() => ({ _isMockStream: true }));
+const mockTransformStream = vi.hoisted(() => ({
+  _isMockStream: true,
+  destroy: vi.fn(),
+}));
+
 vi.mock('@server/utils/createTransformStream', () => ({
   createTransformStream:
     mockCreateTransformStream.mockReturnValue(mockTransformStream),
 }));
 
+const mockFileSizeValidatorInstance = { _isMockValidator: true };
 const mockFileSizeValidatorClass = vi.hoisted(() => vi.fn());
+
 vi.mock('@server/routes/utils/FileSizeValidator', () => ({
-  FileSizeValidator: mockFileSizeValidatorClass.mockImplementation(() => ({
-    process: mockFileValidatorProcess,
-  })),
+  FileSizeValidator: mockFileSizeValidatorClass.mockImplementation(
+    () => mockFileSizeValidatorInstance
+  ),
+}));
+
+vi.mock('node:stream/promises', () => ({
+  pipeline: mockPipeline,
 }));
 
 const mockS3Client = vi.hoisted(() => ({})) as S3Client;
@@ -46,12 +56,7 @@ vi.mock('@server/utils/AWSS3Client/client', () => ({
   s3Client: mockS3Client,
 }));
 
-const mockRequest = {
-  pipe: vi.fn(),
-  on: vi.fn(),
-  resume: vi.fn(),
-  removeListener: vi.fn(),
-} as unknown as Request;
+const mockRequest = {} as Request;
 
 const defaultFolder = ImageFolder.COLLECTIONS;
 const fakeFilename = 'filename';
@@ -61,17 +66,15 @@ const fakeKey = `${defaultFolder}/${fakeFilename}`;
 beforeEach(() => vi.clearAllMocks());
 
 describe('handleStreamUpload', () => {
-  it('Should attach the file size validator', async () => {
+  it('Should initialize the pipeline with Request -> Validator -> Transform', async () => {
     await handleStreamUpload(mockRequest, defaultFolder);
 
-    expect(mockFileSizeValidatorClass).toHaveBeenCalledWith(
-      mockRequest,
-      mockTransformStream
-    );
+    expect(mockFileSizeValidatorClass).toHaveBeenCalledWith();
 
-    expect(mockRequest.on).toHaveBeenCalledWith(
-      'data',
-      mockFileValidatorProcess
+    expect(mockPipeline).toHaveBeenCalledWith(
+      mockRequest,
+      mockFileSizeValidatorInstance,
+      mockTransformStream
     );
   });
 
@@ -94,7 +97,7 @@ describe('handleStreamUpload', () => {
     );
   });
 
-  it('Should log error and rethrow if upload fails', async () => {
+  it('Should log error, destroy stream, and rethrow if Upload fails', async () => {
     const error = new Error('S3 Error');
     mockUploadImageStream.mockRejectedValueOnce(error);
 
@@ -102,14 +105,25 @@ describe('handleStreamUpload', () => {
       handleStreamUpload(mockRequest, defaultFolder)
     ).rejects.toThrow(error);
 
+    // Verify Error Log
     expect(mockLoggerError).toHaveBeenCalledWith(
       expect.stringContaining('Upload failed')
     );
 
-    expect(mockRequest.removeListener).toHaveBeenCalledWith(
-      'data',
-      mockFileValidatorProcess
-    );
+    // Verify cleanup (crucial fix)
+    expect(mockTransformStream.destroy).toHaveBeenCalled();
+  });
+
+  it('Should log error, destroy stream, and rethrow if Pipeline fails', async () => {
+    // Simulate an error in the pipeline (e.g. file too big)
+    const error = new Error('File too large');
+    mockPipeline.mockRejectedValueOnce(error);
+
+    await expect(
+      handleStreamUpload(mockRequest, defaultFolder)
+    ).rejects.toThrow(error);
+
+    expect(mockTransformStream.destroy).toHaveBeenCalled();
   });
 
   it('Should handle the file uploading and return the key', async () => {
