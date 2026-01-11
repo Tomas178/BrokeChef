@@ -1,31 +1,28 @@
 import { Readable } from 'node:stream';
 import type { S3Client } from '@aws-sdk/client-s3';
 import { AllowedMimeType } from '@server/enums/AllowedMimetype';
-import { Upload } from '@aws-sdk/lib-storage';
 import { uploadImageStream } from '../uploadImageStream';
 
-const mockDone = vi.fn().mockResolvedValueOnce({});
+const mockDone = vi.fn().mockResolvedValue({});
+
+const mockUpload = vi.hoisted(() => vi.fn());
 
 vi.mock('@aws-sdk/lib-storage', () => {
   return {
-    Upload: vi.fn().mockImplementation(() => {
-      return {
-        done: mockDone,
-      };
-    }),
+    Upload: mockUpload,
   };
 });
 
 const fakeKey = 'fake-key';
+const fakeImagesBucket = 'fake-bucket';
 
-const fakeImagesBucket = vi.hoisted(() => 'fake-bucket');
 vi.mock('@server/config', () => ({
   default: {
     auth: {
       aws: {
         s3: {
           buckets: {
-            images: fakeImagesBucket,
+            images: 'fake-bucket',
           },
         },
       },
@@ -34,36 +31,51 @@ vi.mock('@server/config', () => ({
 }));
 
 const s3Client = {} as S3Client;
-
 const contentType = AllowedMimeType.JPEG;
 
-beforeEach(() => vi.clearAllMocks());
-
-const createDummyStream = () =>
+const createFakeStream = () =>
   Readable.from([Buffer.from('chunk1'), Buffer.from('chunk2')]);
 
 describe('uploadImageStream', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockUpload.mockImplementation(() => ({
+      done: mockDone,
+    }));
+  });
+
   it('Should call the Upload class with correct parameters', async () => {
-    const dummyStream = createDummyStream();
+    const fakeStream = createFakeStream();
 
-    await uploadImageStream(s3Client, fakeKey, dummyStream, contentType);
+    uploadImageStream(s3Client, fakeKey, fakeStream, contentType);
 
-    expect(Upload).toHaveBeenCalledExactlyOnceWith({
+    expect(mockUpload).toHaveBeenCalledWith({
       client: s3Client,
       params: {
         Bucket: fakeImagesBucket,
         Key: fakeKey,
-        Body: dummyStream,
+        Body: fakeStream,
         ContentType: contentType,
       },
     });
   });
 
-  it('Should await until the upload is done', async () => {
-    const dummyStream = createDummyStream();
+  it('Should return the Upload instance (mocked object)', () => {
+    const fakeStream = createFakeStream();
 
-    await uploadImageStream(s3Client, fakeKey, dummyStream, contentType);
+    const result = uploadImageStream(
+      s3Client,
+      fakeKey,
+      fakeStream,
+      contentType
+    );
 
-    expect(mockDone).toHaveBeenCalledOnce();
+    expect(result).toEqual(
+      expect.objectContaining({
+        done: mockDone,
+      })
+    );
+
+    expect(mockUpload).toHaveBeenCalledOnce();
   });
 });

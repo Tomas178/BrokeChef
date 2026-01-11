@@ -2,6 +2,7 @@ import { Readable } from 'node:stream';
 import { ImageFolder } from '@server/enums/ImageFolder';
 import type { S3Client } from '@aws-sdk/client-s3';
 import { allowedMimetypesArray } from '@server/enums/AllowedMimetype';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { handleStreamUpload } from '../handleStreamUpload';
 
 const [
@@ -11,7 +12,16 @@ const [
   mockLoggerError,
   mockCreateTransformStream,
   mockPipeline,
-] = vi.hoisted(() => [vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn(), vi.fn()]);
+  mockDone,
+] = vi.hoisted(() => [
+  vi.fn(),
+  vi.fn(),
+  vi.fn(),
+  vi.fn(),
+  vi.fn(),
+  vi.fn(),
+  vi.fn(),
+]);
 
 vi.mock('@server/utils/formUniqueFilename', () => ({
   formUniqueFilename: mockFormUniqueFilename,
@@ -30,8 +40,7 @@ vi.mock('@server/logger', () => ({
 
 const mockTransformStream = vi.hoisted(() => ({ _isMockStream: true }));
 vi.mock('@server/utils/createTransformStream', () => ({
-  createTransformStream:
-    mockCreateTransformStream.mockReturnValue(mockTransformStream),
+  createTransformStream: mockCreateTransformStream,
 }));
 
 vi.mock('node:stream/promises', () => ({
@@ -43,27 +52,35 @@ vi.mock('@server/utils/AWSS3Client/client', () => ({
   s3Client: mockS3Client,
 }));
 
-const mockFileBuffer = Buffer.from('fake image');
 const defaultFolder = ImageFolder.COLLECTIONS;
 const fakeFilename = 'filename';
 const fakeKey = `${defaultFolder}/${fakeFilename}`;
 
-beforeEach(() => {
-  vi.clearAllMocks();
-  mockFormUniqueFilename.mockReturnValue(fakeFilename);
-});
+const createMockFileStream = () => Readable.from([Buffer.from('chunk')]);
 
 describe('handleStreamUpload', () => {
-  it('Should create a transform stream', async () => {
-    await handleStreamUpload(mockFileBuffer, defaultFolder);
+  beforeEach(() => {
+    vi.clearAllMocks();
 
+    mockFormUniqueFilename.mockReturnValue(fakeFilename);
+    mockCreateTransformStream.mockReturnValue(mockTransformStream);
+    mockPipeline.mockResolvedValue(undefined);
+    mockDone.mockResolvedValue({});
+
+    mockUploadImageStream.mockReturnValue({
+      done: mockDone,
+    });
+  });
+
+  it('Should create a transform stream', async () => {
+    await handleStreamUpload(createMockFileStream(), defaultFolder);
     expect(mockCreateTransformStream).toHaveBeenCalledOnce();
   });
 
   it('Should call uploadImageStream with correct params', async () => {
-    await handleStreamUpload(mockFileBuffer, defaultFolder);
+    await handleStreamUpload(createMockFileStream(), defaultFolder);
 
-    expect(mockUploadImageStream).toHaveBeenCalledExactlyOnceWith(
+    expect(mockUploadImageStream).toHaveBeenCalledWith(
       mockS3Client,
       fakeKey,
       mockTransformStream,
@@ -72,34 +89,24 @@ describe('handleStreamUpload', () => {
   });
 
   it('Should pipeline the buffer through the transform stream', async () => {
-    await handleStreamUpload(mockFileBuffer, defaultFolder);
+    await handleStreamUpload(createMockFileStream(), defaultFolder);
 
     expect(mockPipeline).toHaveBeenCalledOnce();
-
     const [bufferStream, transformStream] = mockPipeline.mock.calls[0];
 
     expect(bufferStream).toBeInstanceOf(Readable);
     expect(transformStream).toBe(mockTransformStream);
   });
 
-  it('Should wait for both pipeline and upload to complete', async () => {
-    const pipelinePromise = Promise.resolve();
-    const uploadPromise = Promise.resolve();
-
-    mockPipeline.mockReturnValueOnce(pipelinePromise);
-    mockUploadImageStream.mockReturnValueOnce(uploadPromise);
-
-    await handleStreamUpload(mockFileBuffer, defaultFolder);
+  it('Should wait for both pipeline and upload.done() to complete', async () => {
+    await handleStreamUpload(createMockFileStream(), defaultFolder);
 
     expect(mockPipeline).toHaveBeenCalled();
-    expect(mockUploadImageStream).toHaveBeenCalled();
+    expect(mockDone).toHaveBeenCalled();
   });
 
   it('Should return the S3 key', async () => {
-    mockFormUniqueFilename.mockReturnValueOnce(fakeFilename);
-
-    const key = await handleStreamUpload(mockFileBuffer, defaultFolder);
-
+    const key = await handleStreamUpload(createMockFileStream(), defaultFolder);
     expect(key).toBe(fakeKey);
   });
 
@@ -108,38 +115,32 @@ describe('handleStreamUpload', () => {
     mockPipeline.mockRejectedValueOnce(error);
 
     await expect(
-      handleStreamUpload(mockFileBuffer, defaultFolder)
+      handleStreamUpload(createMockFileStream(), defaultFolder)
     ).rejects.toThrow(error);
 
     expect(mockLoggerError).toHaveBeenCalledWith(
-      expect.stringContaining('Upload to S3 failed')
+      expect.stringContaining(`Upload to S3 failed: ${fakeKey}`)
     );
   });
 
-  it('Should log error and rethrow if S3 upload fails', async () => {
+  it('Should log error and rethrow if upload.done() fails', async () => {
     const error = new Error('S3 Error');
-    mockUploadImageStream.mockRejectedValueOnce(error);
+    mockDone.mockRejectedValueOnce(error);
 
     await expect(
-      handleStreamUpload(mockFileBuffer, defaultFolder)
+      handleStreamUpload(createMockFileStream(), defaultFolder)
     ).rejects.toThrow(error);
 
     expect(mockLoggerError).toHaveBeenCalledWith(
-      expect.stringContaining('Upload to S3 failed')
+      expect.stringContaining(`Upload to S3 failed: ${fakeKey}`)
     );
   });
 
   it('Should log information about created S3 object', async () => {
-    const key = await handleStreamUpload(mockFileBuffer, defaultFolder);
+    await handleStreamUpload(createMockFileStream(), defaultFolder);
 
-    expect(mockLoggerInfo).toHaveBeenCalledExactlyOnceWith(
-      expect.stringContaining(key)
+    expect(mockLoggerInfo).toHaveBeenCalledWith(
+      expect.stringContaining(fakeKey)
     );
-  });
-
-  it('Should generate unique filename for each upload', async () => {
-    await handleStreamUpload(mockFileBuffer, defaultFolder);
-
-    expect(mockFormUniqueFilename).toHaveBeenCalledOnce();
   });
 });

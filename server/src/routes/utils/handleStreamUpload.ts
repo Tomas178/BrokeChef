@@ -9,27 +9,24 @@ import { s3Client } from '@server/utils/AWSS3Client/client';
 import { AllowedMimeType } from '@server/enums/AllowedMimetype';
 
 export async function handleStreamUpload(
-  fileBuffer: Buffer,
+  fileStream: Readable,
   folderName: ImageFolderValues
 ) {
   const uniqueFilename = formUniqueFilename();
   const key = `${folderName}/${uniqueFilename}`;
 
+  const transformStream = createTransformStream();
+
+  const upload = uploadImageStream(
+    s3Client,
+    key,
+    transformStream,
+    AllowedMimeType.JPEG
+  );
+
   try {
-    const bufferStream = Readable.from(fileBuffer);
-
-    const transformStream = createTransformStream();
-
-    const uploadPromise = uploadImageStream(
-      s3Client,
-      key,
-      transformStream,
-      AllowedMimeType.JPEG
-    );
-
-    await pipeline(bufferStream, transformStream);
-
-    await uploadPromise;
+    await pipeline(fileStream, transformStream);
+    await upload.done();
 
     logger.info(`Object created in S3: ${key}`);
     return key;
