@@ -1,17 +1,18 @@
 /* eslint-disable unicorn/consistent-function-scoping */
+import { Readable } from 'node:stream';
 import createApp from '@server/app';
 import supertest from 'supertest';
 import { StatusCodes } from 'http-status-codes';
 import type { Database } from '@server/database';
 import { ImageFolder, type ImageFolderValues } from '@server/enums/ImageFolder';
 
-const [mockHandleFile, mockHandleStreamUpload] = vi.hoisted(() => [
+const [mockHandleFileStream, mockHandleStreamUpload] = vi.hoisted(() => [
   vi.fn(),
   vi.fn(),
 ]);
 
-vi.mock('@server/utils/handleFile', () => ({
-  handleFile: mockHandleFile,
+vi.mock('@server/utils/handleFileStream', () => ({
+  handleFileStream: mockHandleFileStream,
 }));
 
 vi.mock('@server/routes/utils/handleStreamUpload', () => ({
@@ -25,9 +26,8 @@ vi.mock('@server/middleware/authenticate', () => ({
   },
 }));
 
-const fakeBuffer = Buffer.from('fake image');
+const getFakeFileStream = () => Readable.from(['chunk1', 'chunk2']);
 const fakeKey = 'uploads/test-image.jpg';
-
 const database = {} as Database;
 
 describe('Server health check', () => {
@@ -47,7 +47,7 @@ describe('Image uploading', () => {
   const testUploadError = (endpoint: string) => async () => {
     const errorMessage = 'Supported types for image are .png, .jpg or .jpeg';
 
-    mockHandleFile.mockRejectedValueOnce({
+    mockHandleFileStream.mockRejectedValueOnce({
       message: errorMessage,
       status: StatusCodes.BAD_REQUEST,
     });
@@ -69,7 +69,8 @@ describe('Image uploading', () => {
       expectedFolder: ImageFolderValues
     ) =>
     async () => {
-      mockHandleFile.mockResolvedValueOnce({ buffer: fakeBuffer });
+      const stream = getFakeFileStream();
+      mockHandleFileStream.mockResolvedValueOnce({ stream });
 
       const app = createApp(database);
 
@@ -78,9 +79,9 @@ describe('Image uploading', () => {
         .attach('file', Buffer.from('test'), 'file.png')
         .expect(StatusCodes.OK);
 
-      expect(mockHandleFile).toHaveBeenCalledOnce();
+      expect(mockHandleFileStream).toHaveBeenCalledOnce();
       expect(mockHandleStreamUpload).toHaveBeenCalledWith(
-        fakeBuffer,
+        stream,
         expectedFolder
       );
       expect(body).toEqual({ [responseKey]: fakeKey });

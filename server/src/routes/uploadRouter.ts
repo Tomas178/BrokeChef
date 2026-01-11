@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { authenticate } from '@server/middleware/authenticate';
 import { jsonRoute } from '@server/utils/middleware';
-import { handleFile } from '@server/utils/handleFile';
 import { ImageFolder } from '@server/enums/ImageFolder';
+import { handleFileStream } from '@server/utils/handleFileStream';
 import { handleStreamUpload } from './utils/handleStreamUpload';
 
 const uploadRouter = Router();
@@ -11,8 +11,8 @@ uploadRouter.post(
   '/recipe',
   authenticate,
   jsonRoute(async req => {
-    const file = await handleFile(req);
-    const key = await handleStreamUpload(file.buffer, ImageFolder.RECIPES);
+    const { stream } = await handleFileStream(req);
+    const key = await handleStreamUpload(stream, ImageFolder.RECIPES);
     return { imageUrl: key };
   })
 );
@@ -21,8 +21,8 @@ uploadRouter.post(
   '/profile',
   authenticate,
   jsonRoute(async req => {
-    const file = await handleFile(req);
-    const key = await handleStreamUpload(file.buffer, ImageFolder.PROFILES);
+    const { stream } = await handleFileStream(req);
+    const key = await handleStreamUpload(stream, ImageFolder.PROFILES);
 
     return { image: key };
   })
@@ -32,8 +32,8 @@ uploadRouter.post(
   '/collection',
   authenticate,
   jsonRoute(async req => {
-    const file = await handleFile(req);
-    const key = await handleStreamUpload(file.buffer, ImageFolder.COLLECTIONS);
+    const { stream } = await handleFileStream(req);
+    const key = await handleStreamUpload(stream, ImageFolder.COLLECTIONS);
 
     return { imageUrl: key };
   })
