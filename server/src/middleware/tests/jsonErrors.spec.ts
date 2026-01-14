@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/prevent-abbreviations */
 import jsonErrors from '@server/middleware/jsonErrors';
 import type { $ZodStringDef } from 'better-auth';
 import { StatusCodes } from 'http-status-codes';

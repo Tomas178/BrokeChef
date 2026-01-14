@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/prevent-abbreviations */
 import { MulterError } from 'multer';
 import { handleFile } from '../handleFile';
 import ImageTooLarge from '../errors/images/ImageTooLarge';

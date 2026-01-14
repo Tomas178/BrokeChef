@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/prevent-abbreviations */
 import type { NextFunction, Request, Response } from 'express';
 import Unauthenticated from '@server/utils/errors/general/Unauthenticated';
 import { authenticate } from '../authenticate';
