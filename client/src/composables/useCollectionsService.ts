@@ -9,7 +9,7 @@ import { apiOrigin } from '@/config';
 import axios from 'axios';
 import useErrorMessage from './useErrorMessage';
 import { DEFAULT_SERVER_ERROR } from '@/consts';
-import { MAX_FILE_SIZE } from '@server/shared/consts';
+import { assertValidFile } from '@/utils/assertValidFile';
 
 export function useCollectionsService() {
   const { showLoading, updateToast } = useToast();
@@ -29,11 +29,7 @@ export function useCollectionsService() {
       return undefined;
     }
 
-    if (collectionImageFile.value.size > MAX_FILE_SIZE) {
-      throw new Error(
-        `Image too large please upload image <= ${(MAX_FILE_SIZE / 1024 / 1024).toFixed(0)}MB`
-      );
-    }
+    assertValidFile(collectionImageFile.value);
 
     const formData = new FormData();
     formData.append('file', collectionImageFile.value);

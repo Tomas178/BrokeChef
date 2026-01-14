@@ -11,7 +11,7 @@ import type {
 } from '@server/shared/types';
 import { apiOrigin } from '@/config';
 import axios from 'axios';
-import { MAX_FILE_SIZE } from '@server/shared/consts';
+import { assertValidFile } from '@/utils/assertValidFile';
 
 export function useRecipesService(recipeId?: number) {
   const { showLoading, updateToast } = useToast();
@@ -55,11 +55,7 @@ export function useRecipesService(recipeId?: number) {
       return undefined;
     }
 
-    if (recipeImageFile.value.size > MAX_FILE_SIZE) {
-      throw new Error(
-        `Image too large please upload image <= ${(MAX_FILE_SIZE / 1024 / 1024).toFixed(0)}MB`
-      );
-    }
+    assertValidFile(recipeImageFile.value);
 
     const formData = new FormData();
     formData.append('file', recipeImageFile.value);
