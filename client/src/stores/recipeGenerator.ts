@@ -112,11 +112,16 @@ export const useRecipeGeneratorStore = defineStore('recipeGenerator', () => {
     }
   }
 
+  function clearRecipes() {
+    recipes.value = [];
+  }
+
   return {
     isGenerating,
     recipes,
     errorMessage,
     generateRecipes,
     reset,
+    clearRecipes,
   };
 });

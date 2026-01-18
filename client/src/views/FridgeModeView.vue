@@ -44,6 +44,7 @@ async function fillRecipeForm(recipe: GeneratedRecipe) {
 async function handleCreateRecipe(recipe: GeneratedRecipe) {
   await fillRecipeForm(recipe);
   await createRecipe();
+  recipeGeneratorStore.clearRecipes();
 }
 
 function handleGenerateRecipes() {
