@@ -46,7 +46,7 @@ export function withError<
     handleError(errorMessage, () => fn(...args), doRethrow)) as T;
 }
 
-function getErrorMessage(error: unknown) {
+export function getErrorMessage(error: unknown) {
   if (!(error instanceof Error)) {
     return DEFAULT_SERVER_ERROR;
   }

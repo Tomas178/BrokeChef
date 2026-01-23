@@ -18,13 +18,14 @@ https://brokechef.sk05mvs33xkna.eu-central-1.cs.amazonlightsail.com/
 - Delete recipe
 - Save/unsave recipe
 - Rate/remove rating
-- Mark/unmark recipe as cooked\tried
+- Mark/unmark recipe as cooked/tried
 - Create/remove collections
 - Add/remove recipes to/from collections
-- FRIDGE MODE: Add your fridge image and get 3 fully generated recipes. Then select 1 of them and it will be created.
+- FRIDGE MODE: Add your fridge image and get 3 fully generated recipes. Then select 1 of them and it will be created. (MAXIMUM 3 REQUESTS PER 60 MINUTES FOR USER)
 - Follow/unfollow another user
 - Look through following/followers list of a user
 - Search recipes in homepage
+- Search recipes by search bar
 - Sorting (newest/oldest, highest/lowest rated)
 
 ## Installation guide

@@ -4,12 +4,25 @@ import { StatusCodes } from 'http-status-codes';
 import { sseManager } from '@server/utils/SSE';
 import { addRecipeJob } from '@server/queues/recipe';
 import config from '@server/config';
+import {
+  checkRateLimit,
+  type RateLimitConfig,
+} from '@server/utils/rateLimiter';
 import { authenticate } from '../middleware/authenticate';
 import { jsonRoute } from '../utils/middleware';
 import { handleFile } from '../utils/handleFile';
 import logger from '../logger';
 
 const generateRecipesRouter = Router();
+
+const FRIDGE_MODE_RATE_LIMIT_PER_USER = 3;
+const FRIDGE_MODE_WINDOW_SECONDS = 3600;
+
+const rateLimitConfig: RateLimitConfig = {
+  endpoint: 'fridge-mode',
+  rateLimit: FRIDGE_MODE_RATE_LIMIT_PER_USER,
+  windowSeconds: FRIDGE_MODE_WINDOW_SECONDS,
+};
 
 const checkRequestOrigin = (origin: string) =>
   config.cors.origin.includes(origin);
@@ -51,6 +64,8 @@ generateRecipesRouter.post(
   authenticate,
   jsonRoute(async req => {
     const userId = req.user!.id;
+
+    await checkRateLimit(userId, rateLimitConfig);
 
     const fileBuffer = await handleFile(req);
     const resizedFileBuffer = await resizeImage(fileBuffer);

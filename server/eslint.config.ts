@@ -3,7 +3,6 @@
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import prettierConfig from 'eslint-config-prettier';
-import prettierPluginRecommended from 'eslint-plugin-prettier/recommended';
 import eslintPluginUnicorn from 'eslint-plugin-unicorn';
 import importPlugin from 'eslint-plugin-import';
 
@@ -115,6 +114,5 @@ export default tseslint.config(
     },
   },
 
-  prettierConfig,
-  prettierPluginRecommended
+  prettierConfig
 );

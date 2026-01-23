@@ -7,6 +7,7 @@ import { RecipeGenerationStatus } from '@server/shared/enums';
 import axios from 'axios';
 import useToast from '@/composables/useToast';
 import { navigateToFridgeMode } from '@/router/utils';
+import { getErrorMessage } from '@/composables/useErrorMessage/error';
 
 export const useRecipeGeneratorStore = defineStore('recipeGenerator', () => {
   const isGenerating = ref(false);
@@ -42,11 +43,6 @@ export const useRecipeGeneratorStore = defineStore('recipeGenerator', () => {
 
     reset();
     isGenerating.value = true;
-
-    showToast(
-      'Recipes are being generated. Meanwhile you can search for other recipes',
-      'success'
-    );
 
     const sseUrl = `${apiOrigin}/api/recipe/events/${userId}`;
     eventSource.value = new EventSource(sseUrl, { withCredentials: true });
@@ -105,8 +101,13 @@ export const useRecipeGeneratorStore = defineStore('recipeGenerator', () => {
       const uploadEndpoint = `${apiOrigin}/api/recipe/generate`;
 
       await axios.post(uploadEndpoint, formData, { withCredentials: true });
-    } catch {
-      errorMessage.value = 'Failed to upload image.';
+
+      showToast(
+        'Recipes are being generated. Meanwhile you can search for other recipes',
+        'success'
+      );
+    } catch (error) {
+      errorMessage.value = getErrorMessage(error);
       isGenerating.value = false;
       closeEventSource();
     }
