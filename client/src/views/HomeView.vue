@@ -3,12 +3,16 @@ import RecipeCard from '@/components/RecipeCard.vue';
 import { FwbDropdown, FwbPagination, FwbInput } from 'flowbite-vue';
 import { trpc } from '@/trpc';
 import type { PaginationWithSort } from '@server/shared/pagination';
-import type { RecipesPublic } from '@server/shared/types';
+import type {
+  PaginationWithUserInput,
+  RecipesPublic,
+} from '@server/shared/types';
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { SortingTypes, type SortingTypesValues } from '@server/shared/enums';
 import Spinner from '@/components/Spinner.vue';
 import { RECIPE_CARD_VARIANT } from '@/types/recipeCard';
+import useErrorMessage from '@/composables/useErrorMessage';
 
 const route = useRoute();
 const router = useRouter();
@@ -45,6 +49,12 @@ const selectedSortLabel = computed(
   () => sortOptions.find((o) => o.value === pagination.sort)?.label ?? 'Newest'
 );
 
+const [searchRecipes, searchRecipesErrorMessage] = useErrorMessage<
+  [PaginationWithUserInput],
+  ReturnType<typeof trpc.recipes.search.query>,
+  typeof trpc.recipes.search.query
+>(async (input) => await trpc.recipes.search.query(input), true);
+
 const fetchPage = async (page: number) => {
   isLoading.value = true;
 
@@ -57,7 +67,7 @@ const fetchPage = async (page: number) => {
     let fetchedRecipes: RecipesPublic[] = [];
 
     if (searchQuery.value.trim()) {
-      fetchedRecipes = await trpc.recipes.search.query({
+      fetchedRecipes = await searchRecipes({
         userInput: searchQuery.value,
         offset,
         limit: RECIPES_PER_PAGE,
@@ -79,8 +89,10 @@ const handleSearch = async () => {
   await fetchPage(1);
 };
 
-const clearSearch = () => {
+const clearSearch = async () => {
   searchQuery.value = '';
+  searchRecipesErrorMessage.value = '';
+  await fetchPage(1);
 };
 
 const updateQueryParams = async (
@@ -188,7 +200,13 @@ onMounted(async () => {
           </template>
         </FwbInput>
         <p
-          v-if="searchQuery"
+          v-if="searchRecipesErrorMessage"
+          class="mt-2 text-center text-sm text-red-500"
+        >
+          {{ searchRecipesErrorMessage }}
+        </p>
+        <p
+          v-else-if="searchQuery"
           class="dark:text-primary-green mt-2 text-center text-sm text-gray-500"
         >
           Using Semantic Search. Sorting by relevance.

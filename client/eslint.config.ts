@@ -5,7 +5,6 @@ import {
   defineConfigWithVueTs,
   vueTsConfigs,
 } from '@vue/eslint-config-typescript';
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import playwright from 'eslint-plugin-playwright';
 import vitest from '@vitest/eslint-plugin';
 
@@ -89,7 +88,5 @@ export default defineConfigWithVueTs(
   {
     ...vitest.configs.recommended,
     files: ['src/**/__tests__/*'],
-  },
-
-  eslintPluginPrettierRecommended
+  }
 );
