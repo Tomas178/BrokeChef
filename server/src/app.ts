@@ -18,6 +18,8 @@ import generateRecipesRouter from './routes/generateRecipesRouter';
 export default function createApp(database: Database) {
   const app = express();
 
+  app.set('trust proxy', 'loopback');
+
   app.use(
     cors({
       origin: config.cors.origin,
