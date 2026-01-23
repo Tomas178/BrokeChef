@@ -84,7 +84,7 @@ onMounted(() => {
         <button
           type="button"
           @click="isDarkMode = !isDarkMode"
-          class="hover:text-secondary-green ml-4 flex cursor-pointer items-center justify-center rounded-lg px-3 py-2 text-gray-500 dark:bg-inherit dark:text-gray-400 dark:hover:text-white"
+          class="ml-2 flex cursor-pointer items-center justify-center text-gray-500 dark:bg-inherit dark:text-gray-400"
         >
           <span
             v-if="isDarkMode"
@@ -107,11 +107,11 @@ onMounted(() => {
 @reference "../assets/index.css";
 
 :deep(ul) {
-  @apply items-center;
+  @apply items-center md:space-x-6;
 }
 
 :deep(ul > a) {
-  @apply bg-background-form-light flex items-center justify-center px-3 py-2 dark:bg-inherit;
+  @apply bg-background-form-light flex items-center justify-center dark:bg-inherit;
 }
 
 :deep(ul .router-link-exact-active) {
