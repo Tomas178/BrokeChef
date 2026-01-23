@@ -11,7 +11,7 @@ import { TRPCError } from '@trpc/server';
 
 export const NO_IP_ADDRESS = 'unknown-ip';
 
-const EMBEDDED_SEARCH_RATE_LIMIT_PER_USER = 3;
+const EMBEDDED_SEARCH_RATE_LIMIT_PER_USER = 10;
 const EMBEDDED_SEARCH_WINDOW_SECONDS = 3600;
 
 const rateLimitConfig: RateLimitConfig = {

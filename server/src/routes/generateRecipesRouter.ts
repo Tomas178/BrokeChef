@@ -15,7 +15,7 @@ import logger from '../logger';
 
 const generateRecipesRouter = Router();
 
-const FRIDGE_MODE_RATE_LIMIT_PER_USER = 3;
+const FRIDGE_MODE_RATE_LIMIT_PER_USER = 5;
 const FRIDGE_MODE_WINDOW_SECONDS = 3600;
 
 const rateLimitConfig: RateLimitConfig = {
