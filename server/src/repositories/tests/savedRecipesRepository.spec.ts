@@ -6,7 +6,9 @@ import {
   fakeSavedRecipe,
   fakeUser,
 } from '@server/entities/tests/fakes';
+import pgvector from 'pgvector/kysely';
 import { savedRecipesRepository } from '../savedRecipesRepository';
+import { getVector } from './utils';
 
 const database = await wrapInRollbacks(createTestDatabase());
 const repository = savedRecipesRepository(database);
@@ -94,5 +96,59 @@ describe('isSaved', () => {
     });
 
     expect(isSaved).toBeFalsy();
+  });
+
+  describe('getAverageUserEmbedding', () => {
+    it('Should return undefined if no result was returned', async () => {
+      const averageEmbedding = await repository.getAverageUserEmbedding(
+        user.id
+      );
+      expect(averageEmbedding).toBeUndefined();
+    });
+
+    it('Should return the correct average embedding for a single saved recipe', async () => {
+      const vector = getVector(0.1);
+      const [recipeWithEmbedding] = await insertAll(
+        database,
+        'recipes',
+        fakeRecipeDB({ userId: user.id, embedding: pgvector.toSql(vector) })
+      );
+
+      await insertAll(
+        database,
+        'savedRecipes',
+        fakeSavedRecipe({ userId: user.id, recipeId: recipeWithEmbedding.id })
+      );
+
+      const avgEmbedding = await repository.getAverageUserEmbedding(user.id);
+      expect(avgEmbedding).toEqual(vector);
+    });
+
+    it('Should return the calculated average embedding for multiple saved recipes', async () => {
+      const vectorA = getVector(0.1);
+      const vectorB = getVector(0.2);
+
+      const [recipe1, recipe2] = await insertAll(database, 'recipes', [
+        fakeRecipeDB({
+          userId: user.id,
+          embedding: pgvector.toSql(vectorA),
+        }),
+        fakeRecipeDB({
+          userId: user.id,
+          embedding: pgvector.toSql(vectorB),
+        }),
+      ]);
+
+      await insertAll(database, 'savedRecipes', [
+        fakeSavedRecipe({ userId: user.id, recipeId: recipe1.id }),
+        fakeSavedRecipe({ userId: user.id, recipeId: recipe2.id }),
+      ]);
+
+      const avgEmbedding = await repository.getAverageUserEmbedding(user.id);
+
+      expect(avgEmbedding![0]).toBeCloseTo(0.15);
+      expect(avgEmbedding![1]).toBeCloseTo(0.15);
+      expect(avgEmbedding![2]).toBeCloseTo(0.15);
+    });
   });
 });

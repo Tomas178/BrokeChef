@@ -22,9 +22,9 @@ import {
 import { initialPage, initialPageWithSort } from '@server/entities/shared';
 import { SortingTypes } from '@server/enums/SortingTypes';
 import { NoResultError } from 'kysely';
-import { OPENAI_EMBEDDING_DIMENSIONS } from '@server/database/migrations/20260102T092811Z-addVectorEmbedding';
 import pgvector from 'pgvector/kysely';
 import { recipesRepository } from '../recipesRepository';
+import { getVector } from './utils';
 
 const database = await wrapInRollbacks(createTestDatabase());
 const repository = recipesRepository(database);
@@ -47,9 +47,6 @@ const defaultRecipes = await insertAll(database, 'recipes', [
 ]);
 
 const [recipeOne, recipeTwo] = defaultRecipes;
-
-const getVector = (fillValue: number) =>
-  Array.from<number>({ length: OPENAI_EMBEDDING_DIMENSIONS }).fill(fillValue);
 
 describe('create', () => {
   it('Should create a new recipe', async () => {

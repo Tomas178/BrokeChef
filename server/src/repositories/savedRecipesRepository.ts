@@ -3,7 +3,7 @@ import {
   savedRecipesKeysPublic,
   type SavedRecipesPublic,
 } from '@server/entities/savedRecipes';
-import type { Insertable } from 'kysely';
+import { sql, type Insertable } from 'kysely';
 
 const TABLE = 'savedRecipes';
 
@@ -13,6 +13,7 @@ export interface SavedRecipesRepository {
   create: (link: SavedRecipesLink) => Promise<SavedRecipesPublic>;
   remove: (link: SavedRecipesLink) => Promise<SavedRecipesPublic>;
   isSaved: (link: SavedRecipesLink) => Promise<boolean>;
+  getAverageUserEmbedding: (userId: string) => Promise<number[] | undefined>;
 }
 
 export function savedRecipesRepository(
@@ -45,6 +46,21 @@ export function savedRecipesRepository(
         .executeTakeFirst();
 
       return !!exists;
+    },
+
+    async getAverageUserEmbedding(userId) {
+      const result = await database
+        .selectFrom(TABLE)
+        .innerJoin('recipes', 'recipes.id', 'savedRecipes.recipeId')
+        .select(sql<number[]>`AVG(recipes.embedding)`.as('avgEmbedding'))
+        .where('savedRecipes.userId', '=', userId)
+        .executeTakeFirst();
+
+      if (!result || !result.avgEmbedding) {
+        return;
+      }
+
+      return result.avgEmbedding;
     },
   };
 }
