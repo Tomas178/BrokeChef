@@ -28,6 +28,8 @@ import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import { getEmbedding } from '@server/utils/OpenAI/getEmbedding';
 import { openai } from '@server/utils/OpenAI/client';
 import { formatRecipeForEmbedding } from '@server/utils/OpenAI/formatRecipeForEmbedding';
+import { savedRecipesRepository as buildSavedRecipesRepository } from '@server/repositories/savedRecipesRepository';
+import { SortingTypes } from '@server/enums/SortingTypes';
 import { joinStepsToSingleString } from './utils/joinStepsToSingleString';
 import { insertIngredients, insertTools } from './utils/inserts';
 import { validateRecipeExists } from './utils/recipeValidations';
@@ -51,6 +53,10 @@ export interface RecipesService {
   search: (input: string, pagination: Pagination) => Promise<RecipesPublic[]>;
   findById: (recipeId: number) => Promise<RecipesPublicAllInfo | undefined>;
   findAll: (pagination: PaginationWithSort) => Promise<RecipesPublic[]>;
+  findAllRecommended: (
+    userId: string,
+    pagination: Pagination
+  ) => Promise<RecipesPublic[]>;
   remove: (recipeId: number) => Promise<RecipesPublic>;
 }
 
@@ -78,6 +84,7 @@ async function handleRecipeImageGeneration(
 
 export function recipesService(database: Database): RecipesService {
   const recipesRepository = buildRecipesRepository(database);
+  const savedRecipesRepository = buildSavedRecipesRepository(database);
 
   return {
     async createRecipe(recipe, userId) {
@@ -200,6 +207,33 @@ export function recipesService(database: Database): RecipesService {
 
     async findAll(pagination) {
       const recipes = await recipesRepository.findAll(pagination);
+
+      if (recipes.length > 0) {
+        const imageUrls = recipes.map(recipe => recipe.imageUrl);
+        const signedUrls = await signImages(imageUrls);
+
+        for (const [index, recipe] of recipes.entries()) {
+          recipe.imageUrl = signedUrls[index];
+
+          if (!recipe.rating) {
+            recipe.rating = undefined;
+          }
+        }
+      }
+
+      return recipes;
+    },
+
+    async findAllRecommended(userId, pagination) {
+      const userVector =
+        await savedRecipesRepository.getAverageUserEmbedding(userId);
+
+      const recipes = await (userVector
+        ? recipesRepository.search(userVector, pagination)
+        : recipesRepository.findAll({
+            ...pagination,
+            sort: SortingTypes.NEWEST,
+          }));
 
       if (recipes.length > 0) {
         const imageUrls = recipes.map(recipe => recipe.imageUrl);

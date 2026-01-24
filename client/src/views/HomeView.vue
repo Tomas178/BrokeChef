@@ -13,9 +13,13 @@ import { SortingTypes, type SortingTypesValues } from '@server/shared/enums';
 import Spinner from '@/components/Spinner.vue';
 import { RECIPE_CARD_VARIANT } from '@/types/recipeCard';
 import useErrorMessage from '@/composables/useErrorMessage';
+import { useUserStore } from '@/stores/user';
+import { storeToRefs } from 'pinia';
+import { watchEffect } from 'vue';
 
 const route = useRoute();
 const router = useRouter();
+const { isLoggedIn } = storeToRefs(useUserStore());
 
 const RECIPES_PER_PAGE = 5;
 
@@ -38,16 +42,33 @@ const pagination = reactive<PaginationWithSort>({
   sort: SortingTypes.NEWEST,
 });
 
-const sortOptions = [
+const baseSortOptions = [
   { label: 'Newest', value: SortingTypes.NEWEST },
   { label: 'Highest Rated', value: SortingTypes.HIGHEST_RATING },
   { label: 'Lowest Rated', value: SortingTypes.LOWEST_RATING },
   { label: 'Oldest', value: SortingTypes.OLDEST },
 ] as const;
 
-const selectedSortLabel = computed(
-  () => sortOptions.find((o) => o.value === pagination.sort)?.label ?? 'Newest'
+const authSortOptions = [
+  ...baseSortOptions,
+  { label: 'Recommended', value: SortingTypes.RECOMMENDED },
+] as const;
+
+const sortOptions = computed(() =>
+  isLoggedIn.value ? authSortOptions : baseSortOptions
 );
+
+const selectedSortLabel = computed(
+  () =>
+    sortOptions.value.find((o) => o.value === pagination.sort)?.label ??
+    'Newest'
+);
+
+watchEffect(() => {
+  if (!isLoggedIn.value && pagination.sort === SortingTypes.RECOMMENDED) {
+    onSortChange(SortingTypes.NEWEST);
+  }
+});
 
 const [searchRecipes, searchRecipesErrorMessage] = useErrorMessage<
   [PaginationWithUserInput],
@@ -72,6 +93,18 @@ const fetchPage = async (page: number) => {
         offset,
         limit: RECIPES_PER_PAGE,
       });
+    } else if (pagination.sort === SortingTypes.RECOMMENDED) {
+      if (isLoggedIn.value) {
+        fetchedRecipes = await trpc.recipes.findAllRecommended.query({
+          offset,
+          limit: RECIPES_PER_PAGE,
+        });
+      } else {
+        fetchedRecipes = await trpc.recipes.findAll.query({
+          ...pagination,
+          sort: SortingTypes.NEWEST,
+        });
+      }
     } else {
       pagination.offset = offset;
       fetchedRecipes = await trpc.recipes.findAll.query(pagination);
@@ -129,7 +162,8 @@ const getPageFromRoute = (): number => {
 const getSortFromRoute = (): SortingTypesValues => {
   const rawSort = route.query.sort;
   const sortStr = Array.isArray(rawSort) ? rawSort[0] : rawSort;
-  return sortOptions.some((o) => o.value === sortStr)
+
+  return authSortOptions.some((o) => o.value === sortStr)
     ? (sortStr as SortingTypesValues)
     : SortingTypes.NEWEST;
 };

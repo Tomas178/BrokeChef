@@ -16,6 +16,8 @@ import { PostgresError } from 'pg-error-enum';
 import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import { S3ServiceException } from '@aws-sdk/client-s3';
 import { NoResultError } from 'kysely';
+import type { SavedRecipesRepository } from '@server/repositories/savedRecipesRepository';
+import { getVector } from '@server/repositories/tests/utils';
 import { recipesService } from '../recipesService';
 
 const fakeImageKey = 'fakeKey';
@@ -129,6 +131,15 @@ vi.mock('@server/repositories/toolsRepository', () => ({
 
 vi.mock('@server/repositories/recipesToolsRepository', () => ({
   recipesToolsRepository: () => mockRecipesToolsRepository,
+}));
+
+const mockSavedRecipesRepoGetAverageUserEmbedding = vi.fn();
+const mockSavedRecipesRepository: Partial<SavedRecipesRepository> = {
+  getAverageUserEmbedding: mockSavedRecipesRepoGetAverageUserEmbedding,
+};
+
+vi.mock('@server/repositories/savedRecipesRepository', () => ({
+  savedRecipesRepository: () => mockSavedRecipesRepository,
 }));
 
 const database = {
@@ -408,6 +419,67 @@ describe('findAll', () => {
 
     expect(recipes[0]).toHaveProperty('rating', fakeRecipes[0].rating);
     expect(recipes[1]).toHaveProperty('rating', fakeRecipes[1].rating);
+  });
+});
+
+describe('findAllRecommended', () => {
+  describe('Search case', () => {
+    beforeEach(() =>
+      mockSavedRecipesRepoGetAverageUserEmbedding.mockResolvedValueOnce(
+        getVector(0.1)
+      )
+    );
+
+    it('Should call search method if user has saved recipes', async () => {
+      mockRecipesRepoSearch.mockResolvedValueOnce([]);
+
+      await expect(
+        service.findAllRecommended(author.id, initialPage)
+      ).resolves.toEqual([]);
+
+      expect(mockRecipesRepoSearch).toHaveBeenCalledOnce();
+      expect(mockRecipesRepoFindAll).not.toHaveBeenCalledOnce();
+    });
+
+    it('Should return recipes if user has saved recipes', async () => {
+      const fakeRecipes = [fakeRecipeWithRating(), fakeRecipeWithRating()];
+      mockRecipesRepoSearch.mockResolvedValueOnce(fakeRecipes);
+
+      const recipes = await service.findAllRecommended(author.id, initialPage);
+      expect(recipes).toBe(fakeRecipes);
+    });
+  });
+
+  describe('findAll case', () => {
+    it('Should call findAll method if user has no saved recipes', async () => {
+      mockRecipesRepoFindAll.mockResolvedValueOnce([]);
+
+      await expect(
+        service.findAllRecommended(author.id, initialPage)
+      ).resolves.toEqual([]);
+
+      expect(mockRecipesRepoFindAll).toHaveBeenCalledOnce();
+      expect(mockRecipesRepoSearch).not.toHaveBeenCalledOnce();
+    });
+
+    it('Should return recipes if user has no saved recipes', async () => {
+      const fakeRecipes = [fakeRecipeWithRating(), fakeRecipeWithRating()];
+      mockRecipesRepoFindAll.mockResolvedValueOnce(fakeRecipes);
+
+      const recipes = await service.findAllRecommended(author.id, initialPage);
+      expect(recipes).toBe(fakeRecipes);
+    });
+  });
+
+  it('Should return recipes with signed images', async () => {
+    const fakeRecipes = [fakeRecipe(), fakeRecipe()];
+    mockRecipesRepoFindAll.mockResolvedValueOnce(fakeRecipes);
+
+    const recipes = await service.findAllRecommended(author.id, initialPage);
+    expect(recipes).toHaveLength(fakeRecipes.length);
+    expect(recipes).toEqual(fakeRecipes);
+
+    expect(mockSignImages).toHaveBeenCalledOnce();
   });
 });
 

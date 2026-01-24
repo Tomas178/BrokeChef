@@ -15,9 +15,12 @@ export const expiresAtSchema = z.date().default(() => new Date());
 
 const POSTGRES_INT_MAX = 2_141_483_647;
 
+const DEFAULT_OFFSET = 0;
+const DEFAULT_LIMIT = 5;
+
 export const paginationSchema = z.object({
-  offset: z.number().int().min(0).max(POSTGRES_INT_MAX).default(0),
-  limit: z.number().int().min(1).max(100).default(5),
+  offset: z.number().int().min(0).max(POSTGRES_INT_MAX).default(DEFAULT_OFFSET),
+  limit: z.number().int().min(1).max(100).default(DEFAULT_LIMIT),
 });
 
 export const paginationWithSortSchema = paginationSchema.extend({
@@ -29,8 +32,8 @@ export const paginationWithUserInput = paginationSchema.extend({
 });
 
 export const initialPage = {
-  offset: 0,
-  limit: 5,
+  offset: DEFAULT_OFFSET,
+  limit: DEFAULT_LIMIT,
 };
 
 export const initialPageWithSort = {
