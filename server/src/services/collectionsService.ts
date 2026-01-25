@@ -27,6 +27,7 @@ import { pick } from 'lodash-es';
 import { rollbackImageUpload } from './utils/rollbackImageUpload';
 import { validateUserExists } from './utils/userValidations';
 import { validateCollectionExists } from './utils/collectionValidations';
+import { assignSignedUrls } from './utils/assignSignedUrls';
 
 export interface CollectionsService {
   create: (
@@ -121,20 +122,12 @@ export function collectionsService(database: Database): CollectionsService {
       await validateUserExists(usersRepository, userId);
 
       const collections = await collectionsRepository.findByUserId(userId);
-      const mappedCollections = collections.map(collection =>
+
+      const signedCollectionsImageUrls = await assignSignedUrls(collections);
+
+      const mappedCollections = signedCollectionsImageUrls.map(collection =>
         pick(collection, collectionsKeysPublicBasic)
       );
-
-      const collectionsImageUrls = mappedCollections.map(
-        collection => collection.imageUrl
-      );
-
-      const signedCollectionsImageUrls = await signImages(collectionsImageUrls);
-
-      for (const [index, collection] of mappedCollections.entries()) {
-        collection.imageUrl = signedCollectionsImageUrls[index];
-      }
-
       return mappedCollections;
     },
 
@@ -144,17 +137,9 @@ export function collectionsService(database: Database): CollectionsService {
       const recipesInCollection =
         await recipesRepository.findByCollectionId(collectionId);
 
-      const recipesImageUrls = recipesInCollection.map(
-        recipe => recipe.imageUrl
-      );
+      const assignedCollections = await assignSignedUrls(recipesInCollection);
 
-      const signedRecipesImageUrls = await signImages(recipesImageUrls);
-
-      for (const [index, recipe] of recipesInCollection.entries()) {
-        recipe.imageUrl = signedRecipesImageUrls[index];
-      }
-
-      return recipesInCollection;
+      return assignedCollections;
     },
 
     async totalCollectionsByUser(userId) {

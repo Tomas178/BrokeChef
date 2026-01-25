@@ -6,23 +6,48 @@ vi.mock('@server/utils/AWSS3Client/signGetUrl', () => ({
   signGetUrl: vi.fn(() => fakeImageUrl),
 }));
 
+const imageUrl = 'fake-url';
+
 describe('signImages', () => {
-  it('Should sign all of the image urls inside the array of strings', async () => {
-    const imageUrls = ['fake-url-1', 'fake-url-2'];
+  describe('Array case', () => {
+    it('Should sign all of the image urls', async () => {
+      const imageUrls = [imageUrl, imageUrl];
 
-    const signedImageUrls = await signImages(imageUrls);
+      const signedImageUrls = await signImages(imageUrls);
 
-    const [signedImageOne, signedImageTwo] = signedImageUrls;
+      const [signedImageOne, signedImageTwo] = signedImageUrls;
 
-    expect(signedImageOne).toBe(fakeImageUrl);
-    expect(signedImageTwo).toBe(fakeImageUrl);
+      expect(signedImageOne).toBe(fakeImageUrl);
+      expect(signedImageTwo).toBe(fakeImageUrl);
+    });
+
+    it('Should not sign an empty url', async () => {
+      const imageUrls = [imageUrl, imageUrl, ''];
+
+      const signedImageUrls = await signImages(imageUrls);
+
+      const [signedImageOne, signedImageTwo, signedImageThree] =
+        signedImageUrls;
+
+      expect(signedImageOne).toBe(fakeImageUrl);
+      expect(signedImageTwo).toBe(fakeImageUrl);
+      expect(signedImageThree).toBe('');
+    });
   });
 
-  it('Should sign the image url of when given single string', async () => {
-    const imageUrl = 'fake-url';
+  describe('Single string case', () => {
+    it('Should sign the image url', async () => {
+      const signedImageUrl = await signImages(imageUrl);
 
-    const signedImageUrl = await signImages(imageUrl);
+      expect(signedImageUrl).toBe(fakeImageUrl);
+    });
 
-    expect(signedImageUrl).toBe(fakeImageUrl);
+    it('Should not sign an empty url', async () => {
+      const emptyString = '';
+
+      const signedImageUrl = await signImages(emptyString);
+
+      expect(signedImageUrl).toBe(emptyString);
+    });
   });
 });

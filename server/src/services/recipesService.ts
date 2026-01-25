@@ -34,6 +34,7 @@ import { joinStepsToSingleString } from './utils/joinStepsToSingleString';
 import { insertIngredients, insertTools } from './utils/inserts';
 import { validateRecipeExists } from './utils/recipeValidations';
 import { rollbackImageUpload } from './utils/rollbackImageUpload';
+import { assignSignedUrls } from './utils/assignSignedUrls';
 
 export type CreateRecipeData = Omit<
   CreateRecipeInput,
@@ -181,16 +182,11 @@ export function recipesService(database: Database): RecipesService {
 
       const recipes = await recipesRepository.search(embedding, pagination);
 
-      if (recipes.length > 0) {
-        const imageUrls = recipes.map(recipe => recipe.imageUrl);
-        const signedUrls = await signImages(imageUrls);
+      const assignedRecipes = await assignSignedUrls(recipes);
 
-        for (const [index, recipe] of recipes.entries()) {
-          recipe.imageUrl = signedUrls[index];
-
-          if (!recipe.rating) {
-            recipe.rating = undefined;
-          }
+      for (const recipe of assignedRecipes) {
+        if (!recipe.rating) {
+          recipe.rating = undefined;
         }
       }
 
@@ -208,16 +204,11 @@ export function recipesService(database: Database): RecipesService {
     async findAll(pagination) {
       const recipes = await recipesRepository.findAll(pagination);
 
-      if (recipes.length > 0) {
-        const imageUrls = recipes.map(recipe => recipe.imageUrl);
-        const signedUrls = await signImages(imageUrls);
+      const assignedRecipes = await assignSignedUrls(recipes);
 
-        for (const [index, recipe] of recipes.entries()) {
-          recipe.imageUrl = signedUrls[index];
-
-          if (!recipe.rating) {
-            recipe.rating = undefined;
-          }
+      for (const recipe of assignedRecipes) {
+        if (!recipe.rating) {
+          recipe.rating = undefined;
         }
       }
 
@@ -235,16 +226,11 @@ export function recipesService(database: Database): RecipesService {
             sort: SortingTypes.NEWEST,
           }));
 
-      if (recipes.length > 0) {
-        const imageUrls = recipes.map(recipe => recipe.imageUrl);
-        const signedUrls = await signImages(imageUrls);
+      const assignedRecipes = await assignSignedUrls(recipes);
 
-        for (const [index, recipe] of recipes.entries()) {
-          recipe.imageUrl = signedUrls[index];
-
-          if (!recipe.rating) {
-            recipe.rating = undefined;
-          }
+      for (const recipe of assignedRecipes) {
+        if (!recipe.rating) {
+          recipe.rating = undefined;
         }
       }
 

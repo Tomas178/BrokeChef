@@ -10,6 +10,7 @@ import { signImages } from '@server/utils/signImages';
 import config from '@server/config';
 import logger from '@server/logger';
 import { isOAuthProviderImage } from './utils/isOAuthProviderImage';
+import { assignSignedUrls } from './utils/assignSignedUrls';
 
 export interface UsersService {
   getRecipes: (
@@ -42,23 +43,12 @@ export function usersService(database: Database): UsersService {
         recipesRepository.findSavedByUser(id, pagination),
       ]);
 
-      const createdUrls = created.map(recipe => recipe.imageUrl);
-      const savedUrls = saved.map(recipe => recipe.imageUrl);
-
-      const [signedCreatedUrls, signedSavedUrls] = await Promise.all([
-        signImages(createdUrls),
-        signImages(savedUrls),
+      const [assignedCreatedRecipes, assignedSavedRecipes] = await Promise.all([
+        assignSignedUrls(created),
+        assignSignedUrls(saved),
       ]);
 
-      for (const [index, recipe] of created.entries()) {
-        recipe.imageUrl = signedCreatedUrls[index];
-      }
-
-      for (const [index, recipe] of saved.entries()) {
-        recipe.imageUrl = signedSavedUrls[index];
-      }
-
-      return { created, saved };
+      return { created: assignedCreatedRecipes, saved: assignedSavedRecipes };
     },
 
     async getCreatedRecipes(id, pagination) {
@@ -67,15 +57,9 @@ export function usersService(database: Database): UsersService {
         pagination
       );
 
-      const urls = createdRecipes.map(recipe => recipe.imageUrl);
+      const assignedRecipes = await assignSignedUrls(createdRecipes);
 
-      const signedUrls = await signImages(urls);
-
-      for (const [index, recipe] of createdRecipes.entries()) {
-        recipe.imageUrl = signedUrls[index];
-      }
-
-      return createdRecipes;
+      return assignedRecipes;
     },
 
     async getSavedRecipes(id, pagination) {
@@ -84,15 +68,9 @@ export function usersService(database: Database): UsersService {
         pagination
       );
 
-      const urls = savedRecipes.map(recipe => recipe.imageUrl);
+      const assignedRecipes = await assignSignedUrls(savedRecipes);
 
-      const signedUrls = await signImages(urls);
-
-      for (const [index, recipe] of savedRecipes.entries()) {
-        recipe.imageUrl = signedUrls[index];
-      }
-
-      return savedRecipes;
+      return assignedRecipes;
     },
 
     async findById(id) {

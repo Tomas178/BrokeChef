@@ -6,12 +6,14 @@ export async function signImages<T extends string | string[]>(
 ): Promise<T> {
   if (Array.isArray(images)) {
     const signedImages = await Promise.all(
-      images.map(async image => await signGetUrl(s3Client, image))
+      images.map(async image =>
+        image ? await signGetUrl(s3Client, image) : ''
+      )
     );
 
     return signedImages as T;
   } else {
-    const image = await signGetUrl(s3Client, images);
+    const image = images ? await signGetUrl(s3Client, images) : '';
 
     return image as T;
   }

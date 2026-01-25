@@ -5,6 +5,7 @@ import type { UsersRepository } from '@server/repositories/usersRepository';
 import type { Database } from '@server/database';
 import type { S3Client } from '@aws-sdk/client-s3';
 import { usersService } from '../usersService';
+import type { HasImageUrl } from '../utils/assignSignedUrls';
 
 const [fakeImageUrl, fakeImageBucket] = vi.hoisted(() => [
   'fake-url',
@@ -19,6 +20,16 @@ const mockSignImages = vi.hoisted(() =>
       return images.map(() => fakeImageUrl);
     }
     return fakeImageUrl;
+  })
+);
+
+const mockAssignSignedUrls = vi.hoisted(() =>
+  vi.fn(<T extends HasImageUrl>(array: T[]) => {
+    for (const element of array) {
+      element.imageUrl = fakeImageUrl;
+    }
+
+    return array;
   })
 );
 
@@ -51,6 +62,10 @@ vi.mock('@server/utils/AWSS3Client/client', () => ({
 
 vi.mock('@server/utils/signImages', () => ({
   signImages: mockSignImages,
+}));
+
+vi.mock('@server/services/utils/assignSignedUrls', () => ({
+  assignSignedUrls: mockAssignSignedUrls,
 }));
 
 vi.mock('@server/utils/AWSS3Client/deleteFile', () => ({
@@ -118,7 +133,7 @@ describe('getRecipes', () => {
 
     expect(mockRecipesRepoFindCreatedByUser).toHaveBeenCalledOnce();
     expect(mockRecipesRepoFindSavedByUser).toHaveBeenCalledOnce();
-    expect(mockSignImages).toBeCalledTimes(2);
+    expect(mockAssignSignedUrls).toBeCalledTimes(2);
 
     expect(created).toEqual(createdRecipes);
     expect(saved).toEqual(savedRecipes);
@@ -135,7 +150,7 @@ describe('getCreatedRecipes', () => {
     );
 
     expect(mockRecipesRepoFindCreatedByUser).toHaveBeenCalledOnce();
-    expect(mockSignImages).toHaveBeenCalledOnce();
+    expect(mockAssignSignedUrls).toHaveBeenCalledOnce();
     expect(createdRecipesFromService).toEqual(createdRecipes);
   });
 });
@@ -150,7 +165,7 @@ describe('getSavedRecipes', () => {
     );
 
     expect(mockRecipesRepoFindSavedByUser).toHaveBeenCalledOnce();
-    expect(mockSignImages).toHaveBeenCalledOnce();
+    expect(mockAssignSignedUrls).toHaveBeenCalledOnce();
     expect(savedRecipesFromRepo).toEqual(savedRecipes);
   });
 });

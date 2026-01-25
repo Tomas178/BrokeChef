@@ -19,6 +19,7 @@ import { NoResultError } from 'kysely';
 import type { SavedRecipesRepository } from '@server/repositories/savedRecipesRepository';
 import { getVector } from '@server/repositories/tests/utils';
 import { recipesService } from '../recipesService';
+import type { HasImageUrl } from '../utils/assignSignedUrls';
 
 const fakeImageKey = 'fakeKey';
 const fakeSteps = ['Step 1', 'Step 2'];
@@ -33,6 +34,7 @@ const {
   mockInsertTools,
   mockFormatRecipeForEmbedding,
   mockGetEmbedding,
+  mockAssignSignedUrls,
 } = vi.hoisted(() => ({
   mockDeleteFile: vi.fn(),
   mockGenerateRecipeImage: vi.fn(() => Buffer.from('image')),
@@ -47,10 +49,21 @@ const {
   mockInsertTools: vi.fn(),
   mockFormatRecipeForEmbedding: vi.fn(),
   mockGetEmbedding: vi.fn(),
+  mockAssignSignedUrls: vi.fn(<T extends HasImageUrl>(array: T[]) => {
+    for (const element of array) {
+      element.imageUrl = fakeImageUrl;
+    }
+
+    return array;
+  }),
 }));
 
 vi.mock('@server/utils/signImages', () => ({
   signImages: mockSignImages,
+}));
+
+vi.mock('@server/services/utils/assignSignedUrls', () => ({
+  assignSignedUrls: mockAssignSignedUrls,
 }));
 
 vi.mock('@server/logger', () => ({
@@ -327,7 +340,7 @@ describe('search', () => {
     expect(recipes).toHaveLength(fakeRecipes.length);
     expect(recipes).toEqual(fakeRecipes);
 
-    expect(mockSignImages).toHaveBeenCalledOnce();
+    expect(mockAssignSignedUrls).toHaveBeenCalledOnce();
   });
 
   it('Should return recipes with ratings included as undefined when no ratings exist', async () => {
@@ -392,7 +405,7 @@ describe('findAll', () => {
     expect(recipes).toHaveLength(fakeRecipes.length);
     expect(recipes).toEqual(fakeRecipes);
 
-    expect(mockSignImages).toHaveBeenCalledOnce();
+    expect(mockAssignSignedUrls).toHaveBeenCalledOnce();
   });
 
   it('Should return recipes with ratings included as undefined when no ratings exist', async () => {
@@ -479,7 +492,7 @@ describe('findAllRecommended', () => {
     expect(recipes).toHaveLength(fakeRecipes.length);
     expect(recipes).toEqual(fakeRecipes);
 
-    expect(mockSignImages).toHaveBeenCalledOnce();
+    expect(mockAssignSignedUrls).toHaveBeenCalledOnce();
   });
 });
 

@@ -15,6 +15,7 @@ import { pick } from 'lodash-es';
 import { collectionsKeysPublicBasic } from '@server/entities/collections';
 import { collectionsService } from '../collectionsService';
 import CollectionNotFound from '../../utils/errors/collections/CollectionNotFound';
+import type { HasImageUrl } from '../utils/assignSignedUrls';
 
 const fakeImageKey = 'fakeKey';
 const fakeImageUrl = 'https://signed-url.com/folder/image.png';
@@ -28,6 +29,7 @@ const {
   mockValidateUserExists,
   mockUploadImage,
   mockRollbackImageUpload,
+  mockAssignSignedUrls,
 } = vi.hoisted(() => ({
   mockSignImages: vi.fn((images: string | string[]) => {
     if (Array.isArray(images)) {
@@ -42,10 +44,21 @@ const {
   mockValidateUserExists: vi.fn(),
   mockUploadImage: vi.fn(() => fakeImageKey),
   mockRollbackImageUpload: vi.fn(),
+  mockAssignSignedUrls: vi.fn(<T extends HasImageUrl>(array: T[]) => {
+    for (const element of array) {
+      element.imageUrl = fakeImageUrl;
+    }
+
+    return array;
+  }),
 }));
 
 vi.mock('@server/utils/signImages', () => ({
   signImages: mockSignImages,
+}));
+
+vi.mock('@server/services/utils/assignSignedUrls', () => ({
+  assignSignedUrls: mockAssignSignedUrls,
 }));
 
 vi.mock('@server/logger', () => ({
@@ -299,12 +312,11 @@ describe('findRecipesByCollectionId', () => {
     ).rejects.toThrowError(CollectionNotFound);
 
     expect(mockRecipesRepoFindRecipesByCollectionId).not.toHaveBeenCalled();
-    expect(mockSignImages).not.toHaveBeenCalled();
+    expect(mockAssignSignedUrls).not.toHaveBeenCalled();
   });
 
   it('Should return an array of one recipe with signed image if there is only one recipe in collection', async () => {
     const recipe = fakeRecipe();
-    const imageUrl = recipe.imageUrl;
     mockRecipesRepoFindRecipesByCollectionId.mockResolvedValueOnce([recipe]);
 
     const recipesInCollection =
@@ -313,7 +325,7 @@ describe('findRecipesByCollectionId', () => {
     expect(
       mockRecipesRepoFindRecipesByCollectionId
     ).toHaveBeenCalledExactlyOnceWith(collectionId);
-    expect(mockSignImages).toHaveBeenCalledExactlyOnceWith([imageUrl]);
+    expect(mockAssignSignedUrls).toHaveBeenCalledExactlyOnceWith([recipe]);
 
     expect(recipesInCollection).toEqual([
       { ...recipe, imageUrl: fakeImageUrl },
@@ -324,7 +336,6 @@ describe('findRecipesByCollectionId', () => {
     mockValidateCollectionExists.mockResolvedValueOnce(undefined);
 
     const recipes = [fakeRecipe(), fakeRecipe(), fakeRecipe()];
-    const imageUrls = recipes.map(recipe => recipe.imageUrl);
     mockRecipesRepoFindRecipesByCollectionId.mockResolvedValueOnce(recipes);
 
     const recipesInCollection =
@@ -337,7 +348,7 @@ describe('findRecipesByCollectionId', () => {
     expect(
       mockRecipesRepoFindRecipesByCollectionId
     ).toHaveBeenCalledExactlyOnceWith(collectionId);
-    expect(mockSignImages).toHaveBeenCalledExactlyOnceWith(imageUrls);
+    expect(mockAssignSignedUrls).toHaveBeenCalledExactlyOnceWith(recipes);
     expect(recipesInCollection).toHaveLength(3);
     expect(recipesInCollection).toEqual([
       { ...recipes[0], imageUrl: fakeImageUrl },
