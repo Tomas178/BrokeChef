@@ -26,7 +26,7 @@ https://brokechef.sk05mvs33xkna.eu-central-1.cs.amazonlightsail.com/
 - Look through following/followers list of a user
 - Search recipes in homepage
 - Search recipes by search bar
-- Sorting (newest/oldest, highest/lowest rated)
+- Sorting (newest/oldest, highest/lowest rated and also recommended by users saved recipes)
 
 ## Installation guide
 
