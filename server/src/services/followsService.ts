@@ -9,10 +9,9 @@ import { PostgresError } from 'pg-error-enum';
 import UserAlreadyFollowed from '@server/utils/errors/follows/UserAlreadyFollowed';
 import { NoResultError } from 'kysely';
 import FollowLinkNotFound from '@server/utils/errors/follows/FollowLinkNotFound';
-import { signImages } from '@server/utils/signImages';
 import logger from '@server/logger';
 import { validateUserExists } from './utils/userValidations';
-import { isOAuthProviderImage } from './utils/isOAuthProviderImage';
+import { assignProfileSignedUrls } from './utils/assignProfileSignedUrls';
 
 export interface FollowsService {
   create: (followLink: FollowLink) => Promise<FollowsPublic>;
@@ -90,46 +89,26 @@ export function followsService(database: Database): FollowsService {
       const followingUsersFromRepo =
         await followsRepository.getFollowing(followerId);
 
-      const followingUsers = followingUsersFromRepo.map(user => ({ ...user }));
+      const followingUsersCopy = followingUsersFromRepo.map(
+        user => ({ ...user }) as UsersPublic
+      );
 
-      const imageUrls = followingUsers
-        .filter(user => user.image && !isOAuthProviderImage(user.image))
-        .map(user => user.image as string);
+      const assignedFollowingUsers =
+        await assignProfileSignedUrls(followingUsersCopy);
 
-      if (imageUrls.length > 0) {
-        const signedImageUrls = await signImages(imageUrls);
-
-        for (const [, user] of followingUsers.entries()) {
-          if (user.image && !isOAuthProviderImage(user.image)) {
-            // eslint-disable-next-line unicorn/no-null
-            user.image = signedImageUrls.shift() ?? null;
-          }
-        }
-      }
-
-      return followingUsers;
+      return assignedFollowingUsers;
     },
 
     async getFollowers(userId) {
       const followersFromRepo = await followsRepository.getFollowers(userId);
-      const followers = followersFromRepo.map(user => ({ ...user }));
+      const followersCopy = followersFromRepo.map(
+        user => ({ ...user }) as UsersPublic
+      );
 
-      const imageUrls = followers
-        .filter(user => user.image && !isOAuthProviderImage(user.image))
-        .map(user => user.image as string);
+      const assignedFollowingUsers =
+        await assignProfileSignedUrls(followersCopy);
 
-      if (imageUrls.length > 0) {
-        const signedImageUrls = await signImages(imageUrls);
-
-        for (const [, user] of followers.entries()) {
-          if (user.image && !isOAuthProviderImage(user.image)) {
-            // eslint-disable-next-line unicorn/no-null
-            user.image = signedImageUrls.shift() ?? null;
-          }
-        }
-      }
-
-      return followers;
+      return assignedFollowingUsers;
     },
   };
 }

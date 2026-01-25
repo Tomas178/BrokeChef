@@ -10,6 +10,7 @@ import { followsService as buildFollowsService } from '@server/services/followsS
 import UserNotFound from '@server/utils/errors/users/UserNotFound';
 import { PostgresError } from 'pg-error-enum';
 import { NoResultError } from 'kysely';
+import type { UsersPublic } from '@server/entities/users';
 
 vi.mock('@server/utils/errors', () => ({
   assertPostgresError: vi.fn(),
@@ -29,6 +30,19 @@ const mockSignImages = vi.hoisted(() =>
 
 vi.mock('@server/utils/signImages', () => ({
   signImages: mockSignImages,
+}));
+
+const mockAssignProfileSignedUrls = vi.hoisted(() =>
+  vi.fn(async (users: UsersPublic[]) => {
+    return users.map(user => ({
+      ...user,
+      image: user.image ? fakeImageUrl : null,
+    }));
+  })
+);
+
+vi.mock('@server/services/utils/assignProfileSignedUrls', () => ({
+  assignProfileSignedUrls: mockAssignProfileSignedUrls,
 }));
 
 const mockValidateUserExists = vi.hoisted(() => vi.fn());
@@ -251,48 +265,37 @@ describe('getFollowing', () => {
   it('Should return an array of users of which the user is following', async () => {
     const usersFollowing = await followsService.getFollowing(followerId);
 
-    expect(usersFollowing[0]).toEqual(users.followedOne);
-    expect(usersFollowing[1]).toEqual(users.followedTwo);
+    expect(usersFollowing[0]).toEqual({
+      ...users.followedOne,
+      image: fakeImageUrl,
+    });
+    expect(usersFollowing[1]).toEqual({
+      ...users.followedTwo,
+      image: fakeImageUrl,
+    });
   });
 
-  it('Should return null for users with no image and only call signImages with for user with non OAuth image', async () => {
-    mockFollowsRepoGetFollowing.mockResolvedValueOnce([
+  it('Should delegate signing logic to assignProfileSignedUrls', async () => {
+    const fakeUsers = [
       users.withoutImage,
       users.withoutOAuthImage,
       users.followedOne,
-    ]);
+    ];
+
+    mockFollowsRepoGetFollowing.mockResolvedValueOnce(fakeUsers);
 
     const usersFollowing = await followsService.getFollowing(followerId);
 
-    expect(mockSignImages).toHaveBeenCalledWith([
-      users.withoutOAuthImage.image,
-    ]);
+    expect(mockAssignProfileSignedUrls).toHaveBeenCalled();
+    expect(mockAssignProfileSignedUrls).toHaveBeenCalledWith(fakeUsers);
 
     expect(usersFollowing[0].image).toBeNull();
     expect(usersFollowing[1].image).toBe(fakeImageUrl);
   });
-
-  it('Should return null for users that had image url but signedImages for some reason are missing signed url', async () => {
-    mockFollowsRepoGetFollowing.mockResolvedValueOnce([
-      users.withoutImage,
-      users.withoutOAuthImage,
-      users.followedOne,
-    ]);
-    mockSignImages.mockResolvedValueOnce([]);
-
-    const usersFollowing = await followsService.getFollowing(followerId);
-
-    expect(mockSignImages).toHaveBeenCalledWith([
-      users.withoutOAuthImage.image,
-    ]);
-
-    expect(usersFollowing[0].image).toBeNull();
-    expect(usersFollowing[1].image).toBeNull();
-  });
 });
 
 describe('getFollowers', () => {
-  it('Should return an empty array if user has no followers anyone', async () => {
+  it('Should return an empty array if user has no followers', async () => {
     mockFollowsRepoGetFollowers.mockResolvedValueOnce([]);
 
     await expect(followsService.getFollowers(followedId)).resolves.toEqual([]);
@@ -301,43 +304,32 @@ describe('getFollowers', () => {
   it('Should return an array of users followers by the given userId', async () => {
     const followers = await followsService.getFollowers(followedId);
 
-    expect(followers[1]).toEqual(users.followerTwo);
-    expect(followers[0]).toEqual(users.followerOne);
+    expect(followers[0]).toEqual({
+      ...users.followerOne,
+      image: fakeImageUrl,
+    });
+    expect(followers[1]).toEqual({
+      ...users.followerTwo,
+      image: fakeImageUrl,
+    });
   });
 
-  it('Should return null for users with no image and only call signImages with for user with non OAuth image', async () => {
-    mockFollowsRepoGetFollowers.mockResolvedValueOnce([
+  it('Should delegate signing logic to assignProfileSignedUrls', async () => {
+    const fakeUsers = [
       users.withoutImage,
       users.withoutOAuthImage,
       users.followerOne,
-    ]);
+    ];
+
+    mockFollowsRepoGetFollowers.mockResolvedValueOnce(fakeUsers);
 
     const followers = await followsService.getFollowers(followerId);
 
-    expect(mockSignImages).toHaveBeenCalledExactlyOnceWith([
-      users.withoutOAuthImage.image,
-    ]);
+    expect(mockAssignProfileSignedUrls).toHaveBeenCalled();
+    expect(mockAssignProfileSignedUrls).toHaveBeenCalledWith(fakeUsers);
 
     expect(followers[0].image).toBeNull();
     expect(followers[1].image).toBe(fakeImageUrl);
-    expect(followers[2].image).toBe(users.followerOne.image);
-  });
-
-  it('Should return null for users that had image url but signedImages for some reason are missing signed url', async () => {
-    mockFollowsRepoGetFollowers.mockResolvedValueOnce([
-      users.withoutImage,
-      users.withoutOAuthImage,
-      users.followedOne,
-    ]);
-    mockSignImages.mockResolvedValueOnce([]);
-
-    const followers = await followsService.getFollowers(followerId);
-
-    expect(mockSignImages).toHaveBeenCalledWith([
-      users.withoutOAuthImage.image,
-    ]);
-
-    expect(followers[0].image).toBeNull();
-    expect(followers[1].image).toBeNull();
+    expect(followers[2].image).toBe(fakeImageUrl);
   });
 });
