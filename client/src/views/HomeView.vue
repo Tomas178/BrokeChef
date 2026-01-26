@@ -21,7 +21,7 @@ const route = useRoute();
 const router = useRouter();
 const { isLoggedIn } = storeToRefs(useUserStore());
 
-const RECIPES_PER_PAGE = 5;
+const RECIPES_PER_PAGE = 12;
 
 const recipes = ref<RecipesPublic[]>([]);
 const totalCount = ref(0);
