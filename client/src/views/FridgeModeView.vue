@@ -59,7 +59,7 @@ function handleGenerateRecipes() {
     <FwbFileInput
       v-model="fridgeImageFile"
       dropzone
-      accept="image/*"
+      accept="image/png, image/jpeg, image/jpg"
       label="Upload Fridge Image"
     />
 

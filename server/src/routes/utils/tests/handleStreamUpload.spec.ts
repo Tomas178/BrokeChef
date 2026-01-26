@@ -13,7 +13,9 @@ const [
   mockCreateTransformStream,
   mockPipeline,
   mockDone,
+  mockDestroy,
 ] = vi.hoisted(() => [
+  vi.fn(),
   vi.fn(),
   vi.fn(),
   vi.fn(),
@@ -38,7 +40,11 @@ vi.mock('@server/logger', () => ({
   },
 }));
 
-const mockTransformStream = vi.hoisted(() => ({ _isMockStream: true }));
+const mockTransformStream = vi.hoisted(() => ({
+  _isMockStream: true,
+  destroy: mockDestroy,
+}));
+
 vi.mock('@server/utils/createTransformStream', () => ({
   createTransformStream: mockCreateTransformStream,
 }));
@@ -118,6 +124,8 @@ describe('handleStreamUpload', () => {
       handleStreamUpload(createMockFileStream(), defaultFolder)
     ).rejects.toThrow(error);
 
+    expect(mockDestroy).toHaveBeenCalled();
+
     expect(mockLoggerError).toHaveBeenCalledWith(
       expect.stringContaining(`Upload to S3 failed: ${fakeKey}`)
     );
@@ -130,6 +138,8 @@ describe('handleStreamUpload', () => {
     await expect(
       handleStreamUpload(createMockFileStream(), defaultFolder)
     ).rejects.toThrow(error);
+
+    expect(mockDestroy).toHaveBeenCalled();
 
     expect(mockLoggerError).toHaveBeenCalledWith(
       expect.stringContaining(`Upload to S3 failed: ${fakeKey}`)

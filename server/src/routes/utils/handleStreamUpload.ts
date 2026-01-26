@@ -25,12 +25,16 @@ export async function handleStreamUpload(
   );
 
   try {
-    await pipeline(fileStream, transformStream);
-    await upload.done();
+    const pipelinePromise = pipeline(fileStream, transformStream);
+
+    await Promise.all([pipelinePromise, upload.done()]);
 
     logger.info(`Object created in S3: ${key}`);
     return key;
   } catch (error) {
+    fileStream.destroy();
+    transformStream.destroy();
+
     logger.error(`Upload to S3 failed: ${key}`);
     throw error;
   }
