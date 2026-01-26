@@ -44,6 +44,12 @@ describe('Authenticated tests', () => {
     await expect(remove(recipeId)).rejects.toThrow(/not found/i);
   });
 
+  it('Should rethrow any other error', async () => {
+    mockRemove.mockRejectedValueOnce(new Error('Network error'));
+
+    await expect(remove(recipeId)).rejects.toThrow(/unexpected/i);
+  });
+
   it('Should remove the rating and return undefined when no ratings for the recipe are left', async () => {
     mockRemove.mockResolvedValueOnce(undefined);
 

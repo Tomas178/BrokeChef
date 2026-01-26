@@ -43,10 +43,9 @@ describe('Authenticated tests', async () => {
   });
 
   it('Should rethrow any other error', async () => {
-    const errorMessage = 'Something happened';
-    mockFindByUserId.mockRejectedValueOnce(new Error(errorMessage));
+    mockFindByUserId.mockRejectedValueOnce(new Error('Something happened'));
 
-    await expect(findByUserId(userId)).rejects.toThrow(errorMessage);
+    await expect(findByUserId(userId)).rejects.toThrow(/unexpected/i);
   });
 
   it('Should call findByUserId with userId from cookies when userId is not provided via argument to the TRPC procedure', async () => {

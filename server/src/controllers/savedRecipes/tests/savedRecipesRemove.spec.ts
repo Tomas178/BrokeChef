@@ -57,6 +57,12 @@ describe('Authenticated tests', () => {
     expect(mockRemove).toHaveBeenCalledOnce();
   });
 
+  it('Should rethrow any other error', async () => {
+    mockRemove.mockRejectedValueOnce(new Error('Something happened'));
+
+    await expect(unsave(recipeId)).rejects.toThrow(/unexpected/i);
+  });
+
   it('Should unsave a recipe', async () => {
     mockRemove.mockResolvedValueOnce(savedRecipeLink);
 

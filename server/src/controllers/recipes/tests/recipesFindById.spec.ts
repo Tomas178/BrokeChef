@@ -40,6 +40,18 @@ describe('Unauthenticated tests', () => {
 describe('Authenticated tests', () => {
   const { findById } = createCaller(authContext({ database }, user));
 
+  it('Should throw an error if the recipe does not exist', async () => {
+    mockFindById.mockRejectedValueOnce(new RecipeNotFound());
+
+    await expect(findById(recipeId)).rejects.toThrow(/not found/i);
+  });
+
+  it('Should rethrow any other error', async () => {
+    mockFindById.mockRejectedValueOnce(new Error('Network error'));
+
+    await expect(findById(recipeId)).rejects.toThrow(/unexpected/i);
+  });
+
   it('Should return a recipe', async () => {
     const fakeRecipeData = {
       ...fakeRecipe(),
@@ -53,11 +65,5 @@ describe('Authenticated tests', () => {
     const recipeResponse = await findById(recipeId);
 
     expect(recipeResponse).toBe(fakeRecipeData);
-  });
-
-  it('Should throw an error if the recipe does not exist', async () => {
-    mockFindById.mockRejectedValueOnce(new RecipeNotFound());
-
-    await expect(findById(recipeId)).rejects.toThrow(/not found/i);
   });
 });

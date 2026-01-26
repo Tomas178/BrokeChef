@@ -63,6 +63,12 @@ describe('Authenticated tests', () => {
     );
   });
 
+  it('Should rethrow any other error', async () => {
+    mockCreate.mockRejectedValueOnce(new Error('Network error'));
+
+    await expect(rate(fakeRating({ recipeId }))).rejects.toThrow(/unexpected/i);
+  });
+
   it('Should create the rating', async () => {
     const ratingInput = {
       userId: user.id,

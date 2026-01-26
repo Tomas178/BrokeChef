@@ -9,6 +9,7 @@ import { deleteFile } from '@server/utils/AWSS3Client/deleteFile';
 import { signImages } from '@server/utils/signImages';
 import config from '@server/config';
 import logger from '@server/logger';
+import UserNotFound from '@server/utils/errors/users/UserNotFound';
 import { isOAuthProviderImage } from './utils/isOAuthProviderImage';
 import { assignSignedUrls } from './utils/assignSignedUrls';
 
@@ -85,13 +86,12 @@ export function usersService(database: Database): UsersService {
 
     async updateImage(userId, image) {
       let userById: UsersPublic | undefined;
-      let isOAuthImage: boolean;
       let isCurrentImageUrlDeleted = false;
 
       try {
         userById = await usersRepository.findById(userId);
         const currentImageUrl = userById.image;
-        isOAuthImage = isOAuthProviderImage(userById?.image);
+        const isOAuthImage = isOAuthProviderImage(userById?.image);
 
         if (currentImageUrl && !isOAuthImage) {
           await deleteFile(
@@ -105,10 +105,14 @@ export function usersService(database: Database): UsersService {
             `Old image url: ${currentImageUrl} deleted from S3 object for user: ${userId}`
           );
         }
-      } catch {
-        if (!isCurrentImageUrlDeleted) {
+      } catch (error) {
+        if (error instanceof UserNotFound) {
+          throw error;
+        }
+
+        if (!isCurrentImageUrlDeleted && userById?.image) {
           logger.error(
-            `Failed to delete old S3 object: ${userById?.image}. Remove it manually from bucket: ${config.auth.aws.s3.buckets.images}`
+            `Failed to delete old S3 object: ${userById.image}. Remove it manually from bucket: ${config.auth.aws.s3.buckets.images}`
           );
         }
       }

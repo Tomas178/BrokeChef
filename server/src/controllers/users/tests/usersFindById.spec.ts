@@ -41,6 +41,12 @@ describe('Authenticated tests', () => {
     expect(mockFindById).toHaveBeenCalledExactlyOnceWith(user.id);
   });
 
+  it('Should rethrow any other error', async () => {
+    mockFindById.mockRejectedValueOnce(new Error('Network error'));
+
+    await expect(findById(user.id)).rejects.toThrow(/unexpected/i);
+  });
+
   it('Should call findById with userId from cookies return user when not given userId but authenticanted', async () => {
     mockFindById.mockResolvedValueOnce(user);
 

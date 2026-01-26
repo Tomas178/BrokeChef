@@ -57,6 +57,12 @@ describe('Authenticated tests', () => {
     expect(mockCreate).toHaveBeenCalledOnce();
   });
 
+  it('Should rethrow any other error', async () => {
+    mockCreate.mockRejectedValueOnce(new Error('Something happened'));
+
+    await expect(save(recipeId)).rejects.toThrow(/unexpected/i);
+  });
+
   it('Should create a saved recipe record', async () => {
     mockCreate.mockResolvedValueOnce(savedRecipeLink);
 

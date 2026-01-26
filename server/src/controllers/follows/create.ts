@@ -33,6 +33,10 @@ export default authenticatedProcedure
         });
       }
 
-      throw new Error('Failed to follow the user');
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to follow the user',
+        cause: error,
+      });
     }
   });

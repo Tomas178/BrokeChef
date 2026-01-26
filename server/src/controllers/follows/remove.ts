@@ -35,6 +35,10 @@ export default authenticatedProcedure
         });
       }
 
-      throw new Error('Failed to unfollow the user');
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to unfollow the user',
+        cause: error,
+      });
     }
   });

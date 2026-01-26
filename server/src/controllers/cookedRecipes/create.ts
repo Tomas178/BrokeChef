@@ -40,6 +40,10 @@ export default authenticatedProcedure
         });
       }
 
-      throw new Error('Failed to mark recipe as cooked');
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to mark recipe as cooked',
+        cause: error,
+      });
     }
   });

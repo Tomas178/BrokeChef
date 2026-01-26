@@ -38,6 +38,10 @@ export default authenticatedProcedure
         });
       }
 
-      throw error;
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'An unexpected error occurred',
+        cause: error,
+      });
     }
   });

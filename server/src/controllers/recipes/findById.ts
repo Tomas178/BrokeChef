@@ -14,10 +14,17 @@ export default authenticatedProcedure
 
       return recipe;
     } catch (error) {
-      if (error instanceof RecipeNotFound)
+      if (error instanceof RecipeNotFound) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: 'Recipe was not found',
         });
+      }
+
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'An unexpected error occurred',
+        cause: error,
+      });
     }
   });

@@ -66,10 +66,9 @@ describe('Authenticated tests', () => {
   });
 
   it('Should rethrow any other error', async () => {
-    const errorMessage = 'Something happened';
-    mockRemove.mockRejectedValueOnce(new Error(errorMessage));
+    mockRemove.mockRejectedValueOnce(new Error('Something happened'));
 
-    await expect(remove(collectionId)).rejects.toThrow(errorMessage);
+    await expect(remove(collectionId)).rejects.toThrow(/unexpected/i);
   });
 
   it('Should return nothing when recipe was removed', async () => {

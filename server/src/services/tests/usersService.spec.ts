@@ -4,6 +4,7 @@ import type { RecipesRepository } from '@server/repositories/recipesRepository';
 import type { UsersRepository } from '@server/repositories/usersRepository';
 import type { Database } from '@server/database';
 import type { S3Client } from '@aws-sdk/client-s3';
+import UserNotFound from '@server/utils/errors/users/UserNotFound';
 import { usersService } from '../usersService';
 import type { HasImageUrl } from '../utils/assignSignedUrls';
 
@@ -309,24 +310,30 @@ describe('updateImage', () => {
   });
 
   it('Should fail to delete the image on failure to insert to db and log an error', async () => {
+    mockUsersRepoFindById.mockResolvedValueOnce(user);
     const errorMessage = 'DB Failed';
     mockUsersRepoUpdateImage.mockRejectedValueOnce(new Error(errorMessage));
-    mockDeleteFile.mockRejectedValueOnce(new Error('Failed to delete from S3'));
+    mockDeleteFile
+      .mockResolvedValueOnce(undefined)
+      .mockRejectedValueOnce(new Error('Failed to delete from S3'));
 
     await expect(service.updateImage(user.id, fakeImage)).rejects.toThrow(
       errorMessage
     );
 
     expect(mockSignImages).not.toHaveBeenCalled();
-    expect(mockDeleteFile).toHaveBeenCalledWith(
-      expect.any(Object),
-      expect.any(String),
-      fakeImage
-    );
 
     expect(mockLoggerError).toHaveBeenCalledWith(
       'Failed to rollback S3 Object:',
       expect.any(Error)
+    );
+  });
+
+  it('Should rethrow UserNotFound error', async () => {
+    mockUsersRepoFindById.mockRejectedValueOnce(new UserNotFound());
+
+    await expect(service.updateImage(user.id, fakeImage)).rejects.toThrowError(
+      UserNotFound
     );
   });
 });

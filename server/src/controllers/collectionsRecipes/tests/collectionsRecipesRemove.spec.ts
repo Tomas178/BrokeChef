@@ -64,10 +64,9 @@ describe('Authenticated tests', () => {
   });
 
   it('Should rethrow any other error', async () => {
-    const errorMessage = 'Something happened';
-    mockRemove.mockRejectedValueOnce(new Error(errorMessage));
+    mockRemove.mockRejectedValueOnce(new Error('Something happened'));
 
-    await expect(unsave(request)).rejects.toThrow(errorMessage);
+    await expect(unsave(request)).rejects.toThrow(/unexpected/i);
   });
 
   it('Should remove the link', async () => {

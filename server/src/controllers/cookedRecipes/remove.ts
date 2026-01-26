@@ -37,6 +37,10 @@ export default authenticatedProcedure
         });
       }
 
-      throw new Error('Failed to unmark cooked recipe');
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Failed to unmark cooked recipe',
+        cause: error,
+      });
     }
   });

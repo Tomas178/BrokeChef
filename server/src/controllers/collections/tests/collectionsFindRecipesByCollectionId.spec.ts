@@ -55,13 +55,12 @@ describe('Authenticated tests', () => {
   });
 
   it('Should rethrow any other error', async () => {
-    const errorMessage = 'Something happened';
     mockFindRecipesByCollectionId.mockRejectedValueOnce(
-      new Error(errorMessage)
+      new Error('Something happened')
     );
 
     await expect(findRecipesByCollectionId(collectionId)).rejects.toThrow(
-      errorMessage
+      /unexpected/i
     );
   });
 

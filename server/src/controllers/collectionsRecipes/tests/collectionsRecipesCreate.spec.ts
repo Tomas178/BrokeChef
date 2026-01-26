@@ -64,10 +64,9 @@ describe('Authenticated tests', () => {
   });
 
   it('Should rethrow any other error', async () => {
-    const errorMessage = 'Something happened';
-    mockCreate.mockRejectedValueOnce(new Error(errorMessage));
+    mockCreate.mockRejectedValueOnce(new Error('Something happened'));
 
-    await expect(save(request)).rejects.toThrow(errorMessage);
+    await expect(save(request)).rejects.toThrow(/unexpected/i);
   });
 
   it('Should create the link', async () => {

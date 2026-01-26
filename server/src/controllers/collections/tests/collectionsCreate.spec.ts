@@ -55,10 +55,9 @@ describe('Authenticated tests', () => {
   });
 
   it('Should rethrow any other error', async () => {
-    const errorMessage = 'Something failed';
-    mockCreate.mockRejectedValueOnce(new Error(errorMessage));
+    mockCreate.mockRejectedValueOnce(new Error('Something failed'));
 
-    await expect(create(requestData)).rejects.toThrow(errorMessage);
+    await expect(create(requestData)).rejects.toThrow(/unexpected/i);
   });
 
   it('Should create the collection', async () => {

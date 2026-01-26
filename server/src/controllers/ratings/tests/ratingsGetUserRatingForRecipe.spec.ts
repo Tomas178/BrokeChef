@@ -50,6 +50,16 @@ describe('Authenticated tests', () => {
     );
   });
 
+  it('Should rethrow any other error', async () => {
+    mockGetUsersRatingForRecipe.mockRejectedValueOnce(
+      new Error('Network error')
+    );
+
+    await expect(getUserRatingForRecipe(recipeId)).rejects.toThrow(
+      /unexpected/i
+    );
+  });
+
   it('Should return the rating that user gave for the recipe', async () => {
     mockGetUsersRatingForRecipe.mockResolvedValueOnce(ratingForRecipe);
 

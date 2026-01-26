@@ -49,10 +49,11 @@ describe('Authenticated tests', () => {
   });
 
   it('Should rethrow any other error', async () => {
-    const errorMessage = 'Something happened';
-    mockTotalCollectionsByUser.mockRejectedValueOnce(new Error(errorMessage));
+    mockTotalCollectionsByUser.mockRejectedValueOnce(
+      new Error('Something happened')
+    );
 
-    await expect(totalCollectionsByUser(userId)).rejects.toThrow(errorMessage);
+    await expect(totalCollectionsByUser(userId)).rejects.toThrow(/unexpected/i);
   });
 
   it('Should call totalCollectionsByUser with userId from cookies return user when not given userId but authenticanted', async () => {
