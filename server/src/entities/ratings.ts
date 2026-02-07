@@ -3,10 +3,13 @@ import type { Ratings } from '@server/database';
 import type { Selectable } from 'kysely';
 import { createdAtSchema, integerIdSchema, oauthUserIdSchema } from './shared';
 
+export const ratingSchema = z.number().int().min(1).max(5);
+export const ratingOptionalSchema = ratingSchema.optional();
+
 export const ratingsSchema = z.object({
   recipeId: integerIdSchema,
   userId: oauthUserIdSchema,
-  rating: z.number().int().min(1).max(5),
+  rating: ratingSchema,
   createdAt: createdAtSchema,
 });
 
@@ -21,4 +24,4 @@ export type RatingsPublic = Pick<
   (typeof ratingsKeysPublic)[number]
 >;
 
-export type Rating = Pick<RatingsPublic, 'rating'>['rating'] | undefined;
+export type Rating = z.infer<typeof ratingOptionalSchema>;

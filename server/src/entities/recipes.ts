@@ -45,10 +45,7 @@ export type RecipesPublic = Pick<
   (typeof recipesKeysPublic)[number]
 > & { author: UsersPublicWithoutId; rating: Rating };
 
-export type RecipesPublicWithoutRating = Pick<
-  Selectable<Recipes>,
-  (typeof recipesKeysPublic)[number]
-> & { author: UsersPublicWithoutId };
+export type RecipesPublicWithoutRating = Omit<RecipesPublic, 'rating'>;
 
 export type RecipesPublicAllInfo = Omit<RecipesPublic, 'steps'> & {
   ingredients: IngredientsName[];

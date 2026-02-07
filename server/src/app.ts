@@ -6,6 +6,7 @@ import {
 import { toNodeHandler } from 'better-auth/node';
 import cors from 'cors';
 import { StatusCodes } from 'http-status-codes';
+import { createOpenApiHttpHandler } from 'trpc-to-openapi';
 import type { Database } from './database';
 import { auth } from './auth';
 import type { Context } from './trpc/index';
@@ -40,6 +41,20 @@ export default function createApp(database: Database) {
   app.use('/api/recipe', generateRecipesRouter);
 
   app.use(jsonErrorHandler);
+
+  app.use(
+    '/api',
+    createOpenApiHttpHandler({
+      router: appRouter,
+      createContext({ req, res }: CreateExpressContextOptions): Context {
+        return {
+          database,
+          req,
+          res,
+        };
+      },
+    })
+  );
 
   app.use(
     '/api/v1/trpc',

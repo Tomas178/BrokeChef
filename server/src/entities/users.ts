@@ -13,6 +13,21 @@ export const usersSchema = z.object({
   updatedAt: updatedAtSchema,
 });
 
+export const usersPublicSchema = usersSchema.pick({
+  id: true,
+  name: true,
+  image: true,
+});
+
+export const usersPublicWithoutIdSchema = usersPublicSchema
+  .omit({
+    id: true,
+    image: true,
+  })
+  .extend({
+    image: z.string().nullable(),
+  });
+
 export const usersKeysAll = Object.keys(usersSchema.shape) as (keyof Users)[];
 
 export const usersKeysPublic = ['id', 'name', 'image'] as const;

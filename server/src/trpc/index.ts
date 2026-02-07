@@ -7,6 +7,7 @@ import type { Request, Response } from 'express';
 import superjson from 'superjson';
 import { ZodError } from 'zod';
 import { fromError } from 'zod-validation-error';
+import type { OpenApiMeta } from 'trpc-to-openapi';
 
 export interface Context {
   database: Database;
@@ -19,23 +20,26 @@ export interface Context {
 
 export type ContextMinimal = Pick<Context, 'database'>;
 
-const t = initTRPC.context<Context>().create({
-  transformer: superjson,
-  errorFormatter({ shape, error }) {
-    if (error.cause instanceof ZodError) {
-      const validationError = fromError(error.cause);
+const t = initTRPC
+  .meta<OpenApiMeta>()
+  .context<Context>()
+  .create({
+    transformer: superjson,
+    errorFormatter({ shape, error }) {
+      if (error.cause instanceof ZodError) {
+        const validationError = fromError(error.cause);
 
-      return {
-        ...shape,
-        data: {
-          message: validationError.message,
-        },
-      };
-    }
+        return {
+          ...shape,
+          data: {
+            message: validationError.message,
+          },
+        };
+      }
 
-    return shape;
-  },
-});
+      return shape;
+    },
+  });
 
 export const {
   createCallerFactory,
