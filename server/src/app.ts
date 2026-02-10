@@ -43,7 +43,7 @@ export default function createApp(database: Database) {
   app.use(jsonErrorHandler);
 
   app.use(
-    '/api',
+    '/api/v1',
     createOpenApiHttpHandler({
       router: appRouter,
       createContext({ req, res }: CreateExpressContextOptions): Context {

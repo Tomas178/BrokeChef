@@ -17,6 +17,6 @@ import '@server/workers/recipe';
 const database = createDatabase(config.database);
 const app = createApp(database);
 
-app.listen(config.port, () => {
-  logger.info(`Server is running at http://localhost:${config.port}`);
+app.listen(config.port, '0.0.0.0', () => {
+  logger.info(`Server is running at port: ${config.port}`);
 });
