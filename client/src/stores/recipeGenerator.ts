@@ -8,6 +8,7 @@ import axios from 'axios';
 import useToast from '@/composables/useToast';
 import { navigateToFridgeMode } from '@/router/utils';
 import { getErrorMessage } from '@/composables/useErrorMessage/error';
+import { assertValidFile } from '@/utils/assertValidFile';
 
 export const useRecipeGeneratorStore = defineStore('recipeGenerator', () => {
   const isGenerating = ref(false);
@@ -32,6 +33,15 @@ export const useRecipeGeneratorStore = defineStore('recipeGenerator', () => {
   }
 
   async function generateRecipes(fridgeImageFile: File) {
+    try {
+      assertValidFile(fridgeImageFile);
+    } catch (error) {
+      const message = (error as Error).message;
+      errorMessage.value = message;
+      showToast(message, 'error');
+      return;
+    }
+
     const { id: userId } = useUserStore();
 
     if (!userId) {
@@ -124,5 +134,6 @@ export const useRecipeGeneratorStore = defineStore('recipeGenerator', () => {
     generateRecipes,
     reset,
     clearRecipes,
+    showToast,
   };
 });
