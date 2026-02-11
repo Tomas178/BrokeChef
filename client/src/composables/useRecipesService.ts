@@ -47,7 +47,7 @@ export function useRecipesService(recipeId?: number) {
 
   async function checkIsAuthor() {
     if (!recipeId) return;
-    isAuthor.value = await trpc.recipes.isAuthor.query(recipeId);
+    isAuthor.value = await trpc.recipes.isAuthor.query({ recipeId });
   }
 
   async function uploadRecipeImage(): Promise<string | undefined> {
