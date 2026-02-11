@@ -2,12 +2,30 @@ import { recipesSchema } from '@server/entities/recipes';
 import { usersPublicWithoutIdSchema } from '@server/entities/users';
 import { ratingOptionalSchema } from '@server/entities/ratings';
 import * as z from 'zod';
+import { arrayStringSchema } from './shared';
+
+const urlSchema = z.string().trim();
+
+const recipesPublicCommonOutputSchema = z.object({
+  author: usersPublicWithoutIdSchema,
+  rating: ratingOptionalSchema,
+  imageUrl: urlSchema,
+});
 
 export const recipesPublicArrayOutputSchema = z.array(
   recipesSchema.omit({ embedding: true, steps: true, imageUrl: true }).extend({
-    author: usersPublicWithoutIdSchema,
-    rating: ratingOptionalSchema,
+    ...recipesPublicCommonOutputSchema.shape,
     steps: z.string().nonempty().trim(),
-    imageUrl: z.string().trim(),
   })
 );
+
+export const recipesPublicAllInfoOutputSchema = recipesSchema
+  .omit({
+    embedding: true,
+    imageUrl: true,
+  })
+  .extend({
+    ...recipesPublicCommonOutputSchema.shape,
+    ingredients: arrayStringSchema,
+    tools: arrayStringSchema,
+  });

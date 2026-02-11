@@ -1,9 +1,7 @@
 import { createCallerFactory } from '@server/trpc';
 import {
-  fakeIngredient,
-  fakeRecipe,
-  fakeTool,
   fakeUser,
+  fakeRecipeAllInfoWithoutEmail,
 } from '@server/entities/tests/fakes';
 import { authContext, requestContext } from '@tests/utils/context';
 import type { RecipesService } from '@server/services/recipesService';
@@ -33,7 +31,9 @@ describe('Unauthenticated tests', () => {
   const { findById } = createCaller(requestContext({ database }));
 
   it('Should throw an error if user is not authenticated', async () => {
-    await expect(findById(1)).rejects.toThrow(/unauthenticated/i);
+    await expect(findById({ id: recipeId })).rejects.toThrow(
+      /unauthenticated/i
+    );
   });
 });
 
@@ -43,27 +43,24 @@ describe('Authenticated tests', () => {
   it('Should throw an error if the recipe does not exist', async () => {
     mockFindById.mockRejectedValueOnce(new RecipeNotFound());
 
-    await expect(findById(recipeId)).rejects.toThrow(/not found/i);
+    await expect(findById({ id: recipeId })).rejects.toThrow(/not found/i);
   });
 
   it('Should rethrow any other error', async () => {
     mockFindById.mockRejectedValueOnce(new Error('Network error'));
 
-    await expect(findById(recipeId)).rejects.toThrow(/unexpected/i);
+    await expect(findById({ id: recipeId })).rejects.toThrow(/unexpected/i);
   });
 
   it('Should return a recipe', async () => {
-    const fakeRecipeData = {
-      ...fakeRecipe(),
-      steps: ['stepOne', 'stepTwo'],
-      ingredients: [fakeIngredient(), fakeIngredient()],
-      tools: [fakeTool(), fakeTool()],
-    };
+    const fakeRecipeData = fakeRecipeAllInfoWithoutEmail({
+      steps: ['Step 1', 'Step 2'],
+    });
 
     mockFindById.mockResolvedValueOnce(fakeRecipeData);
 
-    const recipeResponse = await findById(recipeId);
+    const recipeResponse = await findById({ id: recipeId });
 
-    expect(recipeResponse).toBe(fakeRecipeData);
+    expect(recipeResponse).toStrictEqual(fakeRecipeData);
   });
 });

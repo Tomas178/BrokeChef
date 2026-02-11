@@ -3,8 +3,11 @@ import * as z from 'zod';
 
 export const USER_ID_LENGTH = 32;
 
-export const nonNegativeIntegerSchema = z.number().int().nonnegative();
-export const integerIdSchema = z.number().int().positive();
+const integerSchema = z.number().int();
+
+export const nonNegativeIntegerSchema = integerSchema.nonnegative();
+export const integerIdSchema = integerSchema.positive();
+export const integerIdObjectSchema = z.object({ id: integerIdSchema });
 
 export const oauthUserIdSchema = z.string().length(USER_ID_LENGTH);
 
