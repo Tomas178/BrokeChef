@@ -52,7 +52,7 @@ export interface RecipesService {
     userId: string
   ) => Promise<RecipesPublic | undefined>;
   search: (input: string, pagination: Pagination) => Promise<RecipesPublic[]>;
-  findById: (recipeId: number) => Promise<RecipesPublicAllInfo | undefined>;
+  findById: (recipeId: number) => Promise<RecipesPublicAllInfo>;
   findAll: (pagination: PaginationWithSort) => Promise<RecipesPublic[]>;
   findAllRecommended: (
     userId: string,

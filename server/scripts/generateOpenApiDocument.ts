@@ -11,7 +11,7 @@ export const openApiDocument = generateOpenApiDocument(appRouter, {
   title: 'BrokeChef API',
   description: 'OpenAPI Documentation for the BrokeChef tRPC API',
   version: '1.0.0',
-  baseUrl: 'http://localhost:3000/api/v1',
+  baseUrl: 'http://localhost:3000/api/v1/rest',
 });
 
 const OUTPUT_PATH = path.resolve(

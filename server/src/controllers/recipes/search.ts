@@ -8,6 +8,7 @@ import {
 } from '@server/utils/rateLimiter';
 import RateLimitError from '@server/utils/errors/general/RateLimitError';
 import { TRPCError } from '@trpc/server';
+import { recipesPublicArrayOutputSchema } from '@server/entities/outputSchemas';
 
 export const NO_IP_ADDRESS = 'unknown-ip';
 
@@ -22,7 +23,16 @@ const rateLimitConfig: RateLimitConfig = {
 
 export default publicProcedure
   .use(provideServices({ recipesService }))
+  .meta({
+    openapi: {
+      method: 'GET',
+      path: '/recipes/search',
+      summary: 'Search recipes semantically',
+      tags: ['Recipes'],
+    },
+  })
   .input(paginationWithUserInput)
+  .output(recipesPublicArrayOutputSchema)
   .query(async ({ input: paginationWithUserInput, ctx: { services, req } }) => {
     const ipAddress = req?.ip || NO_IP_ADDRESS;
 

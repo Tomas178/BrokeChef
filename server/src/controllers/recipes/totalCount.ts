@@ -1,7 +1,7 @@
 import { publicProcedure } from '@server/trpc';
 import provideRepos from '@server/trpc/provideRepos';
 import { recipesRepository } from '@server/repositories/recipesRepository';
-import { integerIdSchema } from '@server/entities/shared';
+import { nonNegativeIntegerSchema } from '@server/entities/shared';
 
 export default publicProcedure
   .use(provideRepos({ recipesRepository }))
@@ -13,7 +13,7 @@ export default publicProcedure
       tags: ['Recipes'],
     },
   })
-  .output(integerIdSchema)
+  .output(nonNegativeIntegerSchema)
   .query(async ({ ctx: { repos } }) => {
     const totalCount = await repos.recipesRepository.totalCount();
 

@@ -5,7 +5,7 @@ import {
   initialPage,
   type PaginationWithUserInput,
 } from '@server/entities/shared';
-import { fakeRecipe } from '@server/entities/tests/fakes';
+import { fakeRecipeAllInfoWithoutToolsAndIngredientsAndEmail } from '@server/entities/tests/fakes';
 import RateLimitError from '@server/utils/errors/general/RateLimitError';
 import type { Request } from 'express';
 import recipesRouter from '..';
@@ -47,6 +47,8 @@ it('Should use real IP value in the Request object', async () => {
     req: { ip } as Request,
   });
 
+  mockSearch.mockResolvedValueOnce([]);
+
   await searchWithIP(paginationWithUserInput);
 
   expect(mockCheckRateLimit).toHaveBeenCalledExactlyOnceWith(
@@ -84,7 +86,10 @@ it('Should return an empty list if there are no recipes', async () => {
 });
 
 it('Should return a list of recipes', async () => {
-  const fakeRecipes = [fakeRecipe(), fakeRecipe()];
+  const fakeRecipes = [
+    fakeRecipeAllInfoWithoutToolsAndIngredientsAndEmail(),
+    fakeRecipeAllInfoWithoutToolsAndIngredientsAndEmail(),
+  ];
   mockSearch.mockResolvedValueOnce(fakeRecipes);
 
   const recipes = await search(paginationWithUserInput);

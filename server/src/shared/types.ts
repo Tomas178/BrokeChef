@@ -13,6 +13,7 @@ export type * from '@server/entities/collections';
 export type * from '@server/entities/collectionsRecipes';
 export type * from '@server/entities/generatedRecipe';
 export type * from '@server/entities/shared';
+export type * from '@server/entities/outputSchemas';
 
 export type * from '@server/controllers/recipes/create';
 export type * from '@server/controllers/ratings/create';

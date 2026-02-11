@@ -57,6 +57,11 @@ const randomVector = (dimensions = OPENAI_EMBEDDING_DIMENSIONS) => {
   return vector;
 };
 
+const basicAuthor = () => ({
+  name: random.name(),
+  image: random.url(),
+});
+
 const randomVectorString = () => `[${randomVector().join(',')}]`;
 
 export const fakeUser = <T extends Partial<UsersPublic>>(
@@ -145,9 +150,46 @@ export const fakeRecipeAllInfo = <T extends Partial<RecipesPublicAllInfo>>(
   imageUrl: random.url(),
   author: {
     email: random.email(),
-    name: random.name(),
-    image: random.url(),
+    ...basicAuthor(),
   },
+  ingredients: [random.string()],
+  tools: [random.string()],
+  rating: randomRating(),
+  ...overrides,
+  createdAt: new Date(),
+});
+
+export const fakeRecipeAllInfoWithoutToolsAndIngredientsAndEmail = <
+  T extends Partial<RecipesPublicAllInfo>,
+>(
+  overrides: T = {} as T
+) => ({
+  id: randomIntegerId(),
+  userId: randomOAuthId(),
+  title: randomRecipeTitle(),
+  duration: randomDuration(),
+  steps: random.paragraph(),
+  imageUrl: random.url(),
+  author: {
+    ...basicAuthor(),
+  },
+  rating: randomRating(),
+  ...overrides,
+  createdAt: new Date(),
+});
+
+export const fakeRecipeAllInfoWithoutEmail = <
+  T extends Partial<RecipesPublicAllInfo>,
+>(
+  overrides: T = {} as T
+) => ({
+  id: randomIntegerId(),
+  userId: randomOAuthId(),
+  title: randomRecipeTitle(),
+  duration: randomDuration(),
+  steps: random.paragraph(),
+  imageUrl: random.url(),
+  author: basicAuthor(),
   ingredients: [random.string()],
   tools: [random.string()],
   rating: randomRating(),

@@ -1,5 +1,5 @@
 import { createCallerFactory } from '@server/trpc';
-import { fakeRecipe } from '@server/entities/tests/fakes';
+import { fakeRecipeAllInfoWithoutEmail } from '@server/entities/tests/fakes';
 import type { RecipesService } from '@server/services/recipesService';
 import type { Database } from '@server/database';
 import recipesRouter from '..';
@@ -29,7 +29,10 @@ it('Should return an empty list if there are no recipes', async () => {
 });
 
 it('Should return a list of recipes', async () => {
-  const fakeRecipes = [fakeRecipe(), fakeRecipe()];
+  const fakeRecipes = [
+    fakeRecipeAllInfoWithoutEmail(),
+    fakeRecipeAllInfoWithoutEmail(),
+  ];
   mockFindAll.mockResolvedValueOnce(fakeRecipes);
 
   const recipes = await findAll({});

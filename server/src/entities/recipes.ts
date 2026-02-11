@@ -13,6 +13,8 @@ import type { IngredientsName } from './ingredients';
 import type { ToolsName } from './tools';
 import type { Rating } from './ratings';
 
+export const stepsSchema = z.array(z.string().nonempty().trim());
+
 export const recipesSchema = z.object({
   id: integerIdSchema,
   userId: oauthUserIdSchema,
@@ -26,7 +28,7 @@ export const recipesSchema = z.object({
     .int()
     .min(MIN_DURATION, 'Too short duration')
     .max(MAX_DURATION, 'Too long duration'),
-  steps: z.array(z.string().nonempty().trim()),
+  steps: stepsSchema,
   imageUrl: z.string().trim().optional(),
   embedding: z.array(z.number().nullable()).optional(),
   createdAt: createdAtSchema,
@@ -43,12 +45,12 @@ export const recipesKeysPublic = recipesKeysAll.filter(
 export type RecipesPublic = Pick<
   Selectable<Recipes>,
   (typeof recipesKeysPublic)[number]
-> & { author: UsersPublicWithoutId; rating: Rating };
+> & { author: UsersPublicWithoutId; rating?: Rating };
 
 export type RecipesPublicWithoutRating = Omit<RecipesPublic, 'rating'>;
 
 export type RecipesPublicAllInfo = Omit<RecipesPublic, 'steps'> & {
   ingredients: IngredientsName[];
   tools: ToolsName[];
-  steps: string[];
+  steps: z.infer<typeof stepsSchema>;
 };

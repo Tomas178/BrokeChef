@@ -1,7 +1,10 @@
 import type { RecipesService } from '@server/services/recipesService';
 import { createCallerFactory } from '@server/trpc';
 import type { Database } from '@server/database';
-import { fakeRecipe, fakeUser } from '@server/entities/tests/fakes';
+import {
+  fakeRecipeAllInfoWithoutToolsAndIngredientsAndEmail,
+  fakeUser,
+} from '@server/entities/tests/fakes';
 import { authContext, requestContext } from '@tests/utils/context';
 import { initialPage } from '@server/entities/shared';
 import recipesRouter from '..';
@@ -43,9 +46,14 @@ describe('Authenticated tests', () => {
   });
 
   it('Should return recipes', async () => {
-    const recipes = [fakeRecipe(), fakeRecipe()];
+    const recipes = [
+      fakeRecipeAllInfoWithoutToolsAndIngredientsAndEmail(),
+      fakeRecipeAllInfoWithoutToolsAndIngredientsAndEmail(),
+    ];
     mockFindAllRecommended.mockResolvedValueOnce(recipes);
 
-    await expect(findAllRecommended(initialPage)).resolves.toBe(recipes);
+    await expect(findAllRecommended(initialPage)).resolves.toStrictEqual(
+      recipes
+    );
   });
 });
