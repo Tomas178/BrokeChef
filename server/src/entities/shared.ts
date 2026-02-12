@@ -9,6 +9,8 @@ export const nonNegativeIntegerSchema = integerSchema.nonnegative();
 export const integerIdSchema = integerSchema.positive();
 export const integerIdObjectSchema = z.object({ id: integerIdSchema });
 
+export const booleanSchema = z.boolean();
+
 export const oauthUserIdSchema = z.string().length(USER_ID_LENGTH);
 
 export const arrayStringSchema = z.array(z.string().nonempty().max(100).trim());

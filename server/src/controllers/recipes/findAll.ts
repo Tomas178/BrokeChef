@@ -2,7 +2,7 @@ import { publicProcedure } from '@server/trpc';
 import provideServices from '@server/trpc/provideServices';
 import { recipesService } from '@server/services/recipesService';
 import { paginationWithSortSchema } from '@server/entities/shared';
-import { recipesPublicArrayOutputSchema } from '@server/entities/outputSchemas';
+import { recipesPublicArrayOutputSchema } from '@server/controllers/outputSchemas/recipesSchemas';
 
 export default publicProcedure
   .use(

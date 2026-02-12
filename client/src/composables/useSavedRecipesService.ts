@@ -9,7 +9,7 @@ export function useSavedRecipeService(recipeId: number) {
   const isSaved = ref(false);
 
   const [saveRecipe, saveErrorMessage] = useErrorMessage(
-    async () => await trpc.savedRecipes.save.mutate(recipeId),
+    async () => await trpc.savedRecipes.save.mutate({ id: recipeId }),
     true
   );
 
@@ -26,7 +26,7 @@ export function useSavedRecipeService(recipeId: number) {
   }
 
   const [unsaveRecipe, unsaveErrorMessage] = useErrorMessage(
-    async () => await trpc.savedRecipes.unsave.mutate(recipeId),
+    async () => await trpc.savedRecipes.unsave.mutate({ id: recipeId }),
     true
   );
 
@@ -47,7 +47,7 @@ export function useSavedRecipeService(recipeId: number) {
   }
 
   async function checkIfSaved() {
-    isSaved.value = await trpc.savedRecipes.isSaved.query(recipeId);
+    isSaved.value = await trpc.savedRecipes.isSaved.query({ id: recipeId });
   }
 
   return {

@@ -2,7 +2,7 @@ import { paginationSchema } from '@server/entities/shared';
 import { authenticatedProcedure } from '@server/trpc/authenticatedProcedure';
 import provideServices from '@server/trpc/provideServices';
 import { recipesService } from '@server/services/recipesService';
-import { recipesPublicArrayOutputSchema } from '@server/entities/outputSchemas';
+import { recipesPublicArrayOutputSchema } from '@server/controllers/outputSchemas/recipesSchemas';
 
 export default authenticatedProcedure
   .use(provideServices({ recipesService }))

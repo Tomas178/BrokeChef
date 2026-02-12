@@ -27,7 +27,9 @@ describe('Unauthenticated tests', () => {
   const { isAuthor } = createCaller(requestContext({ database }));
 
   it('Should throw an error if user is not authenticated', async () => {
-    await expect(isAuthor({ recipeId })).rejects.toThrow(/unauthenticated/i);
+    await expect(isAuthor({ id: recipeId })).rejects.toThrow(
+      /unauthenticated/i
+    );
     expect(mockIsAuthor).not.toHaveBeenCalled();
   });
 });
@@ -38,12 +40,12 @@ describe('Authenticated tests', () => {
   it('Should return false if user is not an author', async () => {
     mockIsAuthor.mockResolvedValueOnce(false);
 
-    await expect(isAuthor({ recipeId })).resolves.toBeFalsy();
+    await expect(isAuthor({ id: recipeId })).resolves.toBeFalsy();
   });
 
   it('Should return true if user is an author', async () => {
     mockIsAuthor.mockResolvedValueOnce(true);
 
-    await expect(isAuthor({ recipeId })).resolves.toBeTruthy();
+    await expect(isAuthor({ id: recipeId })).resolves.toBeTruthy();
   });
 });

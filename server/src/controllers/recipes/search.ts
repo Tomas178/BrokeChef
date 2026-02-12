@@ -8,7 +8,7 @@ import {
 } from '@server/utils/rateLimiter';
 import RateLimitError from '@server/utils/errors/general/RateLimitError';
 import { TRPCError } from '@trpc/server';
-import { recipesPublicArrayOutputSchema } from '@server/entities/outputSchemas';
+import { recipesPublicArrayOutputSchema } from '@server/controllers/outputSchemas/recipesSchemas';
 
 export const NO_IP_ADDRESS = 'unknown-ip';
 

@@ -4,7 +4,7 @@ import { authenticatedProcedure } from '@server/trpc/authenticatedProcedure';
 import provideServices from '@server/trpc/provideServices';
 import { recipesService } from '@server/services/recipesService';
 import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
-import { recipesPublicAllInfoOutputSchema } from '@server/entities/outputSchemas';
+import { recipesPublicAllInfoOutputSchema } from '@server/controllers/outputSchemas/recipesSchemas';
 
 export default authenticatedProcedure
   .use(provideServices({ recipesService }))

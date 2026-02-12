@@ -2,7 +2,7 @@ import { recipesSchema } from '@server/entities/recipes';
 import { usersPublicWithoutIdSchema } from '@server/entities/users';
 import { ratingSchema } from '@server/entities/ratings';
 import * as z from 'zod';
-import { arrayStringSchema } from './shared';
+import { arrayStringSchema } from '@server/entities/shared';
 
 const urlSchema = z.string().trim();
 

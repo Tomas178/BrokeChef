@@ -6,6 +6,7 @@ import type { Database } from '@server/database';
 import RecipeAlreadySaved from '@server/utils/errors/recipes/RecipeAlreadySaved';
 import CannotSaveOwnRecipe from '@server/utils/errors/recipes/CannotSaveOwnRecipe';
 import type { SavedRecipesLink } from '@server/repositories/savedRecipesRepository';
+import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import savedRecipesRouter from '..';
 
 const mockCreate = vi.fn();
@@ -35,7 +36,7 @@ describe('Unauthenticated tests', () => {
   const { save } = createCaller(requestContext({ database }));
 
   it('Should throw an error if user is not authenticated', async () => {
-    await expect(save(recipeId)).rejects.toThrow(/unauthenticated/i);
+    await expect(save({ id: recipeId })).rejects.toThrow(/unauthenticated/i);
     expect(mockCreate).not.toHaveBeenCalled();
   });
 });
@@ -43,30 +44,37 @@ describe('Unauthenticated tests', () => {
 describe('Authenticated tests', () => {
   const { save } = createCaller(authContext({ database }, userSaver));
 
+  it('Should throw an error if recipe is not found', async () => {
+    mockCreate.mockRejectedValueOnce(new RecipeNotFound());
+
+    await expect(save({ id: recipeId })).rejects.toThrow(/not found/i);
+    expect(mockCreate).toHaveBeenCalledOnce();
+  });
+
   it('Should throw an error if creator is trying to save his own recipe', async () => {
     mockCreate.mockRejectedValueOnce(new CannotSaveOwnRecipe());
 
-    await expect(save(recipeId)).rejects.toThrow(/own|author/i);
+    await expect(save({ id: recipeId })).rejects.toThrow(/own|author/i);
     expect(mockCreate).toHaveBeenCalledOnce();
   });
 
   it('Should throw an error if recipe is already saved', async () => {
     mockCreate.mockRejectedValueOnce(new RecipeAlreadySaved());
 
-    await expect(save(recipeId)).rejects.toThrow(/saved/i);
+    await expect(save({ id: recipeId })).rejects.toThrow(/saved/i);
     expect(mockCreate).toHaveBeenCalledOnce();
   });
 
   it('Should rethrow any other error', async () => {
     mockCreate.mockRejectedValueOnce(new Error('Something happened'));
 
-    await expect(save(recipeId)).rejects.toThrow(/unexpected/i);
+    await expect(save({ id: recipeId })).rejects.toThrow(/unexpected/i);
   });
 
   it('Should create a saved recipe record', async () => {
     mockCreate.mockResolvedValueOnce(savedRecipeLink);
 
-    const savedRecipe = await save(recipeId);
+    const savedRecipe = await save({ id: recipeId });
 
     expect(mockCreate).toHaveBeenCalledOnce();
     expect(savedRecipe).toMatchObject({
