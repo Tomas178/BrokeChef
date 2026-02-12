@@ -42,7 +42,7 @@ export function useRecipesService(recipeId?: number) {
 
   async function getRecipe() {
     if (!recipeId) return;
-    recipe.value = await trpc.recipes.findById.query(recipeId);
+    recipe.value = await trpc.recipes.findById.query({ id: recipeId });
   }
 
   async function checkIsAuthor() {

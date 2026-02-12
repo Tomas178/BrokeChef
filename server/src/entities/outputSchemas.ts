@@ -1,6 +1,6 @@
 import { recipesSchema } from '@server/entities/recipes';
 import { usersPublicWithoutIdSchema } from '@server/entities/users';
-import { ratingOptionalSchema } from '@server/entities/ratings';
+import { ratingSchema } from '@server/entities/ratings';
 import * as z from 'zod';
 import { arrayStringSchema } from './shared';
 
@@ -8,7 +8,7 @@ const urlSchema = z.string().trim();
 
 const recipesPublicCommonOutputSchema = z.object({
   author: usersPublicWithoutIdSchema,
-  rating: ratingOptionalSchema,
+  rating: ratingSchema.nullish(),
   imageUrl: urlSchema,
 });
 
