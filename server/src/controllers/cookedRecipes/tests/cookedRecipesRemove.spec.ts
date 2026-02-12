@@ -35,7 +35,7 @@ describe('Unauthenticated tests', () => {
   const { unmark } = createCaller(requestContext({ database }));
 
   it('Should throw an error if user is not authenticated', async () => {
-    await expect(unmark(recipeId)).rejects.toThrow(/unauthenticated/i);
+    await expect(unmark({ id: recipeId })).rejects.toThrow(/unauthenticated/i);
     expect(mockRemove).not.toHaveBeenCalled();
   });
 });
@@ -48,26 +48,29 @@ describe('Authenticated tests', () => {
   it('Should throw an error if recipe is not found', async () => {
     mockRemove.mockRejectedValueOnce(new RecipeNotFound());
 
-    await expect(unmark(recipeId)).rejects.toThrow(/not found/i);
+    await expect(unmark({ id: recipeId })).rejects.toThrow(/not found/i);
   });
 
   it('Should throw an error if cooked recipe record is not found', async () => {
     mockRemove.mockRejectedValueOnce(new CookedRecipeNotFound());
 
-    await expect(unmark(recipeId)).rejects.toThrow(/not found/i);
+    await expect(unmark({ id: recipeId })).rejects.toThrow(/not found/i);
   });
 
   it('Should throw general error if any other error occurs', async () => {
     mockRemove.mockRejectedValueOnce(new Error('Something else happened'));
 
-    await expect(unmark(recipeId)).rejects.toThrow(/failed|unmark/i);
+    await expect(unmark({ id: recipeId })).rejects.toThrow(/failed|unmark/i);
   });
 
   it('Should unmark the cooked recipe record', async () => {
     mockRemove.mockResolvedValueOnce(cookedRecipeLink);
 
-    const unmarkedRecipe = await unmark(recipeId);
+    const unmarkedRecipe = await unmark({ id: recipeId });
 
-    expect(unmarkedRecipe).toEqual(cookedRecipeLink);
+    expect(unmarkedRecipe).toEqual({
+      ...cookedRecipeLink,
+      createdAt: expect.any(Date),
+    });
   });
 });

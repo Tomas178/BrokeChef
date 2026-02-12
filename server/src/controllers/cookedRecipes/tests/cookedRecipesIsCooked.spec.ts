@@ -27,7 +27,9 @@ describe('Unauthenticated tests', () => {
   const { isMarked } = createCaller(requestContext({ database }));
 
   it('Should throw an error if user is not authenticated', async () => {
-    await expect(isMarked(recipeId)).rejects.toThrow(/unauthenticated/i);
+    await expect(isMarked({ id: recipeId })).rejects.toThrow(
+      /unauthenticated/i
+    );
     expect(mockIsCooked).not.toHaveBeenCalled();
   });
 });
@@ -40,12 +42,12 @@ describe('Authenticated tests', () => {
   it('Should return false if user has not marked the recipe as already cooked', async () => {
     mockIsCooked.mockResolvedValueOnce(false);
 
-    await expect(isMarked(recipeId)).resolves.toBeFalsy();
+    await expect(isMarked({ id: recipeId })).resolves.toBeFalsy();
   });
 
   it('Should return true if user has marked the recipe as already cooked', async () => {
     mockIsCooked.mockResolvedValueOnce(true);
 
-    await expect(isMarked(recipeId)).resolves.toBeTruthy();
+    await expect(isMarked({ id: recipeId })).resolves.toBeTruthy();
   });
 });

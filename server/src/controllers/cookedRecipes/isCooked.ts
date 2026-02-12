@@ -1,5 +1,5 @@
 import provideRepos from '@server/trpc/provideRepos';
-import { integerIdSchema } from '@server/entities/shared';
+import { booleanSchema, integerIdObjectSchema } from '@server/entities/shared';
 import {
   cookedRecipesRepository,
   type CookedRecipesLink,
@@ -8,8 +8,18 @@ import { authenticatedProcedure } from '@server/trpc/authenticatedProcedure';
 
 export default authenticatedProcedure
   .use(provideRepos({ cookedRecipesRepository }))
-  .input(integerIdSchema)
-  .query(async ({ input: recipeId, ctx: { authUser, repos } }) => {
+  .meta({
+    openapi: {
+      method: 'GET',
+      path: '/cookedRecipes/isCooked',
+      summary: 'Check if the recipe has already been saevd',
+      tags: ['cookedRecipes'],
+      protect: true,
+    },
+  })
+  .input(integerIdObjectSchema)
+  .output(booleanSchema)
+  .query(async ({ input: { id: recipeId }, ctx: { authUser, repos } }) => {
     const link: CookedRecipesLink = {
       userId: authUser.id,
       recipeId,

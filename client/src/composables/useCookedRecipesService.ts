@@ -9,7 +9,7 @@ export function useCookedRecipesService(recipeId: number) {
   const isCooked = ref(false);
 
   const [markAsCooked, markCookedErrorMessage] = useErrorMessage(
-    async () => await trpc.cookedRecipes.mark.mutate(recipeId),
+    async () => await trpc.cookedRecipes.mark.mutate({ id: recipeId }),
     true
   );
 
@@ -30,7 +30,7 @@ export function useCookedRecipesService(recipeId: number) {
   }
 
   const [unmarkAsCooked, unmarkCookedErrorMessage] = useErrorMessage(
-    async () => await trpc.cookedRecipes.unmark.mutate(recipeId),
+    async () => await trpc.cookedRecipes.unmark.mutate({ id: recipeId }),
     true
   );
 
@@ -51,7 +51,7 @@ export function useCookedRecipesService(recipeId: number) {
   }
 
   async function checkIfCooked() {
-    isCooked.value = await trpc.cookedRecipes.isMarked.query(recipeId);
+    isCooked.value = await trpc.cookedRecipes.isMarked.query({ id: recipeId });
   }
 
   return {

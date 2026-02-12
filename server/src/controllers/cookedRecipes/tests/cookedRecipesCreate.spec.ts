@@ -6,6 +6,7 @@ import type { CookedRecipesLink } from '@server/repositories/cookedRecipesReposi
 import { authContext, requestContext } from '@tests/utils/context';
 import CannotMarkOwnRecipeAsCooked from '@server/utils/errors/recipes/CannotMarkOwnRecipeAsCooked';
 import RecipeAlreadyMarkedAsCooked from '@server/utils/errors/recipes/RecipeAlreadyMarkedAsCooked';
+import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import cookedRecipesRouter from '..';
 
 const mockCreate = vi.fn();
@@ -35,7 +36,7 @@ describe('Unauthenticated tests', () => {
   const { mark } = createCaller(requestContext({ database }));
 
   it('Should thrown an error if user is not authenticated', async () => {
-    await expect(mark(recipeId)).rejects.toThrow(/unauthenticated/i);
+    await expect(mark({ id: recipeId })).rejects.toThrow(/unauthenticated/i);
     expect(mockCreate).not.toHaveBeenCalled();
   });
 });
@@ -45,28 +46,34 @@ describe('Authenticated tests', () => {
 
   afterEach(() => expect(mockCreate).toHaveBeenCalledOnce());
 
+  it('Should throw an error if recipe does not exist', async () => {
+    mockCreate.mockRejectedValueOnce(new RecipeNotFound());
+
+    await expect(mark({ id: recipeId })).rejects.toThrow(/not found/i);
+  });
+
   it('Should throw an error if author is trying to mark his own recipe as cooked', async () => {
     mockCreate.mockRejectedValueOnce(new CannotMarkOwnRecipeAsCooked());
 
-    await expect(mark(recipeId)).rejects.toThrow(/failed|mark/i);
+    await expect(mark({ id: recipeId })).rejects.toThrow(/failed|mark/i);
   });
 
   it('Should throw an error if recipe is already marked as cooked', async () => {
     mockCreate.mockRejectedValueOnce(new RecipeAlreadyMarkedAsCooked());
 
-    await expect(mark(recipeId)).rejects.toThrow(/mark|cooked/i);
+    await expect(mark({ id: recipeId })).rejects.toThrow(/mark|cooked/i);
   });
 
   it('Should throw general error if any other error occurs', async () => {
     mockCreate.mockRejectedValueOnce(new Error('Something else happened'));
 
-    await expect(mark(recipeId)).rejects.toThrow(/failed|mark/i);
+    await expect(mark({ id: recipeId })).rejects.toThrow(/failed|mark/i);
   });
 
   it('Should create a cooked recipe record', async () => {
     mockCreate.mockResolvedValueOnce(cookedRecipeLink);
 
-    const savedRecipe = await mark(recipeId);
+    const savedRecipe = await mark({ id: recipeId });
 
     expect(savedRecipe).toMatchObject({
       userId: userChef.id,
