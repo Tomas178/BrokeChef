@@ -30,7 +30,7 @@ const createCaller = createCallerFactory(routes);
 const authenticated = createCaller(authContext({ database }, userOne));
 
 it('Should pass if collection belongs to the user', async () => {
-  const response = await authenticated.testCall(collectionOne.id);
+  const response = await authenticated.testCall({ id: collectionOne.id });
 
   expect(response).toEqual('passed');
 });
@@ -42,9 +42,9 @@ it('Should throw an error if collectionId is not provided', async () => {
 it('Should throw an error if user provides a non-existing collectionId', async () => {
   const nonExistantCollectionId = collectionOne.id + collectionTwo.id;
 
-  await expect(authenticated.testCall(nonExistantCollectionId)).rejects.toThrow(
-    /collection/i
-  );
+  await expect(
+    authenticated.testCall({ id: nonExistantCollectionId })
+  ).rejects.toThrow(/collection/i);
 });
 
 it('Should throw an error if user provides undefined collectionId', async () => {
@@ -54,7 +54,7 @@ it('Should throw an error if user provides undefined collectionId', async () => 
 });
 
 it('Should throw an error if collection does not belong to the user', async () => {
-  await expect(authenticated.testCall(collectionTwo.id)).rejects.toThrow(
-    /collection/i
-  );
+  await expect(
+    authenticated.testCall({ id: collectionTwo.id })
+  ).rejects.toThrow(/collection/i);
 });

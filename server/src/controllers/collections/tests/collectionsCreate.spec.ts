@@ -3,7 +3,7 @@ import { createCallerFactory } from '@server/trpc';
 import {
   fakeUser,
   fakeCollectionRequestData,
-  fakeCollection,
+  fakeCollectionWithId,
 } from '@server/entities/tests/fakes';
 import { authContext, requestContext } from '@tests/utils/context';
 import type { Database } from '@server/database';
@@ -26,7 +26,7 @@ const database = {} as Database;
 
 const user = fakeUser();
 const requestData = fakeCollectionRequestData();
-const responseData = fakeCollection(requestData);
+const responseData = fakeCollectionWithId(requestData);
 
 beforeEach(() => vi.resetAllMocks());
 

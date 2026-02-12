@@ -33,7 +33,7 @@ export interface CollectionsService {
   create: (
     dataForCollection: CreateCollectionInput
   ) => Promise<CollectionsPublic | undefined>;
-  findById: (id: number) => Promise<CollectionsPublic | undefined>;
+  findById: (id: number) => Promise<CollectionsPublic>;
   findByUserId: (userId: string) => Promise<CollectionsPublicBasic[]>;
   findRecipesByCollectionId: (collectionId: number) => Promise<RecipesPublic[]>;
   totalCollectionsByUser: (userId: string) => Promise<number>;

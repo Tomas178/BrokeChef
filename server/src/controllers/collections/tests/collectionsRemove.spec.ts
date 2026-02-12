@@ -40,7 +40,9 @@ describe('Unauthenticated tests', () => {
   const { remove } = createCaller(requestContext({ database }));
 
   it('Should throw an error if user is not authenticated', async () => {
-    await expect(remove(collectionId)).rejects.toThrow(/unauthenticated/i);
+    await expect(remove({ id: collectionId })).rejects.toThrow(
+      /unauthenticated/i
+    );
   });
 });
 
@@ -50,25 +52,27 @@ describe('Authenticated tests', () => {
   it('Should throw an error if user is not the collection author', async () => {
     mockIsAuthor.mockResolvedValueOnce(false);
 
-    await expect(remove(collectionId)).rejects.toThrow(/author|remove|only/i);
+    await expect(remove({ id: collectionId })).rejects.toThrow(
+      /author|remove|only/i
+    );
   });
 
   it('Should throw an error if collection does not exist', async () => {
     mockRemove.mockRejectedValueOnce(new CollectionNotFound());
 
-    await expect(remove(collectionId)).rejects.toThrow(/not found/i);
+    await expect(remove({ id: collectionId })).rejects.toThrow(/not found/i);
   });
 
   it('Should throw an error if failure happened upon deleting collection image from S3', async () => {
     mockRemove.mockRejectedValueOnce(new S3ServiceException({} as any));
 
-    await expect(remove(collectionId)).rejects.toThrow(/failed/i);
+    await expect(remove({ id: collectionId })).rejects.toThrow(/failed/i);
   });
 
   it('Should rethrow any other error', async () => {
     mockRemove.mockRejectedValueOnce(new Error('Something happened'));
 
-    await expect(remove(collectionId)).rejects.toThrow(/unexpected/i);
+    await expect(remove({ id: collectionId })).rejects.toThrow(/unexpected/i);
   });
 
   it('Should return nothing when recipe was removed', async () => {
@@ -76,6 +80,6 @@ describe('Authenticated tests', () => {
 
     mockRemove.mockResolvedValueOnce(removedCollection);
 
-    await expect(remove(collectionId)).resolves.toBeUndefined();
+    await expect(remove({ id: collectionId })).resolves.toBeUndefined();
   });
 });

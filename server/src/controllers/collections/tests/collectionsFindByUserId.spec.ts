@@ -1,9 +1,11 @@
 import type { Database } from '@server/database';
 import { createCallerFactory } from '@server/trpc';
 import type { CollectionsService } from '@server/services/collectionsService';
-import { fakeCollection, fakeUser } from '@server/entities/tests/fakes';
+import { fakeCollectionWithId, fakeUser } from '@server/entities/tests/fakes';
 import { authContext, requestContext } from '@tests/utils/context';
 import UserNotFound from '@server/utils/errors/users/UserNotFound';
+import { pick } from 'lodash-es';
+import { collectionsKeysPublicBasic } from '@server/entities/collections';
 import collectionsRouter from '..';
 
 const mockFindByUserId = vi.fn();
@@ -28,7 +30,7 @@ describe('Unauthenticated tests', () => {
   const { findByUserId } = createCaller(requestContext({ database }));
 
   it('Should thrown an error if user is not authenticated', async () => {
-    await expect(findByUserId(userId)).rejects.toThrow(/unauthenticated/i);
+    await expect(findByUserId({ userId })).rejects.toThrow(/unauthenticated/i);
     expect(mockFindByUserId).not.toHaveBeenCalled();
   });
 });
@@ -39,16 +41,18 @@ describe('Authenticated tests', async () => {
   it('Should throw an error when user is not found', async () => {
     mockFindByUserId.mockRejectedValueOnce(new UserNotFound());
 
-    await expect(findByUserId(userId)).rejects.toThrow(/not found/i);
+    await expect(findByUserId({ userId })).rejects.toThrow(/not found/i);
   });
 
   it('Should rethrow any other error', async () => {
     mockFindByUserId.mockRejectedValueOnce(new Error('Something happened'));
 
-    await expect(findByUserId(userId)).rejects.toThrow(/unexpected/i);
+    await expect(findByUserId({ userId })).rejects.toThrow(/unexpected/i);
   });
 
   it('Should call findByUserId with userId from cookies when userId is not provided via argument to the TRPC procedure', async () => {
+    mockFindByUserId.mockResolvedValueOnce([]);
+
     await findByUserId();
 
     expect(mockFindByUserId).toHaveBeenCalledExactlyOnceWith(userId);
@@ -57,14 +61,19 @@ describe('Authenticated tests', async () => {
   it('Should return an empty array when user has no collections', async () => {
     mockFindByUserId.mockResolvedValueOnce([]);
 
-    await expect(findByUserId(userId)).resolves.toEqual([]);
+    await expect(findByUserId({ userId })).resolves.toEqual([]);
   });
 
   it('Should return an array of collections', async () => {
-    const collections = [fakeCollection(), fakeCollection(), fakeCollection()];
+    const collections = [
+      fakeCollectionWithId(),
+      fakeCollectionWithId(),
+      fakeCollectionWithId(),
+    ].map(collection => pick(collection, collectionsKeysPublicBasic));
+
     mockFindByUserId.mockResolvedValueOnce(collections);
 
-    const retrievedCollections = await findByUserId(userId);
+    const retrievedCollections = await findByUserId({ userId });
 
     expect(retrievedCollections).toHaveLength(collections.length);
 

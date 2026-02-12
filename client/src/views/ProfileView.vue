@@ -271,7 +271,9 @@ async function openCollectionRecipes(collection: CollectionsPublicBasic) {
 
   try {
     collectionRecipes.value =
-      await trpc.collections.findRecipesByCollectionId.query(collection.id);
+      await trpc.collections.findRecipesByCollectionId.query({
+        id: collection.id,
+      });
   } finally {
     isLoadingCollectionRecipes.value = false;
   }
@@ -281,7 +283,7 @@ const [removeCollection, removeCollectionErrorMessage] = useErrorMessage(
   (async (...args: unknown[]) => {
     const collectionId = args[0] as number;
 
-    return trpc.collections.remove.mutate(collectionId);
+    return trpc.collections.remove.mutate({ id: collectionId });
   }) as (...args: unknown[]) => unknown,
   true
 );

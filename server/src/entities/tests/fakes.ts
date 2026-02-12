@@ -293,6 +293,16 @@ export const fakeCollection = <T extends Partial<Insertable<Collections>>>(
   updatedAt: new Date(),
 });
 
+export const fakeCollectionWithId = <
+  T extends Partial<Insertable<Collections>>,
+>(
+  overrides: T = {} as T
+) => ({
+  ...fakeCollection(),
+  id: randomIntegerId(),
+  ...overrides,
+});
+
 export const fakeCreateCollectionData = <
   T extends Partial<CreateCollectionInput>,
 >(

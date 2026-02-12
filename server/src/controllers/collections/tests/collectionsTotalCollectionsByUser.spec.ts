@@ -30,7 +30,7 @@ describe('Unauthenticated tests', () => {
   const { totalCollectionsByUser } = createCaller(requestContext({ database }));
 
   it('Should thrown an error if user is not authenticated', async () => {
-    await expect(totalCollectionsByUser(userId)).rejects.toThrow(
+    await expect(totalCollectionsByUser({ userId })).rejects.toThrow(
       /unauthenticated/i
     );
     expect(mockTotalCollectionsByUser).not.toHaveBeenCalled();
@@ -45,7 +45,9 @@ describe('Authenticated tests', () => {
   it('Should throw an error if user does not exist', async () => {
     mockTotalCollectionsByUser.mockRejectedValueOnce(new UserNotFound());
 
-    await expect(totalCollectionsByUser(userId)).rejects.toThrow(/not found/i);
+    await expect(totalCollectionsByUser({ userId })).rejects.toThrow(
+      /not found/i
+    );
   });
 
   it('Should rethrow any other error', async () => {
@@ -53,22 +55,24 @@ describe('Authenticated tests', () => {
       new Error('Something happened')
     );
 
-    await expect(totalCollectionsByUser(userId)).rejects.toThrow(/unexpected/i);
+    await expect(totalCollectionsByUser({ userId })).rejects.toThrow(
+      /unexpected/i
+    );
   });
 
   it('Should call totalCollectionsByUser with userId from cookies return user when not given userId but authenticanted', async () => {
-    mockTotalCollectionsByUser.mockResolvedValueOnce(user);
+    mockTotalCollectionsByUser.mockResolvedValueOnce(totalCollectionsCount);
 
     const userByAuth = await totalCollectionsByUser();
 
     expect(mockTotalCollectionsByUser).toHaveBeenCalledExactlyOnceWith(user.id);
-    expect(userByAuth).toEqual(user);
+    expect(userByAuth).toEqual(totalCollectionsCount);
   });
 
   it('Should return the total count of collections that user has created', async () => {
     mockTotalCollectionsByUser.mockResolvedValueOnce(totalCollectionsCount);
 
-    await expect(totalCollectionsByUser(userId)).resolves.toBe(
+    await expect(totalCollectionsByUser({ userId })).resolves.toBe(
       totalCollectionsCount
     );
   });

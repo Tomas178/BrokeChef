@@ -4,10 +4,21 @@ import { collectionsService } from '@server/services/collectionsService';
 import CollectionNotFound from '@server/utils/errors/collections/CollectionNotFound';
 import { TRPCError } from '@trpc/server';
 import { S3ServiceException } from '@aws-sdk/client-s3';
+import { voidSchema } from '@server/controllers/outputSchemas/shared';
 
 export default collectionAuthorProcedure
   .use(provideServices({ collectionsService }))
-  .mutation(async ({ input: collectionId, ctx: { services } }) => {
+  .meta({
+    openapi: {
+      method: 'DELETE',
+      path: '/collections/remove',
+      summary: 'Deletes the collection',
+      tags: ['Collections'],
+      protect: true,
+    },
+  })
+  .output(voidSchema)
+  .mutation(async ({ input: { id: collectionId }, ctx: { services } }) => {
     try {
       await services.collectionsService.remove(collectionId);
 

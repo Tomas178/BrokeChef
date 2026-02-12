@@ -3,6 +3,7 @@ import { createCallerFactory } from '@server/trpc';
 import type { Database } from '@server/database';
 import { fakeCollection, fakeUser } from '@server/entities/tests/fakes';
 import { authContext, requestContext } from '@tests/utils/context';
+import CollectionNotFound from '@server/utils/errors/collections/CollectionNotFound';
 import collectionsRouter from '..';
 
 const mockFindById = vi.fn();
@@ -28,7 +29,9 @@ describe('Unauthenticated tests', () => {
   const { findById } = createCaller(requestContext({ database }));
 
   it('Should thrown an error if user is not authenticated', async () => {
-    await expect(findById(collectionId)).rejects.toThrow(/unauthenticated/i);
+    await expect(findById({ id: collectionId })).rejects.toThrow(
+      /unauthenticated/i
+    );
     expect(mockFindById).not.toHaveBeenCalled();
   });
 });
@@ -36,15 +39,23 @@ describe('Unauthenticated tests', () => {
 describe('Authenticated tests', () => {
   const { findById } = createCaller(authContext({ database }, user));
 
-  it('Should return undefined if there is no collection found', async () => {
-    mockFindById.mockResolvedValueOnce(undefined);
+  it('Should throw an error if collection does not exist', async () => {
+    mockFindById.mockRejectedValueOnce(new CollectionNotFound());
 
-    await expect(findById(collectionId)).resolves.toBeUndefined();
+    await expect(findById({ id: collectionId })).rejects.toThrow(/not found/i);
+  });
+
+  it('Should throw general error any other error', async () => {
+    mockFindById.mockRejectedValueOnce(new Error('error'));
+
+    await expect(findById({ id: collectionId })).rejects.toThrow(/unexpected/i);
   });
 
   it('Should return the collection', async () => {
     mockFindById.mockResolvedValueOnce(collection);
 
-    await expect(findById(collectionId)).resolves.toBe(collection);
+    await expect(findById({ id: collectionId })).resolves.toStrictEqual(
+      collection
+    );
   });
 });

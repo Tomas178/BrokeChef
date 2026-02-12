@@ -1,7 +1,10 @@
 import type { CollectionsService } from '@server/services/collectionsService';
 import { createCallerFactory } from '@server/trpc';
 import type { Database } from '@server/database';
-import { fakeRecipe, fakeUser } from '@server/entities/tests/fakes';
+import {
+  fakeRecipeAllInfoWithoutToolsAndIngredientsAndEmail,
+  fakeUser,
+} from '@server/entities/tests/fakes';
 import { authContext, requestContext } from '@tests/utils/context';
 import CollectionNotFound from '@server/utils/errors/collections/CollectionNotFound';
 import collectionsRouter from '..';
@@ -22,7 +25,10 @@ const database = {} as Database;
 const user = fakeUser();
 const collectionId = 123;
 
-const recipes = [fakeRecipe(), fakeRecipe()];
+const recipes = [
+  fakeRecipeAllInfoWithoutToolsAndIngredientsAndEmail(),
+  fakeRecipeAllInfoWithoutToolsAndIngredientsAndEmail(),
+];
 
 beforeEach(() => vi.resetAllMocks());
 
@@ -32,9 +38,9 @@ describe('Unauthenticated tests', () => {
   );
 
   it('Should thrown an error if user is not authenticated', async () => {
-    await expect(findRecipesByCollectionId(collectionId)).rejects.toThrow(
-      /unauthenticated/i
-    );
+    await expect(
+      findRecipesByCollectionId({ id: collectionId })
+    ).rejects.toThrow(/unauthenticated/i);
     expect(mockFindRecipesByCollectionId).not.toHaveBeenCalled();
   });
 });
@@ -49,9 +55,9 @@ describe('Authenticated tests', () => {
       new CollectionNotFound()
     );
 
-    await expect(findRecipesByCollectionId(collectionId)).rejects.toThrow(
-      /not found/i
-    );
+    await expect(
+      findRecipesByCollectionId({ id: collectionId })
+    ).rejects.toThrow(/not found/i);
   });
 
   it('Should rethrow any other error', async () => {
@@ -59,16 +65,16 @@ describe('Authenticated tests', () => {
       new Error('Something happened')
     );
 
-    await expect(findRecipesByCollectionId(collectionId)).rejects.toThrow(
-      /unexpected/i
-    );
+    await expect(
+      findRecipesByCollectionId({ id: collectionId })
+    ).rejects.toThrow(/unexpected/i);
   });
 
   it('Should return all the recipes', async () => {
     mockFindRecipesByCollectionId.mockResolvedValueOnce(recipes);
 
-    await expect(findRecipesByCollectionId(collectionId)).resolves.toEqual(
-      recipes
-    );
+    await expect(
+      findRecipesByCollectionId({ id: collectionId })
+    ).resolves.toEqual(recipes);
   });
 });
