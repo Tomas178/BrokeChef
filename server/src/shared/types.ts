@@ -21,3 +21,5 @@ export type * from '@server/controllers/ratings/create';
 export type * from '@server/utils/SSE';
 
 export type ObjectValues<T> = T[keyof T];
+
+export type Nullable<T> = T | null;

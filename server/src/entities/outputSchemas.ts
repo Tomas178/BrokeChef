@@ -8,8 +8,8 @@ const urlSchema = z.string().trim();
 
 const recipesPublicCommonOutputSchema = z.object({
   author: usersPublicWithoutIdSchema,
-  rating: ratingSchema.nullish(),
   imageUrl: urlSchema,
+  rating: ratingSchema.nullish(),
 });
 
 export const recipesPublicArrayOutputSchema = z.array(

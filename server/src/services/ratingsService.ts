@@ -9,6 +9,7 @@ import RecipeAlreadyRated from '@server/utils/errors/recipes/RecipeAlreadyRated'
 import { NoResultError } from 'kysely';
 import { PostgresError } from 'pg-error-enum';
 import logger from '@server/logger';
+import type { Nullable } from '@server/shared/types';
 import {
   validateRecipeAndUserIsNotAuthor,
   validateRecipeExists,
@@ -24,7 +25,7 @@ export interface RatingsService {
   getUserRatingForRecipe: (recipeId: number, userId: string) => Promise<Rating>;
   create: (recipeToRate: RatingInputFull) => Promise<RatingsPublic | undefined>;
   update: (recipeToUpdate: RatingInputFull) => Promise<Rating>;
-  remove: (userId: string, recipeId: number) => Promise<Rating>;
+  remove: (userId: string, recipeId: number) => Promise<Nullable<Rating>>;
 }
 
 export function ratingsService(database: Database): RatingsService {
