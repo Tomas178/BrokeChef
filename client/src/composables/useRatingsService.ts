@@ -77,7 +77,7 @@ export function useRatingsService(
   }
 
   const [removeRating, removeRatingErrorMessage] = useErrorMessage(
-    async () => await trpc.ratings.remove.mutate(recipeId),
+    async () => await trpc.ratings.remove.mutate({ id: recipeId }),
     true
   );
 
@@ -103,8 +103,9 @@ export function useRatingsService(
   }
 
   async function getUserRating() {
-    userRating.value =
-      await trpc.ratings.getUserRatingForRecipe.query(recipeId);
+    userRating.value = await trpc.ratings.getUserRatingForRecipe.query({
+      id: recipeId,
+    });
   }
 
   return {

@@ -82,7 +82,7 @@ async function handleChangeEmail() {
 }
 
 onMounted(async () => {
-  user.value = await trpc.users.findById.query(props.id);
+  user.value = await trpc.users.findById.query({ userId: props.id });
 });
 </script>
 

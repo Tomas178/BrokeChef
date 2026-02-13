@@ -89,7 +89,7 @@ const getUserIdFromRoute = (): string | undefined => {
 const [getUser] = useErrorMessage(async () => {
   const userId = getUserIdFromRoute();
 
-  user.value = await trpc.users.findById.query(userId);
+  user.value = await trpc.users.findById.query({ userId });
 });
 
 watch(
@@ -122,7 +122,9 @@ const [uploadImage, errorMessage] = useErrorMessage(async () => {
   );
 
   if (data.image && user.value) {
-    user.value.image = await trpc.users.updateImage.mutate(data.image);
+    user.value.image = await trpc.users.updateImage.mutate({
+      imageUrl: data.image,
+    });
   }
 
   return data.image;
@@ -160,7 +162,7 @@ watch(profileImageFile, async (newFile) => {
 
 const [follow, followErrorMessage] = useErrorMessage(async () => {
   if (!user.value) throw new Error('User not found');
-  return trpc.follows.follow.mutate(user.value.id);
+  return trpc.follows.follow.mutate({ userId: user.value.id });
 }, true);
 
 async function handleFollow() {
@@ -179,7 +181,7 @@ async function handleFollow() {
 
 const [unfollow, unfollowErrorMessage] = useErrorMessage(async () => {
   if (!user.value) throw new Error('User not found');
-  return trpc.follows.unfollow.mutate(user.value.id);
+  return trpc.follows.unfollow.mutate({ userId: user.value.id });
 }, true);
 
 async function handleUnfollow() {
@@ -207,9 +209,9 @@ async function fetchProfileData() {
   if (user.value) {
     [totalFollowing.value, totalFollowers.value, isFollowing.value] =
       await Promise.all([
-        trpc.follows.totalFollowing.query(user.value.id),
-        trpc.follows.totalFollowers.query(user.value.id),
-        trpc.follows.isFollowing.query(user.value.id),
+        trpc.follows.totalFollowing.query({ userId: user.value.id }),
+        trpc.follows.totalFollowers.query({ userId: user.value.id }),
+        trpc.follows.isFollowing.query({ userId: user.value.id }),
       ]);
   }
 
@@ -218,12 +220,12 @@ async function fetchProfileData() {
 
 const [getFollowing] = useErrorMessage(async () => {
   if (!user.value) throw new Error('User not found');
-  return trpc.follows.getFollowing.query(user.value.id);
+  return trpc.follows.getFollowing.query({ userId: user.value.id });
 }, true);
 
 const [getFollowers] = useErrorMessage(async () => {
   if (!user.value) throw new Error('User not found');
-  return trpc.follows.getFollowers.query(user.value.id);
+  return trpc.follows.getFollowers.query({ userId: user.value.id });
 }, true);
 
 async function openFollowModal(type: ModalType) {

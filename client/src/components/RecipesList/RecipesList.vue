@@ -54,9 +54,9 @@ async function loadRecipes() {
 
 async function loadTotal() {
   if (recipeType === RECIPE_TYPE.SAVED) {
-    totalRecipes.value = await trpc.users.totalSaved.query(userId);
+    totalRecipes.value = await trpc.users.totalSaved.query({ userId });
   } else {
-    totalRecipes.value = await trpc.users.totalCreated.query(userId);
+    totalRecipes.value = await trpc.users.totalCreated.query({ userId });
   }
 }
 
