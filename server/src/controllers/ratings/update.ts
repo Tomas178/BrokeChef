@@ -1,15 +1,14 @@
 import { authenticatedProcedure } from '@server/trpc/authenticatedProcedure';
 import provideServices from '@server/trpc/provideServices';
 import { ratingsService } from '@server/services/ratingsService';
-import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
-import { TRPCError } from '@trpc/server';
+import { withServiceErrors } from '@server/utils/errors/utils/withServiceErrors';
 import { createRatingSchema } from './create';
 
 export default authenticatedProcedure
   .use(provideServices({ ratingsService }))
   .input(createRatingSchema)
-  .mutation(async ({ input, ctx: { authUser, services } }) => {
-    try {
+  .mutation(async ({ input, ctx: { authUser, services } }) =>
+    withServiceErrors(async () => {
       const ratingForUpdate = {
         ...input,
         userId: authUser.id,
@@ -19,18 +18,5 @@ export default authenticatedProcedure
         await services.ratingsService.update(ratingForUpdate);
 
       return updatedRating;
-    } catch (error) {
-      if (error instanceof RecipeNotFound) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: error.message,
-        });
-      }
-
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'An unexpected error occurred',
-        cause: error,
-      });
-    }
-  });
+    })
+  );

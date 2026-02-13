@@ -1,9 +1,12 @@
-import { handleServiceErrors } from './handleServiceErrors';
+import { handleServiceErrors, type ErrorOverride } from './handleServiceErrors';
 
-export async function withServiceErrors<T>(fn: () => Promise<T>): Promise<T> {
+export async function withServiceErrors<T>(
+  fn: () => Promise<T>,
+  overrides?: ErrorOverride[]
+): Promise<T> {
   try {
     return await fn();
   } catch (error) {
-    handleServiceErrors(error);
+    handleServiceErrors(error, overrides);
   }
 }

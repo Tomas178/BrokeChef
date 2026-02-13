@@ -84,7 +84,7 @@ describe('Authenticated tests', () => {
       new Error('Failed to inserto into db')
     );
 
-    await expect(create(fakeCreateRecipeData())).rejects.toThrow(/failed/i);
+    await expect(create(fakeCreateRecipeData())).rejects.toThrow(/unexpected/i);
   });
 
   it('Should throw an error if recipe with the given title is already created by the user', async () => {

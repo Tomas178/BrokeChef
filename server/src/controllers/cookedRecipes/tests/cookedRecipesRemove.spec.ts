@@ -60,7 +60,7 @@ describe('Authenticated tests', () => {
   it('Should throw general error if any other error occurs', async () => {
     mockRemove.mockRejectedValueOnce(new Error('Something else happened'));
 
-    await expect(unmark({ id: recipeId })).rejects.toThrow(/failed|unmark/i);
+    await expect(unmark({ id: recipeId })).rejects.toThrow(/unexpected/i);
   });
 
   it('Should unmark the cooked recipe record', async () => {

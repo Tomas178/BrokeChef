@@ -59,7 +59,7 @@ describe('Authenticated tests', () => {
   it('Should throw a general error for any other error', async () => {
     mockCreate.mockRejectedValueOnce(new Error('Other Error'));
 
-    await expect(follow(userFollowed.id)).rejects.toThrow(/fail/i);
+    await expect(follow(userFollowed.id)).rejects.toThrow(/unexpected/i);
   });
 
   it('Should create the follow', async () => {

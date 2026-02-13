@@ -1,10 +1,9 @@
 import { integerIdObjectSchema } from '@server/entities/shared';
-import { TRPCError } from '@trpc/server';
 import { authenticatedProcedure } from '@server/trpc/authenticatedProcedure';
 import provideServices from '@server/trpc/provideServices';
 import { recipesService } from '@server/services/recipesService';
-import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
 import { recipesPublicAllInfoOutputSchema } from '@server/controllers/outputSchemas/recipesSchemas';
+import { withServiceErrors } from '@server/utils/errors/utils/withServiceErrors';
 
 export default authenticatedProcedure
   .use(provideServices({ recipesService }))
@@ -19,23 +18,10 @@ export default authenticatedProcedure
   })
   .input(integerIdObjectSchema)
   .output(recipesPublicAllInfoOutputSchema)
-  .query(async ({ input: { id: recipeId }, ctx: { services } }) => {
-    try {
+  .query(async ({ input: { id: recipeId }, ctx: { services } }) =>
+    withServiceErrors(async () => {
       const recipe = await services.recipesService.findById(recipeId);
 
       return recipe;
-    } catch (error) {
-      if (error instanceof RecipeNotFound) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Recipe was not found',
-        });
-      }
-
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'An unexpected error occurred',
-        cause: error,
-      });
-    }
-  });
+    })
+  );

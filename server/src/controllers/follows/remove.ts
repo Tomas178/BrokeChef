@@ -3,15 +3,13 @@ import provideServices from '@server/trpc/provideServices';
 import { followsService } from '@server/services/followsService';
 import { oauthUserIdSchema } from '@server/entities/shared';
 import type { FollowLink } from '@server/repositories/followsRepository';
-import UserNotFound from '@server/utils/errors/users/UserNotFound';
-import { TRPCError } from '@trpc/server';
-import FollowLinkNotFound from '@server/utils/errors/follows/FollowLinkNotFound';
+import { withServiceErrors } from '@server/utils/errors/utils/withServiceErrors';
 
 export default authenticatedProcedure
   .use(provideServices({ followsService }))
   .input(oauthUserIdSchema)
-  .mutation(async ({ input: followedId, ctx: { services, authUser } }) => {
-    try {
+  .mutation(async ({ input: followedId, ctx: { services, authUser } }) =>
+    withServiceErrors(async () => {
       const unfollowLink: FollowLink = {
         followerId: authUser.id,
         followedId,
@@ -20,25 +18,5 @@ export default authenticatedProcedure
       await services.followsService.remove(unfollowLink);
 
       return;
-    } catch (error) {
-      if (error instanceof UserNotFound) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: error.message,
-        });
-      }
-
-      if (error instanceof FollowLinkNotFound) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: error.message,
-        });
-      }
-
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Failed to unfollow the user',
-        cause: error,
-      });
-    }
-  });
+    })
+  );

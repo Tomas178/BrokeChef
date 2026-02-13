@@ -18,6 +18,6 @@ const conflictErrors = [
 ] as const;
 
 export const ERRORS_CONFLICTS = new Map<
-  new () => Error,
+  new (...args: never[]) => Error,
   Extract<TRPC_ERROR_CODE_KEY, 'CONFLICT'>
 >(conflictErrors.map(ErrorClass => [ErrorClass, 'CONFLICT']));

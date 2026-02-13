@@ -58,7 +58,7 @@ describe('Authentcated tests', () => {
   it('Should throw a general server error', async () => {
     mockUpdateImage.mockRejectedValueOnce(new Error('Service Failed'));
 
-    await expect(updateImage('image')).rejects.toThrow(/failed/i);
+    await expect(updateImage('image')).rejects.toThrow(/unexpected/i);
     expect(mockUpdateImage).toHaveBeenCalledWith(expect.any(String), 'image');
   });
 });

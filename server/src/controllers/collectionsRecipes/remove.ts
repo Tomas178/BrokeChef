@@ -1,18 +1,15 @@
 import { authenticatedProcedure } from '@server/trpc/authenticatedProcedure';
 import provideServices from '@server/trpc/provideServices';
 import { collectionsRecipesService } from '@server/services/collectionsRecipesService';
-import RecipeNotFound from '@server/utils/errors/recipes/RecipeNotFound';
-import { TRPCError } from '@trpc/server';
-import CollectionNotFound from '@server/utils/errors/collections/CollectionNotFound';
 import { collectionsRecipesRequest } from '@server/entities/collectionsRecipes';
 import type { CollectionsRecipesLink } from '@server/repositories/collectionsRecipesRepository';
-import CollectionRecipeLinkNotFound from '@server/utils/errors/collections/CollectionRecipeLinkNotFound';
+import { withServiceErrors } from '@server/utils/errors/utils/withServiceErrors';
 
 export default authenticatedProcedure
   .use(provideServices({ collectionsRecipesService }))
   .input(collectionsRecipesRequest)
-  .mutation(async ({ input, ctx: { services } }) => {
-    try {
+  .mutation(async ({ input, ctx: { services } }) =>
+    withServiceErrors(async () => {
       const link: CollectionsRecipesLink = {
         collectionId: input.collectionId,
         recipeId: input.recipeId,
@@ -21,32 +18,5 @@ export default authenticatedProcedure
       await services.collectionsRecipesService.remove(link);
 
       return;
-    } catch (error) {
-      if (error instanceof RecipeNotFound) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: error.message,
-        });
-      }
-
-      if (error instanceof CollectionNotFound) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: error.message,
-        });
-      }
-
-      if (error instanceof CollectionRecipeLinkNotFound) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: error.message,
-        });
-      }
-
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'An unexpected error occurred',
-        cause: error,
-      });
-    }
-  });
+    })
+  );

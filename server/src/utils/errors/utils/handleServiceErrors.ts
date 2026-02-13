@@ -1,14 +1,31 @@
-import { TRPCError } from '@trpc/server';
+import { TRPCError, type TRPC_ERROR_CODE_KEY } from '@trpc/server';
 import { ERROR_MAP } from './errorMap';
 
-export function handleServiceErrors(error: unknown): never {
+export interface ErrorOverride {
+  errorClass: new (...args_: never[]) => Error;
+  code: TRPC_ERROR_CODE_KEY;
+  message: string;
+}
+
+export function handleServiceErrors(
+  error: unknown,
+  overrides?: ErrorOverride[]
+): never {
   if (error instanceof Error) {
-    for (const [ErrorClass, statusCode] of ERROR_MAP) {
+    if (overrides) {
+      for (const override of overrides) {
+        if (error instanceof override.errorClass) {
+          throw new TRPCError({
+            code: override.code,
+            message: override.message,
+          });
+        }
+      }
+    }
+
+    for (const [ErrorClass, code] of ERROR_MAP) {
       if (error instanceof ErrorClass) {
-        throw new TRPCError({
-          code: statusCode,
-          message: error.message,
-        });
+        throw new TRPCError({ code, message: error.message });
       }
     }
   }

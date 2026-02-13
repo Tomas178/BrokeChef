@@ -10,6 +10,6 @@ const forbiddenErrors = [
 ] as const;
 
 export const ERRORS_FORBIDDEN = new Map<
-  new () => Error,
+  new (...args: never[]) => Error,
   Extract<TRPC_ERROR_CODE_KEY, 'FORBIDDEN'>
 >(forbiddenErrors.map(ErrorClass => [ErrorClass, 'FORBIDDEN']));

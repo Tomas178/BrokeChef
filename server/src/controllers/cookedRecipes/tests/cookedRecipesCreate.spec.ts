@@ -67,7 +67,7 @@ describe('Authenticated tests', () => {
   it('Should throw general error if any other error occurs', async () => {
     mockCreate.mockRejectedValueOnce(new Error('Something else happened'));
 
-    await expect(mark({ id: recipeId })).rejects.toThrow(/failed|mark/i);
+    await expect(mark({ id: recipeId })).rejects.toThrow(/unexpected/i);
   });
 
   it('Should create a cooked recipe record', async () => {

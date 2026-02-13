@@ -70,11 +70,10 @@ it('Should throw an error if rate limit was excedded and use NO_IP_ADDRESS value
   expect(mockSearch).not.toHaveBeenCalled();
 });
 
-it('Should rethrow any other error when checking rate limit', async () => {
-  const errorMessage = 'errorMessage';
-  mockCheckRateLimit.mockRejectedValueOnce(new Error(errorMessage));
+it('Should throw a general error for any other error', async () => {
+  mockCheckRateLimit.mockRejectedValueOnce(new Error('errorMessage'));
 
-  await expect(search(paginationWithUserInput)).rejects.toThrow(errorMessage);
+  await expect(search(paginationWithUserInput)).rejects.toThrow(/unexpected/i);
   expect(mockSearch).not.toHaveBeenCalled();
 });
 

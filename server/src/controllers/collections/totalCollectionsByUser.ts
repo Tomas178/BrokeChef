@@ -5,9 +5,8 @@ import {
   nonNegativeIntegerSchema,
   oauthUserIdSchema,
 } from '@server/entities/shared';
-import UserNotFound from '@server/utils/errors/users/UserNotFound';
-import { TRPCError } from '@trpc/server';
 import * as z from 'zod';
+import { withServiceErrors } from '@server/utils/errors/utils/withServiceErrors';
 
 export default authenticatedProcedure
   .use(provideServices({ collectionsService }))
@@ -22,26 +21,13 @@ export default authenticatedProcedure
   })
   .input(z.object({ userId: oauthUserIdSchema.nullish() }).nullish())
   .output(nonNegativeIntegerSchema)
-  .query(async ({ input, ctx: { authUser, services } }) => {
-    try {
+  .query(async ({ input, ctx: { authUser, services } }) =>
+    withServiceErrors(async () => {
       const userId = input?.userId ?? authUser.id;
 
       const totalCount =
         await services.collectionsService.totalCollectionsByUser(userId);
 
       return totalCount;
-    } catch (error) {
-      if (error instanceof UserNotFound) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: error.message,
-        });
-      }
-
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'An unexpected error occurred',
-        cause: error,
-      });
-    }
-  });
+    })
+  );

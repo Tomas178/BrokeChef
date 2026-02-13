@@ -1,19 +1,26 @@
 import { TRPCError } from '@trpc/server';
 import RecipeNotFound from '../../recipes/RecipeNotFound';
 import { withServiceErrors } from '../withServiceErrors';
+import type { ErrorOverride } from '../handleServiceErrors';
+
+class ExternalLibraryError extends Error {
+  constructor(detail: string) {
+    super(`External: ${detail}`);
+  }
+}
 
 describe('withServiceErrors', () => {
   it('Should throw a mapped TRPCError when a known error is thrown', async () => {
-    const ErrorClass = new RecipeNotFound();
+    const error = new RecipeNotFound();
 
     await expect(
       withServiceErrors(() => {
-        throw ErrorClass;
+        throw error;
       })
     ).rejects.toThrow(
       expect.objectContaining({
         code: 'NOT_FOUND',
-        message: ErrorClass.message,
+        message: error.message,
       })
     );
   });
@@ -43,5 +50,70 @@ describe('withServiceErrors', () => {
     const result = await withServiceErrors(() => Promise.resolve('success'));
 
     expect(result).toBe('success');
+  });
+
+  it('Should use override when error matches an override entry', async () => {
+    const overrides: ErrorOverride[] = [
+      {
+        errorClass: ExternalLibraryError,
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Custom override message',
+      },
+    ];
+
+    await expect(
+      withServiceErrors(() => {
+        throw new ExternalLibraryError('something');
+      }, overrides)
+    ).rejects.toThrow(
+      expect.objectContaining({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Custom override message',
+      })
+    );
+  });
+
+  it('Should prioritize overrides over the default error map', async () => {
+    const overrides: ErrorOverride[] = [
+      {
+        errorClass: RecipeNotFound,
+        code: 'BAD_REQUEST',
+        message: 'Overridden message',
+      },
+    ];
+
+    await expect(
+      withServiceErrors(() => {
+        throw new RecipeNotFound();
+      }, overrides)
+    ).rejects.toThrow(
+      expect.objectContaining({
+        code: 'BAD_REQUEST',
+        message: 'Overridden message',
+      })
+    );
+  });
+
+  it('Should fall through to default error map when no override matches', async () => {
+    const overrides: ErrorOverride[] = [
+      {
+        errorClass: ExternalLibraryError,
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Not relevant',
+      },
+    ];
+
+    const error = new RecipeNotFound();
+
+    await expect(
+      withServiceErrors(() => {
+        throw error;
+      }, overrides)
+    ).rejects.toThrow(
+      expect.objectContaining({
+        code: 'NOT_FOUND',
+        message: error.message,
+      })
+    );
   });
 });

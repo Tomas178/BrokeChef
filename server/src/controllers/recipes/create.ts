@@ -4,9 +4,7 @@ import { authenticatedProcedure } from '@server/trpc/authenticatedProcedure';
 import provideServices from '@server/trpc/provideServices';
 import * as z from 'zod';
 import { recipesService } from '@server/services/recipesService';
-import { TRPCError } from '@trpc/server';
-import UserNotFound from '@server/utils/errors/users/UserNotFound';
-import RecipeAlreadyCreated from '@server/utils/errors/recipes/RecipeAlreadyCreated';
+import { withServiceErrors } from '@server/utils/errors/utils/withServiceErrors';
 
 const createRecipeInputSchema = recipesSchema
   .pick({
@@ -25,33 +23,13 @@ export type CreateRecipeInput = z.infer<typeof createRecipeInputSchema>;
 export default authenticatedProcedure
   .use(provideServices({ recipesService }))
   .input(createRecipeInputSchema)
-  .mutation(async ({ input, ctx: { authUser, services } }) => {
-    try {
+  .mutation(async ({ input, ctx: { authUser, services } }) =>
+    withServiceErrors(async () => {
       const recipeCreated = await services.recipesService.createRecipe(
         input,
         authUser.id
       );
 
       return recipeCreated;
-    } catch (error) {
-      if (error instanceof UserNotFound) {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: error.message,
-        });
-      }
-
-      if (error instanceof RecipeAlreadyCreated) {
-        throw new TRPCError({
-          code: 'CONFLICT',
-          message: error.message,
-        });
-      }
-
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Failed to create recipe',
-        cause: error,
-      });
-    }
-  });
+    })
+  );

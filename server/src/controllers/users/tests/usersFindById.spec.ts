@@ -41,7 +41,7 @@ describe('Authenticated tests', () => {
     expect(mockFindById).toHaveBeenCalledExactlyOnceWith(user.id);
   });
 
-  it('Should rethrow any other error', async () => {
+  it('Should throw general error for any other error', async () => {
     mockFindById.mockRejectedValueOnce(new Error('Network error'));
 
     await expect(findById(user.id)).rejects.toThrow(/unexpected/i);

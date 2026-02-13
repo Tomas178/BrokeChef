@@ -20,6 +20,6 @@ const notFoundErrors = [
 ] as const;
 
 export const ERRORS_NOT_FOUND = new Map<
-  new () => Error,
+  new (...args: never[]) => Error,
   Extract<TRPC_ERROR_CODE_KEY, 'NOT_FOUND'>
 >(notFoundErrors.map(ErrorClass => [ErrorClass, 'NOT_FOUND']));

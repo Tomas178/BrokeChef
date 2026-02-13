@@ -57,7 +57,7 @@ describe('Authenticated tests', () => {
   it('Should throw a general error for any other error', async () => {
     mockRemove.mockRejectedValueOnce(new Error('Other Error'));
 
-    await expect(unfollow(userFollowed.id)).rejects.toThrow(/fail/i);
+    await expect(unfollow(userFollowed.id)).rejects.toThrow(/unexpected/i);
   });
 
   it('Should remove the follow and return undefined', async () => {

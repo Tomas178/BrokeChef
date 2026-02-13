@@ -6,9 +6,8 @@ import {
   checkRateLimit,
   type RateLimitConfig,
 } from '@server/utils/rateLimiter';
-import RateLimitError from '@server/utils/errors/general/RateLimitError';
-import { TRPCError } from '@trpc/server';
 import { recipesPublicArrayOutputSchema } from '@server/controllers/outputSchemas/recipesSchemas';
+import { withServiceErrors } from '@server/utils/errors/utils/withServiceErrors';
 
 export const NO_IP_ADDRESS = 'unknown-ip';
 
@@ -33,25 +32,19 @@ export default publicProcedure
   })
   .input(paginationWithUserInput)
   .output(recipesPublicArrayOutputSchema)
-  .query(async ({ input: paginationWithUserInput, ctx: { services, req } }) => {
-    const ipAddress = req?.ip || NO_IP_ADDRESS;
+  .query(async ({ input: paginationWithUserInput, ctx: { services, req } }) =>
+    withServiceErrors(async () => {
+      const ipAddress = req?.ip || NO_IP_ADDRESS;
 
-    try {
       await checkRateLimit(ipAddress, rateLimitConfig);
-    } catch (error) {
-      if (error instanceof RateLimitError) {
-        throw new TRPCError({
-          code: 'TOO_MANY_REQUESTS',
-          message: error.message,
-        });
-      }
 
-      throw error;
-    }
+      const { userInput, ...pagination } = paginationWithUserInput;
 
-    const { userInput, ...pagination } = paginationWithUserInput;
+      const recipes = await services.recipesService.search(
+        userInput,
+        pagination
+      );
 
-    const recipes = await services.recipesService.search(userInput, pagination);
-
-    return recipes;
-  });
+      return recipes;
+    })
+  );
