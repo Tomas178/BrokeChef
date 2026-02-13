@@ -30,7 +30,7 @@ describe('Unauthenticated tests', () => {
   const { getUserRatingForRecipe } = createCaller(requestContext({ database }));
 
   it('Should throw an error if user is not authenticated', async () => {
-    await expect(getUserRatingForRecipe(recipeId)).rejects.toThrow(
+    await expect(getUserRatingForRecipe({ id: recipeId })).rejects.toThrow(
       /unauthenticated/i
     );
     expect(mockGetUsersRatingForRecipe).not.toHaveBeenCalled();
@@ -45,7 +45,7 @@ describe('Authenticated tests', () => {
   it('Should throw an error if recipe is not found', async () => {
     mockGetUsersRatingForRecipe.mockRejectedValueOnce(new RecipeNotFound());
 
-    await expect(getUserRatingForRecipe(recipeId)).rejects.toThrow(
+    await expect(getUserRatingForRecipe({ id: recipeId })).rejects.toThrow(
       /not found/i
     );
   });
@@ -55,7 +55,7 @@ describe('Authenticated tests', () => {
       new Error('Network error')
     );
 
-    await expect(getUserRatingForRecipe(recipeId)).rejects.toThrow(
+    await expect(getUserRatingForRecipe({ id: recipeId })).rejects.toThrow(
       /unexpected/i
     );
   });
@@ -63,7 +63,7 @@ describe('Authenticated tests', () => {
   it('Should return the rating that user gave for the recipe', async () => {
     mockGetUsersRatingForRecipe.mockResolvedValueOnce(ratingForRecipe);
 
-    const rating = await getUserRatingForRecipe(recipeId);
+    const rating = await getUserRatingForRecipe({ id: recipeId });
 
     expect(mockGetUsersRatingForRecipe).toHaveBeenCalledWith(recipeId, user.id);
     expect(rating).toBe(ratingForRecipe);

@@ -30,7 +30,7 @@ describe('Unauthenticated tests', () => {
   const { remove } = createCaller(requestContext({ database }));
 
   it('Should throw an error if user is not authenticated', async () => {
-    await expect(remove(recipeId)).rejects.toThrow(/unauthenticated/i);
+    await expect(remove({ id: recipeId })).rejects.toThrow(/unauthenticated/i);
     expect(mockRemove).not.toHaveBeenCalled();
   });
 });
@@ -41,19 +41,19 @@ describe('Authenticated tests', () => {
   it('Should throw an error if rating is not found', async () => {
     mockRemove.mockRejectedValueOnce(new RatingNotFound());
 
-    await expect(remove(recipeId)).rejects.toThrow(/not found/i);
+    await expect(remove({ id: recipeId })).rejects.toThrow(/not found/i);
   });
 
   it('Should rethrow any other error', async () => {
     mockRemove.mockRejectedValueOnce(new Error('Network error'));
 
-    await expect(remove(recipeId)).rejects.toThrow(/unexpected/i);
+    await expect(remove({ id: recipeId })).rejects.toThrow(/unexpected/i);
   });
 
   it('Should remove the rating and return undefined when no ratings for the recipe are left', async () => {
     mockRemove.mockResolvedValueOnce(undefined);
 
-    const removedRating = await remove(recipeId);
+    const removedRating = await remove({ id: recipeId });
 
     expect(mockRemove).toHaveBeenCalledExactlyOnceWith(user.id, recipeId);
 
@@ -63,7 +63,7 @@ describe('Authenticated tests', () => {
   it('Should remove the rating and return new rating for the recipe if any ratings are left', async () => {
     mockRemove.mockResolvedValueOnce(fakeRating);
 
-    const removedRating = await remove(recipeId);
+    const removedRating = await remove({ id: recipeId });
 
     expect(mockRemove).toHaveBeenCalledExactlyOnceWith(user.id, recipeId);
 

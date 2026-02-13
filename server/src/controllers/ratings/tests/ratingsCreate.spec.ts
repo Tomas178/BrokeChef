@@ -76,11 +76,13 @@ describe('Authenticated tests', () => {
       rating: 4,
     };
 
-    mockCreate.mockResolvedValueOnce(ratingInput);
+    const fakeRatingRecord = fakeRating();
+
+    mockCreate.mockResolvedValueOnce(fakeRatingRecord);
 
     const rating = await rate(ratingInput);
 
     expect(mockCreate).toHaveBeenCalledExactlyOnceWith(ratingInput);
-    expect(rating).toEqual(ratingInput);
+    expect(rating).toEqual(fakeRatingRecord);
   });
 });

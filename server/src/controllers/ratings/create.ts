@@ -14,7 +14,17 @@ export type CreateRatingInput = z.infer<typeof createRatingSchema>;
 
 export default authenticatedProcedure
   .use(provideServices({ ratingsService }))
+  .meta({
+    openapi: {
+      method: 'POST',
+      path: '/ratings/create',
+      summary: 'Rate recipe',
+      tags: ['Ratings'],
+      protect: true,
+    },
+  })
   .input(createRatingSchema)
+  .output(ratingsSchema.optional())
   .mutation(async ({ input, ctx: { authUser, services } }) =>
     withServiceErrors(async () => {
       const createRatingInput = {
