@@ -1,7 +1,6 @@
 import { createCallerFactory } from '@server/trpc';
 import {
-  fakeRecipe,
-  fakeSavedRecipe,
+  fakeRecipeAllInfoWithoutToolsAndIngredientsAndEmail,
   fakeUser,
 } from '@server/entities/tests/fakes';
 import { initialPage } from '@server/entities/shared';
@@ -40,8 +39,14 @@ describe('Authenticated tests', () => {
   const { getRecipes } = createCaller(authContext({ database }, user));
 
   it('Should return saved and created recipes when given id', async () => {
-    const savedRecipes = [fakeSavedRecipe(), fakeSavedRecipe()];
-    const createdRecipes = [fakeRecipe(), fakeRecipe()];
+    const savedRecipes = [
+      fakeRecipeAllInfoWithoutToolsAndIngredientsAndEmail(),
+      fakeRecipeAllInfoWithoutToolsAndIngredientsAndEmail(),
+    ];
+    const createdRecipes = [
+      fakeRecipeAllInfoWithoutToolsAndIngredientsAndEmail(),
+      fakeRecipeAllInfoWithoutToolsAndIngredientsAndEmail(),
+    ];
 
     const userRecipes = {
       saved: savedRecipes,
@@ -54,13 +59,19 @@ describe('Authenticated tests', () => {
       ...initialPage,
     });
 
-    expect(saved).toBe(savedRecipes);
-    expect(created).toBe(createdRecipes);
+    expect(saved).toStrictEqual(savedRecipes);
+    expect(created).toStrictEqual(createdRecipes);
   });
 
   it('Should return saved and created recipes when authenticated but not given id', async () => {
-    const savedRecipes = [fakeSavedRecipe(), fakeSavedRecipe()];
-    const createdRecipes = [fakeRecipe(), fakeRecipe()];
+    const savedRecipes = [
+      fakeRecipeAllInfoWithoutToolsAndIngredientsAndEmail(),
+      fakeRecipeAllInfoWithoutToolsAndIngredientsAndEmail(),
+    ];
+    const createdRecipes = [
+      fakeRecipeAllInfoWithoutToolsAndIngredientsAndEmail(),
+      fakeRecipeAllInfoWithoutToolsAndIngredientsAndEmail(),
+    ];
 
     const userRecipes = {
       saved: savedRecipes,
@@ -72,7 +83,7 @@ describe('Authenticated tests', () => {
       ...initialPage,
     });
 
-    expect(saved).toBe(savedRecipes);
-    expect(created).toBe(createdRecipes);
+    expect(saved).toStrictEqual(savedRecipes);
+    expect(created).toStrictEqual(createdRecipes);
   });
 });

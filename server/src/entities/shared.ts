@@ -3,8 +3,9 @@ import * as z from 'zod';
 
 export const USER_ID_LENGTH = 32;
 
-const integerSchema = z.number().int();
+export const nonEmptyStringSchema = z.string().nonempty();
 
+const integerSchema = z.number().int();
 export const nonNegativeIntegerSchema = integerSchema.nonnegative();
 export const integerIdSchema = integerSchema.positive();
 export const integerIdObjectSchema = z.object({ id: integerIdSchema });

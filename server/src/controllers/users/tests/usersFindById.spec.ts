@@ -1,5 +1,5 @@
 import { createCallerFactory } from '@server/trpc';
-import { fakeUser } from '@server/entities/tests/fakes';
+import { fakeUserPublic } from '@server/entities/tests/fakes';
 import { authContext, requestContext } from '@tests/utils/context';
 import type { Database } from '@server/database';
 import type { UsersService } from '@server/services/usersService';
@@ -19,7 +19,7 @@ vi.mock('@server/services/usersService', () => ({
 const createCaller = createCallerFactory(usersRouter);
 const database = {} as Database;
 
-const user = fakeUser();
+const user = fakeUserPublic();
 
 beforeEach(() => mockFindById.mockReset());
 
@@ -37,14 +37,14 @@ describe('Authenticated tests', () => {
   it('Should throw an error if user is not found', async () => {
     mockFindById.mockRejectedValueOnce(new UserNotFound());
 
-    await expect(findById(user.id)).rejects.toThrow(/not found/i);
+    await expect(findById({ userId: user.id })).rejects.toThrow(/not found/i);
     expect(mockFindById).toHaveBeenCalledExactlyOnceWith(user.id);
   });
 
   it('Should throw general error for any other error', async () => {
     mockFindById.mockRejectedValueOnce(new Error('Network error'));
 
-    await expect(findById(user.id)).rejects.toThrow(/unexpected/i);
+    await expect(findById({ userId: user.id })).rejects.toThrow(/unexpected/i);
   });
 
   it('Should call findById with userId from cookies return user when not given userId but authenticanted', async () => {
@@ -60,7 +60,7 @@ describe('Authenticated tests', () => {
     mockFindById.mockResolvedValueOnce(user);
 
     const randomUserId = 'a'.repeat(32);
-    const userById = await findById(randomUserId);
+    const userById = await findById({ userId: randomUserId });
 
     expect(mockFindById).toHaveBeenCalledExactlyOnceWith(randomUserId);
     expect(userById).toEqual(user);

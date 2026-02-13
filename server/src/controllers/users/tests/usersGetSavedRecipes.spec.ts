@@ -1,5 +1,8 @@
 import { createCallerFactory } from '@server/trpc';
-import { fakeSavedRecipe, fakeUser } from '@server/entities/tests/fakes';
+import {
+  fakeRecipeAllInfoWithoutToolsAndIngredientsAndEmail,
+  fakeUser,
+} from '@server/entities/tests/fakes';
 import { authContext, requestContext } from '@tests/utils/context';
 import type { UsersService } from '@server/services/usersService';
 import type { Database } from '@server/database';
@@ -41,12 +44,15 @@ describe('Authenticated tests', () => {
   });
 
   it('Should return saved recipes', async () => {
-    const createdRecipes = [fakeSavedRecipe(), fakeSavedRecipe()];
+    const createdRecipes = [
+      fakeRecipeAllInfoWithoutToolsAndIngredientsAndEmail(),
+      fakeRecipeAllInfoWithoutToolsAndIngredientsAndEmail(),
+    ];
     mockGetSavedRecipes.mockResolvedValueOnce(createdRecipes);
 
     const retrievedCreatedRecipes = await getSavedRecipes({});
 
     expect(retrievedCreatedRecipes).toHaveLength(createdRecipes.length);
-    expect(retrievedCreatedRecipes).toBe(createdRecipes);
+    expect(retrievedCreatedRecipes).toStrictEqual(createdRecipes);
   });
 });
