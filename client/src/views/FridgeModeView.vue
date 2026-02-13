@@ -7,6 +7,7 @@ import { FwbButton, FwbFileInput } from 'flowbite-vue';
 import { ref } from 'vue';
 import { useRecipeGeneratorStore } from '@/stores/recipeGenerator';
 import { storeToRefs } from 'pinia';
+import { assertValidFile } from '@/utils/assertValidFile';
 
 const fridgeImageFile = ref<File | undefined>(undefined);
 
@@ -48,9 +49,21 @@ async function handleCreateRecipe(recipe: GeneratedRecipe) {
 }
 
 function handleGenerateRecipes() {
-  if (fridgeImageFile.value) {
-    recipeGeneratorStore.generateRecipes(fridgeImageFile.value);
+  if (!fridgeImageFile.value) {
+    return;
   }
+
+  try {
+    assertValidFile(fridgeImageFile.value);
+  } catch (error) {
+    const message = (error as Error).message;
+    errorMessage.value = message;
+    recipeGeneratorStore.showToast(errorMessage.value, 'error');
+    fridgeImageFile.value = undefined;
+    return;
+  }
+
+  recipeGeneratorStore.generateRecipes(fridgeImageFile.value);
 }
 </script>
 
