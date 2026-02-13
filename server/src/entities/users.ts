@@ -19,14 +19,13 @@ export const usersPublicSchema = usersSchema.pick({
   image: true,
 });
 
-export const usersPublicWithoutIdSchema = usersPublicSchema
-  .omit({
-    id: true,
-    image: true,
-  })
-  .extend({
-    image: z.string().nullable(),
-  });
+export const usersPublicImageNullableSchema = usersPublicSchema.extend({
+  image: z.string().nullable(),
+});
+
+export const usersPublicWithoutIdSchema = usersPublicImageNullableSchema.omit({
+  id: true,
+});
 
 export const usersKeysAll = Object.keys(usersSchema.shape) as (keyof Users)[];
 

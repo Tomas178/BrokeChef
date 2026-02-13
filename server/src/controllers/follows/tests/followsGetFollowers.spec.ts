@@ -1,7 +1,7 @@
 import type { FollowsService } from '@server/services/followsService';
 import { createCallerFactory } from '@server/trpc';
 import type { Database } from '@server/database';
-import { fakeUser } from '@server/entities/tests/fakes';
+import { fakeUserPublic } from '@server/entities/tests/fakes';
 import { authContext, requestContext } from '@tests/utils/context';
 import followsRouter from '..';
 
@@ -19,9 +19,9 @@ const createCaller = createCallerFactory(followsRouter);
 const database = {} as Database;
 
 const [userFollowerOne, userFollowerTwo, userFollowed] = [
-  fakeUser(),
-  fakeUser(),
-  fakeUser(),
+  fakeUserPublic(),
+  fakeUserPublic(),
+  fakeUserPublic(),
 ];
 
 beforeEach(() => mockGetFollowers.mockReset());
@@ -59,7 +59,9 @@ describe('Authenticated tests', () => {
     it('Should return an empty array if user has no followers', async () => {
       mockGetFollowers.mockResolvedValueOnce([]);
 
-      await expect(getFollowers(userFollowed.id)).resolves.toEqual([]);
+      await expect(getFollowers({ userId: userFollowed.id })).resolves.toEqual(
+        []
+      );
     });
 
     it('Should return an array of 2 users if user has 2 followers', async () => {
@@ -67,7 +69,7 @@ describe('Authenticated tests', () => {
 
       mockGetFollowers.mockResolvedValueOnce(followingUsers);
 
-      await expect(getFollowers(userFollowed.id)).resolves.toEqual(
+      await expect(getFollowers({ userId: userFollowed.id })).resolves.toEqual(
         followingUsers
       );
     });

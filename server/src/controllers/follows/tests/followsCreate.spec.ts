@@ -33,7 +33,9 @@ describe('Unauthenticated tests', () => {
   const { follow } = createCaller(requestContext({ database }));
 
   it('Should thrown an error if user is not authenticated', async () => {
-    await expect(follow(userFollowed.id)).rejects.toThrow(/unauthenticated/i);
+    await expect(follow({ userId: userFollowed.id })).rejects.toThrow(
+      /unauthenticated/i
+    );
   });
 });
 
@@ -45,13 +47,15 @@ describe('Authenticated tests', () => {
   it('Should throw an error when user is not found', async () => {
     mockCreate.mockRejectedValueOnce(new UserNotFound());
 
-    await expect(follow(userFollowed.id)).rejects.toThrow(/not found/i);
+    await expect(follow({ userId: userFollowed.id })).rejects.toThrow(
+      /not found/i
+    );
   });
 
   it('Should throw an error if user is already followed', async () => {
     mockCreate.mockRejectedValueOnce(new UserAlreadyFollowed());
 
-    await expect(follow(userFollowed.id)).rejects.toThrow(
+    await expect(follow({ userId: userFollowed.id })).rejects.toThrow(
       /exists|already|follow(ed|ing)/i
     );
   });
@@ -59,12 +63,16 @@ describe('Authenticated tests', () => {
   it('Should throw a general error for any other error', async () => {
     mockCreate.mockRejectedValueOnce(new Error('Other Error'));
 
-    await expect(follow(userFollowed.id)).rejects.toThrow(/unexpected/i);
+    await expect(follow({ userId: userFollowed.id })).rejects.toThrow(
+      /unexpected/i
+    );
   });
 
   it('Should create the follow', async () => {
     mockCreate.mockResolvedValueOnce(createdLink);
 
-    await expect(follow(createdLink.followedId)).resolves.toEqual(createdLink);
+    await expect(follow({ userId: createdLink.followedId })).resolves.toEqual(
+      createdLink
+    );
   });
 });

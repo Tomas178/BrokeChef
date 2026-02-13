@@ -26,7 +26,7 @@ describe('Unauthenticated tests', () => {
   const { isFollowing } = createCaller(requestContext({ database }));
 
   it('Should thrown an error if user is not authenticated', async () => {
-    await expect(isFollowing(userFollowed.id)).rejects.toThrow(
+    await expect(isFollowing({ userId: userFollowed.id })).rejects.toThrow(
       /unauthenticated/i
     );
   });
@@ -40,12 +40,14 @@ describe('Authenticated tests', () => {
   it('Should return false when user is not following the given userId', async () => {
     mockIsFollowing.mockResolvedValueOnce(false);
 
-    await expect(isFollowing(userFollowed.id)).resolves.toBeFalsy();
+    await expect(isFollowing({ userId: userFollowed.id })).resolves.toBeFalsy();
   });
 
   it('Should return true when user is not following the given userId', async () => {
     mockIsFollowing.mockResolvedValueOnce(true);
 
-    await expect(isFollowing(userFollowed.id)).resolves.toBeTruthy();
+    await expect(
+      isFollowing({ userId: userFollowed.id })
+    ).resolves.toBeTruthy();
   });
 });

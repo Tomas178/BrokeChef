@@ -26,7 +26,7 @@ describe('Unauthenticated tests', () => {
   const { totalFollowers } = createCaller(requestContext({ database }));
 
   it('Should thrown an error if user is not authenticated', async () => {
-    await expect(totalFollowers(userFollower.id)).rejects.toThrow(
+    await expect(totalFollowers({ userId: userFollower.id })).rejects.toThrow(
       /unauthenticated/i
     );
   });
@@ -63,7 +63,9 @@ describe('Authenticated tests', () => {
 
       mockTotalFollowers.mockResolvedValueOnce(zero);
 
-      await expect(totalFollowers(userFollower.id)).resolves.toBe(zero);
+      await expect(totalFollowers({ userId: userFollower.id })).resolves.toBe(
+        zero
+      );
     });
 
     it('Should return 2 if user is followed by 2 other users', async () => {
@@ -71,7 +73,9 @@ describe('Authenticated tests', () => {
 
       mockTotalFollowers.mockResolvedValueOnce(two);
 
-      await expect(totalFollowers(userFollower.id)).resolves.toBe(two);
+      await expect(totalFollowers({ userId: userFollower.id })).resolves.toBe(
+        two
+      );
     });
   });
 });

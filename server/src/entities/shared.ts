@@ -12,6 +12,9 @@ export const integerIdObjectSchema = z.object({ id: integerIdSchema });
 export const booleanSchema = z.boolean();
 
 export const oauthUserIdSchema = z.string().length(USER_ID_LENGTH);
+export const oauthUserIdObjectSchema = z.object({ userId: oauthUserIdSchema });
+export const oauthUserIdObjectNullishSchema =
+  oauthUserIdObjectSchema.optional();
 
 export const arrayStringSchema = z.array(z.string().nonempty().max(100).trim());
 

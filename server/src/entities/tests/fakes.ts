@@ -9,6 +9,7 @@ import type {
   Recipes,
   SavedRecipes,
   Tools,
+  Users,
 } from '@server/database';
 import { random } from '@tests/utils/random';
 import type { Insertable } from 'kysely';
@@ -64,9 +65,7 @@ const basicAuthor = () => ({
 
 const randomVectorString = () => `[${randomVector().join(',')}]`;
 
-export const fakeUser = <T extends Partial<UsersPublic>>(
-  overrides: T = {} as T
-) => ({
+export const fakeUser = <T extends Partial<Users>>(overrides: T = {} as T) => ({
   id: randomOAuthId(),
   name: random.name(),
   email: random.email(),
@@ -76,6 +75,16 @@ export const fakeUser = <T extends Partial<UsersPublic>>(
   ...overrides,
   createdAt: new Date(),
   updatedAt: new Date(),
+});
+
+export const fakeUserPublic = <T extends Partial<UsersPublic>>(
+  overrides: T = {} as T
+) => ({
+  id: randomOAuthId(),
+  name: random.name(),
+  image:
+    (random.url({ domain: 'avatars.githubusercontent.com' }) as string) || null,
+  ...overrides,
 });
 
 export const fakeAuthUser = <T extends Partial<AuthUser>>(
