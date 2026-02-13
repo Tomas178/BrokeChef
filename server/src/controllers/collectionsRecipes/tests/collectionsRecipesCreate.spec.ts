@@ -74,6 +74,6 @@ describe('Authenticated tests', () => {
 
     const createdLink = await save(request);
 
-    expect(createdLink).toEqual(request);
+    expect(createdLink).toEqual({ ...request, createdAt: expect.any(Date) });
   });
 });

@@ -9,14 +9,15 @@ import CollectionRecipeLinkNotFound from '@server/utils/errors/collections/Colle
 import CollectionRecipesLinkAlreadyExists from '@server/utils/errors/collections/CollectionRecipeLinkAlreadyExists';
 import { PostgresError } from 'pg-error-enum';
 import logger from '@server/logger';
+import type { CollectionsRecipesPublic } from '@server/entities/collectionsRecipes';
 import { validateCollectionExists } from './utils/collectionValidations';
 import { validateRecipeExists } from './utils/recipeValidations';
 
 export interface CollectionsRecipesService {
-  create: (link: CollectionsRecipesLink) => Promise<CollectionsRecipesLink>;
+  create: (link: CollectionsRecipesLink) => Promise<CollectionsRecipesPublic>;
   remove: (
     link: CollectionsRecipesLink
-  ) => Promise<CollectionsRecipesLink | undefined>;
+  ) => Promise<CollectionsRecipesPublic | undefined>;
 }
 
 export function collectionsRecipesService(

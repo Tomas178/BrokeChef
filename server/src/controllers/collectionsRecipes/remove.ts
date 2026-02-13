@@ -4,10 +4,21 @@ import { collectionsRecipesService } from '@server/services/collectionsRecipesSe
 import { collectionsRecipesRequest } from '@server/entities/collectionsRecipes';
 import type { CollectionsRecipesLink } from '@server/repositories/collectionsRecipesRepository';
 import { withServiceErrors } from '@server/utils/errors/utils/withServiceErrors';
+import { voidSchema } from '../outputSchemas/shared';
 
 export default authenticatedProcedure
   .use(provideServices({ collectionsRecipesService }))
+  .meta({
+    openapi: {
+      method: 'DELETE',
+      path: '/collectionsRecipes/remove',
+      summary: 'Remove recipe from collection',
+      tags: ['CollectionsRecipes'],
+      protect: true,
+    },
+  })
   .input(collectionsRecipesRequest)
+  .output(voidSchema)
   .mutation(async ({ input, ctx: { services } }) =>
     withServiceErrors(async () => {
       const link: CollectionsRecipesLink = {
