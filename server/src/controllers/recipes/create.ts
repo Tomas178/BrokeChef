@@ -5,6 +5,7 @@ import provideServices from '@server/trpc/provideServices';
 import * as z from 'zod';
 import { recipesService } from '@server/services/recipesService';
 import { withServiceErrors } from '@server/utils/errors/utils/withServiceErrors';
+import { recipesPublicOutputSchema } from '../outputSchemas/recipesSchemas';
 
 const createRecipeInputSchema = recipesSchema
   .pick({
@@ -22,7 +23,17 @@ export type CreateRecipeInput = z.infer<typeof createRecipeInputSchema>;
 
 export default authenticatedProcedure
   .use(provideServices({ recipesService }))
+  .meta({
+    openapi: {
+      method: 'POST',
+      path: '/recipes/create',
+      summary: 'Create the recipe',
+      tags: ['Recipes'],
+      protect: true,
+    },
+  })
   .input(createRecipeInputSchema)
+  .output(recipesPublicOutputSchema.optional())
   .mutation(async ({ input, ctx: { authUser, services } }) =>
     withServiceErrors(async () => {
       const recipeCreated = await services.recipesService.createRecipe(

@@ -12,11 +12,15 @@ const recipesPublicCommonOutputSchema = z.object({
   rating: ratingSchema.nullish(),
 });
 
-export const recipesPublicArrayOutputSchema = z.array(
-  recipesSchema.omit({ embedding: true, steps: true, imageUrl: true }).extend({
+export const recipesPublicOutputSchema = recipesSchema
+  .omit({ embedding: true, steps: true, imageUrl: true })
+  .extend({
     ...recipesPublicCommonOutputSchema.shape,
     steps: z.string().nonempty().trim(),
-  })
+  });
+
+export const recipesPublicArrayOutputSchema = z.array(
+  recipesPublicOutputSchema
 );
 
 export const recipesPublicAllInfoOutputSchema = recipesSchema

@@ -51,6 +51,11 @@ describe('Authenticated tests', () => {
       ...createRecipeData,
       id: 1,
       steps: stepsInASingleString,
+      userId: user.id,
+      author: {
+        name: user.name,
+        image: user.image,
+      },
     });
 
     const recipeCreated = await create(createRecipeData);
