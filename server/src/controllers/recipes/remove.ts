@@ -4,6 +4,7 @@ import provideServices from '@server/trpc/provideServices';
 import { recipesService } from '@server/services/recipesService';
 import type { ErrorOverride } from '@server/utils/errors/utils/handleServiceErrors';
 import { withServiceErrors } from '@server/utils/errors/utils/withServiceErrors';
+import { voidSchema } from '../outputSchemas/shared';
 
 const errorsOverrideList: ErrorOverride[] = [
   {
@@ -15,7 +16,17 @@ const errorsOverrideList: ErrorOverride[] = [
 
 export default recipeAuthorProcedure
   .use(provideServices({ recipesService }))
-  .mutation(async ({ input: recipeId, ctx: { services } }) =>
+  .meta({
+    openapi: {
+      method: 'DELETE',
+      path: '/recipes/remove',
+      summary: 'Delete the recipe',
+      tags: ['Recipes'],
+      protect: true,
+    },
+  })
+  .output(voidSchema)
+  .mutation(async ({ input: { id: recipeId }, ctx: { services } }) =>
     withServiceErrors(async () => {
       await services.recipesService.remove(recipeId);
 

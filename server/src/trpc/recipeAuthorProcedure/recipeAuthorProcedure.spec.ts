@@ -29,7 +29,7 @@ const authenticated = createCaller(authContext({ database }, userOne));
 
 it('Should pass if recipe belongs to the user', async () => {
   mockIsAuthor.mockResolvedValueOnce(true);
-  const response = await authenticated.testCall(recipeId);
+  const response = await authenticated.testCall({ id: recipeId });
 
   expect(response).toEqual('passed');
 });
@@ -39,7 +39,9 @@ it('Should throw an error if recipeId is not provided', async () => {
 });
 
 it('Should throw an error if user provides a non-existing recipeId', async () => {
-  await expect(authenticated.testCall(recipeId)).rejects.toThrow(/recipe/i);
+  await expect(authenticated.testCall({ id: recipeId })).rejects.toThrow(
+    /recipe/i
+  );
 });
 
 it('Should throw an error if user provides undefined recipeId', async () => {
@@ -51,5 +53,7 @@ it('Should throw an error if user provides undefined recipeId', async () => {
 it('Should throw an error if recipe does not belong to the user', async () => {
   mockIsAuthor.mockResolvedValueOnce(false);
 
-  await expect(authenticated.testCall(recipeId + 1)).rejects.toThrow(/recipe/i);
+  await expect(authenticated.testCall({ id: recipeId + 1 })).rejects.toThrow(
+    /recipe/i
+  );
 });

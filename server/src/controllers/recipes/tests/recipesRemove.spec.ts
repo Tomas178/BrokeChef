@@ -40,7 +40,7 @@ describe('Unauthenticated tests', () => {
   const { remove } = createCaller(requestContext({ database }));
 
   it('Should throw an error if user is not authenticated', async () => {
-    await expect(remove(recipeId)).rejects.toThrow(/unauthenticated/i);
+    await expect(remove({ id: recipeId })).rejects.toThrow(/unauthenticated/i);
     expect(mockRemove).not.toHaveBeenCalled();
   });
 });
@@ -51,25 +51,27 @@ describe('Authenticated tests', () => {
   it('Should throw an error if user is not the recipe author', async () => {
     mockIsAuthor.mockResolvedValueOnce(false);
 
-    await expect(remove(recipeId)).rejects.toThrow(/author|remove|only/i);
+    await expect(remove({ id: recipeId })).rejects.toThrow(
+      /author|remove|only/i
+    );
   });
 
   it('Should throw an error if recipe does not exist', async () => {
     mockRemove.mockRejectedValueOnce(new RecipeNotFound());
 
-    await expect(remove(recipeId)).rejects.toThrow(/not found/i);
+    await expect(remove({ id: recipeId })).rejects.toThrow(/not found/i);
   });
 
   it('Should throw an error if failure happened upon deleting recipe image from S3', async () => {
     mockRemove.mockRejectedValueOnce(new S3ServiceException({} as any));
 
-    await expect(remove(recipeId)).rejects.toThrow(/failed/i);
+    await expect(remove({ id: recipeId })).rejects.toThrow(/failed/i);
   });
 
   it('Should rethrow any other error', async () => {
     mockRemove.mockRejectedValueOnce(new Error('Network error'));
 
-    await expect(remove(recipeId)).rejects.toThrow(/unexpected/i);
+    await expect(remove({ id: recipeId })).rejects.toThrow(/unexpected/i);
   });
 
   it('Should return nothing when recipe was removed', async () => {
@@ -77,6 +79,6 @@ describe('Authenticated tests', () => {
 
     mockRemove.mockResolvedValueOnce(removedRecipe);
 
-    await expect(remove(recipeId)).resolves.toBeUndefined();
+    await expect(remove({ id: recipeId })).resolves.toBeUndefined();
   });
 });

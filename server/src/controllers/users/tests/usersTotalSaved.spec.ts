@@ -34,16 +34,26 @@ describe('Unauthenticated tests', () => {
 describe('Authenticated tests', () => {
   const { totalSaved } = createCaller(authContext({ database }, user));
 
+  it('Should call totalSaved with userId from cookies return user when not given userId but authenticanted', async () => {
+    const totalRecipes = 5;
+    mockTotalSavedByUser.mockResolvedValueOnce(totalRecipes);
+
+    const totalCount = await totalSaved();
+
+    expect(mockTotalSavedByUser).toHaveBeenCalledExactlyOnceWith(user.id);
+    expect(totalCount).toEqual(totalRecipes);
+  });
+
   it('Should return 0', async () => {
     mockTotalSavedByUser.mockResolvedValueOnce(0);
 
-    await expect(totalSaved()).resolves.toBe(0);
+    await expect(totalSaved({ userId: user.id })).resolves.toBe(0);
   });
 
   it('Should return the same number that was created', async () => {
     const totalRecipes = 5;
     mockTotalSavedByUser.mockResolvedValueOnce(totalRecipes);
 
-    await expect(totalSaved()).resolves.toBe(totalRecipes);
+    await expect(totalSaved({ userId: user.id })).resolves.toBe(totalRecipes);
   });
 });
