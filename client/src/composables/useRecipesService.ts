@@ -115,7 +115,7 @@ export function useRecipesService(recipeId?: number) {
 
   const [deleteRecipe, deleteErrorMessage] = useErrorMessage(async () => {
     if (!recipeId) throw new Error('Recipe ID is required');
-    return await trpc.recipes.remove.mutate(recipeId);
+    return await trpc.recipes.remove.mutate({ id: recipeId });
   }, true);
 
   async function handleDelete() {
