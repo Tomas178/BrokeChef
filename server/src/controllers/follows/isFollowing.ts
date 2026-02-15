@@ -12,7 +12,7 @@ export default authenticatedProcedure
   .meta({
     openapi: {
       method: 'GET',
-      path: '/follows/isFollowing',
+      path: '/follows/isFollowing/{userId}',
       summary: 'Check if the user is following the given user',
       tags: ['Follows'],
       protect: true,

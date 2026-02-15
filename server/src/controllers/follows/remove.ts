@@ -11,7 +11,7 @@ export default authenticatedProcedure
   .meta({
     openapi: {
       method: 'DELETE',
-      path: '/follows/remove',
+      path: '/follows/{userId}',
       summary: 'Unfollow user',
       tags: ['Follows'],
       protect: true,

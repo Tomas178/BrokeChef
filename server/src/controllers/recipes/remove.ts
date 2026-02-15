@@ -19,7 +19,7 @@ export default recipeAuthorProcedure
   .meta({
     openapi: {
       method: 'DELETE',
-      path: '/recipes/remove',
+      path: '/recipes/{id}',
       summary: 'Delete the recipe',
       tags: ['Recipes'],
       protect: true,

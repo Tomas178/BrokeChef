@@ -15,7 +15,7 @@ export default authenticatedProcedure
   .meta({
     openapi: {
       method: 'POST',
-      path: '/cookedRecipes/create',
+      path: '/cookedRecipes/{id}',
       summary: 'Create the cooked recipe link in the databse',
       tags: ['cookedRecipes'],
       protect: true,

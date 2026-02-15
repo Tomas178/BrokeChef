@@ -11,7 +11,7 @@ export default authenticatedProcedure
   .meta({
     openapi: {
       method: 'GET',
-      path: '/cookedRecipes/isCooked',
+      path: '/cookedRecipes/{id}',
       summary: 'Check if the recipe has already been saevd',
       tags: ['cookedRecipes'],
       protect: true,

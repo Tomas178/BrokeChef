@@ -11,7 +11,7 @@ export default authenticatedProcedure
   .meta({
     openapi: {
       method: 'DELETE',
-      path: '/cookedRecipes/remove',
+      path: '/cookedRecipes/{id}',
       summary: 'Remove cooked recipe link from database',
       tags: ['cookedRecipes'],
       protect: true,

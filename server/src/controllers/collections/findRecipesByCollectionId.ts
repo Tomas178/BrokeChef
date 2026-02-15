@@ -10,7 +10,7 @@ export default authenticatedProcedure
   .meta({
     openapi: {
       method: 'GET',
-      path: '/collections/findRecipesByCollectionId',
+      path: '/collections/findRecipesByCollectionId/{id}',
       summary: 'Find all recipes in the collection',
       tags: ['Collections'],
       protect: true,

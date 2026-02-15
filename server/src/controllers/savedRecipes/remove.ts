@@ -11,7 +11,7 @@ export default authenticatedProcedure
   .meta({
     openapi: {
       method: 'DELETE',
-      path: '/savedRecipes/remove',
+      path: '/savedRecipes/{id}',
       summary: 'Remove saved recipe record from database',
       tags: ['savedRecipes'],
       protect: true,

@@ -11,7 +11,7 @@ export default authenticatedProcedure
   .meta({
     openapi: {
       method: 'POST',
-      path: '/follows/create',
+      path: '/follows/{userId}',
       summary: 'Follow the user',
       tags: ['Follows'],
       protect: true,

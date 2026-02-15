@@ -108,7 +108,7 @@
                       "maximum": 1000
                     },
                     "createdAt": {
-                      "default": "2026-02-15T12:49:58.355Z",
+                      "default": "2026-02-15T15:20:54.922Z",
                       "type": "string"
                     },
                     "author": {
@@ -399,7 +399,7 @@
                         "maximum": 1000
                       },
                       "createdAt": {
-                        "default": "2026-02-15T12:49:58.355Z",
+                        "default": "2026-02-15T15:20:54.922Z",
                         "type": "string"
                       },
                       "author": {
@@ -735,7 +735,7 @@
                         "maximum": 1000
                       },
                       "createdAt": {
-                        "default": "2026-02-15T12:49:58.355Z",
+                        "default": "2026-02-15T15:20:54.922Z",
                         "type": "string"
                       },
                       "author": {
@@ -1056,7 +1056,7 @@
                         "maximum": 1000
                       },
                       "createdAt": {
-                        "default": "2026-02-15T12:49:58.355Z",
+                        "default": "2026-02-15T15:20:54.922Z",
                         "type": "string"
                       },
                       "author": {
@@ -1372,7 +1372,7 @@
                       }
                     },
                     "createdAt": {
-                      "default": "2026-02-15T12:49:58.355Z",
+                      "default": "2026-02-15T15:20:54.922Z",
                       "type": "string"
                     },
                     "author": {
@@ -1639,9 +1639,7 @@
             }
           }
         }
-      }
-    },
-    "/recipes/remove": {
+      },
       "delete": {
         "operationId": "recipes-remove",
         "summary": "Delete the recipe",
@@ -1655,7 +1653,7 @@
         ],
         "parameters": [
           {
-            "in": "query",
+            "in": "path",
             "name": "id",
             "schema": {
               "type": "integer",
@@ -1867,7 +1865,7 @@
         }
       }
     },
-    "/recipes/isAuthor": {
+    "/recipes/isAuthor/{id}": {
       "get": {
         "operationId": "recipes-isAuthor",
         "summary": "Check if the user is the author of the recipe",
@@ -1881,7 +1879,7 @@
         ],
         "parameters": [
           {
-            "in": "query",
+            "in": "path",
             "name": "id",
             "schema": {
               "type": "integer",
@@ -2313,7 +2311,7 @@
         }
       }
     },
-    "/savedRecipes/create": {
+    "/savedRecipes/{id}": {
       "post": {
         "operationId": "savedRecipes-save",
         "summary": "Create a saved recipe record in database",
@@ -2325,27 +2323,18 @@
             "Authorization": []
           }
         ],
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "integer",
-                    "exclusiveMinimum": 0,
-                    "maximum": 9007199254740991
-                  }
-                },
-                "required": [
-                  "id"
-                ]
-              }
-            }
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "required": true
           }
-        },
+        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -2365,7 +2354,7 @@
                       "maxLength": 32
                     },
                     "createdAt": {
-                      "default": "2026-02-15T12:49:58.355Z",
+                      "default": "2026-02-15T15:20:54.922Z",
                       "type": "string"
                     }
                   },
@@ -2532,9 +2521,7 @@
             }
           }
         }
-      }
-    },
-    "/savedRecipes/remove": {
+      },
       "delete": {
         "operationId": "savedRecipes-unsave",
         "summary": "Remove saved recipe record from database",
@@ -2548,7 +2535,7 @@
         ],
         "parameters": [
           {
-            "in": "query",
+            "in": "path",
             "name": "id",
             "schema": {
               "type": "integer",
@@ -2577,7 +2564,7 @@
                       "maxLength": 32
                     },
                     "createdAt": {
-                      "default": "2026-02-15T12:49:58.355Z",
+                      "default": "2026-02-15T15:20:54.922Z",
                       "type": "string"
                     }
                   },
@@ -2782,9 +2769,7 @@
             }
           }
         }
-      }
-    },
-    "/savedRecipes/isSaved": {
+      },
       "get": {
         "operationId": "savedRecipes-isSaved",
         "summary": "Check if the use has the recipe saved",
@@ -2798,7 +2783,7 @@
         ],
         "parameters": [
           {
-            "in": "query",
+            "in": "path",
             "name": "id",
             "schema": {
               "type": "integer",
@@ -3089,7 +3074,7 @@
                             "maximum": 1000
                           },
                           "createdAt": {
-                            "default": "2026-02-15T12:49:58.355Z",
+                            "default": "2026-02-15T15:20:54.922Z",
                             "type": "string"
                           },
                           "author": {
@@ -3175,7 +3160,7 @@
                             "maximum": 1000
                           },
                           "createdAt": {
-                            "default": "2026-02-15T12:49:58.355Z",
+                            "default": "2026-02-15T15:20:54.922Z",
                             "type": "string"
                           },
                           "author": {
@@ -3512,7 +3497,7 @@
                         "maximum": 1000
                       },
                       "createdAt": {
-                        "default": "2026-02-15T12:49:58.355Z",
+                        "default": "2026-02-15T15:20:54.922Z",
                         "type": "string"
                       },
                       "author": {
@@ -3842,7 +3827,7 @@
                         "maximum": 1000
                       },
                       "createdAt": {
-                        "default": "2026-02-15T12:49:58.355Z",
+                        "default": "2026-02-15T15:20:54.922Z",
                         "type": "string"
                       },
                       "author": {
@@ -5047,7 +5032,7 @@
         }
       }
     },
-    "/ratings/getUserRatingForRecipe": {
+    "/ratings/{id}": {
       "get": {
         "operationId": "ratings-getUserRatingForRecipe",
         "summary": "Get user rating for the recipe",
@@ -5061,7 +5046,7 @@
         ],
         "parameters": [
           {
-            "in": "query",
+            "in": "path",
             "name": "id",
             "schema": {
               "type": "integer",
@@ -5080,6 +5065,241 @@
                   "type": "integer",
                   "minimum": 1,
                   "maximum": 5
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "issues": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "message"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "code"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authorization not provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "issues": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "message"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "code"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient access",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "issues": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "message"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "code"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "issues": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "message"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "code"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "issues": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "message"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "code"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "ratings-remove",
+        "summary": "Remove rating for recipe",
+        "tags": [
+          "Ratings"
+        ],
+        "security": [
+          {
+            "Authorization": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 5
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 }
               }
             }
@@ -5340,7 +5560,7 @@
                       "maximum": 5
                     },
                     "createdAt": {
-                      "default": "2026-02-15T12:49:58.355Z",
+                      "default": "2026-02-15T15:20:54.922Z",
                       "type": "string"
                     }
                   },
@@ -5755,244 +5975,7 @@
         }
       }
     },
-    "/ratings/remove": {
-      "delete": {
-        "operationId": "ratings-remove",
-        "summary": "Remove rating for recipe",
-        "tags": [
-          "Ratings"
-        ],
-        "security": [
-          {
-            "Authorization": []
-          }
-        ],
-        "parameters": [
-          {
-            "in": "query",
-            "name": "id",
-            "schema": {
-              "type": "integer",
-              "exclusiveMinimum": 0,
-              "maximum": 9007199254740991
-            },
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "anyOf": [
-                    {
-                      "type": "integer",
-                      "minimum": 1,
-                      "maximum": 5
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid input data",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    },
-                    "code": {
-                      "type": "string"
-                    },
-                    "issues": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "message": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "message"
-                        ],
-                        "additionalProperties": false
-                      }
-                    }
-                  },
-                  "required": [
-                    "message",
-                    "code"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authorization not provided",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    },
-                    "code": {
-                      "type": "string"
-                    },
-                    "issues": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "message": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "message"
-                        ],
-                        "additionalProperties": false
-                      }
-                    }
-                  },
-                  "required": [
-                    "message",
-                    "code"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Insufficient access",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    },
-                    "code": {
-                      "type": "string"
-                    },
-                    "issues": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "message": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "message"
-                        ],
-                        "additionalProperties": false
-                      }
-                    }
-                  },
-                  "required": [
-                    "message",
-                    "code"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    },
-                    "code": {
-                      "type": "string"
-                    },
-                    "issues": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "message": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "message"
-                        ],
-                        "additionalProperties": false
-                      }
-                    }
-                  },
-                  "required": [
-                    "message",
-                    "code"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    },
-                    "code": {
-                      "type": "string"
-                    },
-                    "issues": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "message": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "message"
-                        ],
-                        "additionalProperties": false
-                      }
-                    }
-                  },
-                  "required": [
-                    "message",
-                    "code"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/follows/create": {
+    "/follows/{userId}": {
       "post": {
         "operationId": "follows-follow",
         "summary": "Follow the user",
@@ -6004,27 +5987,18 @@
             "Authorization": []
           }
         ],
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "userId": {
-                    "type": "string",
-                    "minLength": 32,
-                    "maxLength": 32
-                  }
-                },
-                "required": [
-                  "userId"
-                ]
-              }
-            }
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "schema": {
+              "type": "string",
+              "minLength": 32,
+              "maxLength": 32
+            },
+            "required": true
           }
-        },
+        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -6044,7 +6018,7 @@
                       "maxLength": 32
                     },
                     "createdAt": {
-                      "default": "2026-02-15T12:49:58.355Z",
+                      "default": "2026-02-15T15:20:54.922Z",
                       "type": "string"
                     }
                   },
@@ -6211,9 +6185,7 @@
             }
           }
         }
-      }
-    },
-    "/follows/remove": {
+      },
       "delete": {
         "operationId": "follows-unfollow",
         "summary": "Unfollow user",
@@ -6227,7 +6199,7 @@
         ],
         "parameters": [
           {
-            "in": "query",
+            "in": "path",
             "name": "userId",
             "schema": {
               "type": "string",
@@ -6439,7 +6411,7 @@
         }
       }
     },
-    "/follows/isFollowing": {
+    "/follows/isFollowing/{userId}": {
       "get": {
         "operationId": "follows-isFollowing",
         "summary": "Check if the user is following the given user",
@@ -6453,7 +6425,7 @@
         ],
         "parameters": [
           {
-            "in": "query",
+            "in": "path",
             "name": "userId",
             "schema": {
               "type": "string",
@@ -7639,7 +7611,7 @@
         }
       }
     },
-    "/cookedRecipes/create": {
+    "/cookedRecipes/{id}": {
       "post": {
         "operationId": "cookedRecipes-mark",
         "summary": "Create the cooked recipe link in the databse",
@@ -7651,27 +7623,18 @@
             "Authorization": []
           }
         ],
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "integer",
-                    "exclusiveMinimum": 0,
-                    "maximum": 9007199254740991
-                  }
-                },
-                "required": [
-                  "id"
-                ]
-              }
-            }
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "required": true
           }
-        },
+        ],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -7691,7 +7654,7 @@
                       "maximum": 9007199254740991
                     },
                     "createdAt": {
-                      "default": "2026-02-15T12:49:58.355Z",
+                      "default": "2026-02-15T15:20:54.922Z",
                       "type": "string"
                     }
                   },
@@ -7858,9 +7821,7 @@
             }
           }
         }
-      }
-    },
-    "/cookedRecipes/remove": {
+      },
       "delete": {
         "operationId": "cookedRecipes-unmark",
         "summary": "Remove cooked recipe link from database",
@@ -7874,7 +7835,7 @@
         ],
         "parameters": [
           {
-            "in": "query",
+            "in": "path",
             "name": "id",
             "schema": {
               "type": "integer",
@@ -8084,9 +8045,7 @@
             }
           }
         }
-      }
-    },
-    "/cookedRecipes/isCooked": {
+      },
       "get": {
         "operationId": "cookedRecipes-isMarked",
         "summary": "Check if the recipe has already been saevd",
@@ -8100,7 +8059,7 @@
         ],
         "parameters": [
           {
-            "in": "query",
+            "in": "path",
             "name": "id",
             "schema": {
               "type": "integer",
@@ -8377,11 +8336,11 @@
                       "type": "string"
                     },
                     "createdAt": {
-                      "default": "2026-02-15T12:49:58.355Z",
+                      "default": "2026-02-15T15:20:54.922Z",
                       "type": "string"
                     },
                     "updatedAt": {
-                      "default": "2026-02-15T12:49:58.359Z",
+                      "default": "2026-02-15T15:20:54.922Z",
                       "type": "string"
                     }
                   },
@@ -8552,7 +8511,7 @@
         }
       }
     },
-    "/collections/findById": {
+    "/collections/findById/{id}": {
       "get": {
         "operationId": "collections-findById",
         "summary": "Find collection by ID",
@@ -8566,7 +8525,7 @@
         ],
         "parameters": [
           {
-            "in": "query",
+            "in": "path",
             "name": "id",
             "schema": {
               "type": "integer",
@@ -8603,11 +8562,11 @@
                       "type": "string"
                     },
                     "createdAt": {
-                      "default": "2026-02-15T12:49:58.355Z",
+                      "default": "2026-02-15T15:20:54.922Z",
                       "type": "string"
                     },
                     "updatedAt": {
-                      "default": "2026-02-15T12:49:58.359Z",
+                      "default": "2026-02-15T15:20:54.922Z",
                       "type": "string"
                     }
                   },
@@ -9067,7 +9026,7 @@
         }
       }
     },
-    "/collections/findRecipesByCollectionId": {
+    "/collections/findRecipesByCollectionId/{id}": {
       "get": {
         "operationId": "collections-findRecipesByCollectionId",
         "summary": "Find all recipes in the collection",
@@ -9081,7 +9040,7 @@
         ],
         "parameters": [
           {
-            "in": "query",
+            "in": "path",
             "name": "id",
             "schema": {
               "type": "integer",
@@ -9122,7 +9081,7 @@
                         "maximum": 1000
                       },
                       "createdAt": {
-                        "default": "2026-02-15T12:49:58.355Z",
+                        "default": "2026-02-15T15:20:54.922Z",
                         "type": "string"
                       },
                       "author": {
@@ -9607,7 +9566,7 @@
         }
       }
     },
-    "/collections/remove": {
+    "/collections/{id}": {
       "delete": {
         "operationId": "collections-remove",
         "summary": "Deletes the collection",
@@ -9621,7 +9580,7 @@
         ],
         "parameters": [
           {
-            "in": "query",
+            "in": "path",
             "name": "id",
             "schema": {
               "type": "integer",
@@ -9833,7 +9792,7 @@
         }
       }
     },
-    "/collectionsRecipes/create": {
+    "/collectionsRecipes": {
       "post": {
         "operationId": "collectionsRecipes-save",
         "summary": "Save a recipe to collection",
@@ -9891,7 +9850,7 @@
                       "maximum": 9007199254740991
                     },
                     "createdAt": {
-                      "default": "2026-02-15T12:49:58.355Z",
+                      "default": "2026-02-15T15:20:54.922Z",
                       "type": "string"
                     }
                   },
@@ -10058,9 +10017,7 @@
             }
           }
         }
-      }
-    },
-    "/collectionsRecipes/remove": {
+      },
       "delete": {
         "operationId": "collectionsRecipes-unsave",
         "summary": "Remove recipe from collection",

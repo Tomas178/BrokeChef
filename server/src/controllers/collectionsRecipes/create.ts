@@ -13,7 +13,7 @@ export default authenticatedProcedure
   .meta({
     openapi: {
       method: 'POST',
-      path: '/collectionsRecipes/create',
+      path: '/collectionsRecipes',
       summary: 'Save a recipe to collection',
       tags: ['CollectionsRecipes'],
       protect: true,

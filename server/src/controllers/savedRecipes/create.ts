@@ -11,7 +11,7 @@ export default authenticatedProcedure
   .meta({
     openapi: {
       method: 'POST',
-      path: '/savedRecipes/create',
+      path: '/savedRecipes/{id}',
       summary: 'Create a saved recipe record in database',
       tags: ['savedRecipes'],
       protect: true,

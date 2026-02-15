@@ -11,7 +11,7 @@ export default authenticatedProcedure
   .meta({
     openapi: {
       method: 'GET',
-      path: '/savedRecipes/isSaved',
+      path: '/savedRecipes/{id}',
       summary: 'Check if the use has the recipe saved',
       tags: ['savedRecipes'],
       protect: true,

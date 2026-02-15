@@ -19,7 +19,7 @@ export default collectionAuthorProcedure
   .meta({
     openapi: {
       method: 'DELETE',
-      path: '/collections/remove',
+      path: '/collections/{id}',
       summary: 'Deletes the collection',
       tags: ['Collections'],
       protect: true,

@@ -8,7 +8,7 @@ export default authenticatedProcedure
   .meta({
     openapi: {
       method: 'GET',
-      path: '/recipes/isAuthor',
+      path: '/recipes/isAuthor/{id}',
       summary: 'Check if the user is the author of the recipe',
       tags: ['Recipes'],
       protect: true,

@@ -10,7 +10,7 @@ export default authenticatedProcedure
   .meta({
     openapi: {
       method: 'GET',
-      path: '/collections/findById',
+      path: '/collections/findById/{id}',
       summary: 'Find collection by ID',
       tags: ['Collections'],
       protect: true,

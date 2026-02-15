@@ -10,7 +10,7 @@ export default authenticatedProcedure
   .meta({
     openapi: {
       method: 'DELETE',
-      path: '/ratings/remove',
+      path: '/ratings/{id}',
       summary: 'Remove rating for recipe',
       tags: ['Ratings'],
       protect: true,

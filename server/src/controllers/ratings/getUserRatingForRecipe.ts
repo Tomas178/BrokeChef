@@ -10,7 +10,7 @@ export default authenticatedProcedure
   .meta({
     openapi: {
       method: 'GET',
-      path: '/ratings/getUserRatingForRecipe',
+      path: '/ratings/{id}',
       summary: 'Get user rating for the recipe',
       tags: ['Ratings'],
       protect: true,

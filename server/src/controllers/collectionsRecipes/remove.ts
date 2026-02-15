@@ -11,7 +11,7 @@ export default authenticatedProcedure
   .meta({
     openapi: {
       method: 'DELETE',
-      path: '/collectionsRecipes/remove',
+      path: '/collectionsRecipes',
       summary: 'Remove recipe from collection',
       tags: ['CollectionsRecipes'],
       protect: true,
