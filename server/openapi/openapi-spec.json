@@ -108,7 +108,7 @@
                       "maximum": 1000
                     },
                     "createdAt": {
-                      "default": "2026-02-14T10:56:23.425Z",
+                      "default": "2026-02-15T12:49:58.355Z",
                       "type": "string"
                     },
                     "author": {
@@ -399,7 +399,7 @@
                         "maximum": 1000
                       },
                       "createdAt": {
-                        "default": "2026-02-14T10:56:23.425Z",
+                        "default": "2026-02-15T12:49:58.355Z",
                         "type": "string"
                       },
                       "author": {
@@ -735,7 +735,7 @@
                         "maximum": 1000
                       },
                       "createdAt": {
-                        "default": "2026-02-14T10:56:23.425Z",
+                        "default": "2026-02-15T12:49:58.355Z",
                         "type": "string"
                       },
                       "author": {
@@ -1056,7 +1056,7 @@
                         "maximum": 1000
                       },
                       "createdAt": {
-                        "default": "2026-02-14T10:56:23.425Z",
+                        "default": "2026-02-15T12:49:58.355Z",
                         "type": "string"
                       },
                       "author": {
@@ -1372,7 +1372,7 @@
                       }
                     },
                     "createdAt": {
-                      "default": "2026-02-14T10:56:23.425Z",
+                      "default": "2026-02-15T12:49:58.355Z",
                       "type": "string"
                     },
                     "author": {
@@ -2365,7 +2365,7 @@
                       "maxLength": 32
                     },
                     "createdAt": {
-                      "default": "2026-02-14T10:56:23.425Z",
+                      "default": "2026-02-15T12:49:58.355Z",
                       "type": "string"
                     }
                   },
@@ -2577,7 +2577,7 @@
                       "maxLength": 32
                     },
                     "createdAt": {
-                      "default": "2026-02-14T10:56:23.425Z",
+                      "default": "2026-02-15T12:49:58.355Z",
                       "type": "string"
                     }
                   },
@@ -3089,7 +3089,7 @@
                             "maximum": 1000
                           },
                           "createdAt": {
-                            "default": "2026-02-14T10:56:23.425Z",
+                            "default": "2026-02-15T12:49:58.355Z",
                             "type": "string"
                           },
                           "author": {
@@ -3175,7 +3175,7 @@
                             "maximum": 1000
                           },
                           "createdAt": {
-                            "default": "2026-02-14T10:56:23.425Z",
+                            "default": "2026-02-15T12:49:58.355Z",
                             "type": "string"
                           },
                           "author": {
@@ -3512,7 +3512,7 @@
                         "maximum": 1000
                       },
                       "createdAt": {
-                        "default": "2026-02-14T10:56:23.425Z",
+                        "default": "2026-02-15T12:49:58.355Z",
                         "type": "string"
                       },
                       "author": {
@@ -3842,7 +3842,7 @@
                         "maximum": 1000
                       },
                       "createdAt": {
-                        "default": "2026-02-14T10:56:23.425Z",
+                        "default": "2026-02-15T12:49:58.355Z",
                         "type": "string"
                       },
                       "author": {
@@ -5340,7 +5340,7 @@
                       "maximum": 5
                     },
                     "createdAt": {
-                      "default": "2026-02-14T10:56:23.425Z",
+                      "default": "2026-02-15T12:49:58.355Z",
                       "type": "string"
                     }
                   },
@@ -6044,7 +6044,7 @@
                       "maxLength": 32
                     },
                     "createdAt": {
-                      "default": "2026-02-14T10:56:23.425Z",
+                      "default": "2026-02-15T12:49:58.355Z",
                       "type": "string"
                     }
                   },
@@ -7691,7 +7691,7 @@
                       "maximum": 9007199254740991
                     },
                     "createdAt": {
-                      "default": "2026-02-14T10:56:23.425Z",
+                      "default": "2026-02-15T12:49:58.355Z",
                       "type": "string"
                     }
                   },
@@ -7889,31 +7889,7 @@
             "description": "Successful response",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "userId": {
-                      "type": "string",
-                      "minLength": 32,
-                      "maxLength": 32
-                    },
-                    "recipeId": {
-                      "type": "integer",
-                      "exclusiveMinimum": 0,
-                      "maximum": 9007199254740991
-                    },
-                    "createdAt": {
-                      "default": "2026-02-14T10:56:23.425Z",
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "userId",
-                    "recipeId",
-                    "createdAt"
-                  ],
-                  "additionalProperties": false
-                }
+                "schema": {}
               }
             }
           },
@@ -8401,11 +8377,11 @@
                       "type": "string"
                     },
                     "createdAt": {
-                      "default": "2026-02-14T10:56:23.425Z",
+                      "default": "2026-02-15T12:49:58.355Z",
                       "type": "string"
                     },
                     "updatedAt": {
-                      "default": "2026-02-14T10:56:23.426Z",
+                      "default": "2026-02-15T12:49:58.359Z",
                       "type": "string"
                     }
                   },
@@ -8627,11 +8603,11 @@
                       "type": "string"
                     },
                     "createdAt": {
-                      "default": "2026-02-14T10:56:23.425Z",
+                      "default": "2026-02-15T12:49:58.355Z",
                       "type": "string"
                     },
                     "updatedAt": {
-                      "default": "2026-02-14T10:56:23.426Z",
+                      "default": "2026-02-15T12:49:58.359Z",
                       "type": "string"
                     }
                   },
@@ -9146,7 +9122,7 @@
                         "maximum": 1000
                       },
                       "createdAt": {
-                        "default": "2026-02-14T10:56:23.425Z",
+                        "default": "2026-02-15T12:49:58.355Z",
                         "type": "string"
                       },
                       "author": {
@@ -9915,7 +9891,7 @@
                       "maximum": 9007199254740991
                     },
                     "createdAt": {
-                      "default": "2026-02-14T10:56:23.425Z",
+                      "default": "2026-02-15T12:49:58.355Z",
                       "type": "string"
                     }
                   },

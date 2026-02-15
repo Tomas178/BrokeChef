@@ -68,9 +68,6 @@ describe('Authenticated tests', () => {
 
     const unmarkedRecipe = await unmark({ id: recipeId });
 
-    expect(unmarkedRecipe).toEqual({
-      ...cookedRecipeLink,
-      createdAt: expect.any(Date),
-    });
+    expect(unmarkedRecipe).toBeUndefined();
   });
 });

@@ -3,8 +3,8 @@ import provideServices from '@server/trpc/provideServices';
 import { cookedRecipesService } from '@server/services/cookedRecipesService';
 import { integerIdObjectSchema } from '@server/entities/shared';
 import type { CookedRecipesLink } from '@server/repositories/cookedRecipesRepository';
-import { cookedRecipesSchema } from '@server/entities/cookedRecipes';
 import { withServiceErrors } from '@server/utils/errors/utils/withServiceErrors';
+import { voidSchema } from '../outputSchemas/shared';
 
 export default authenticatedProcedure
   .use(provideServices({ cookedRecipesService }))
@@ -18,7 +18,7 @@ export default authenticatedProcedure
     },
   })
   .input(integerIdObjectSchema)
-  .output(cookedRecipesSchema.optional())
+  .output(voidSchema)
   .mutation(async ({ input: { id: recipeId }, ctx: { authUser, services } }) =>
     withServiceErrors(async () => {
       const unmarkCookedRecipeLink: CookedRecipesLink = {
@@ -26,10 +26,8 @@ export default authenticatedProcedure
         recipeId,
       };
 
-      const unmarkedRecipe = await services.cookedRecipesService.remove(
-        unmarkCookedRecipeLink
-      );
+      await services.cookedRecipesService.remove(unmarkCookedRecipeLink);
 
-      return unmarkedRecipe;
+      return;
     })
   );
