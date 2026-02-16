@@ -64,6 +64,7 @@ export class GracefulShutdownManager {
       const sortedHandlers = [...this.cleanupHandlers].sort(
         (a, b) => a.priority - b.priority
       );
+
       for (const { name, handler } of sortedHandlers) {
         try {
           await Promise.race([

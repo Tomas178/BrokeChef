@@ -28,8 +28,9 @@ afterEach(async () => {
   vi.restoreAllMocks();
   await new Promise<void>(resolve => {
     server.close(() => resolve());
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-  }).catch(() => {});
+  }).catch(() => {
+    /* empty */
+  });
 });
 
 describe('GracefulShutdownManager', () => {
@@ -192,6 +193,43 @@ describe('GracefulShutdownManager', () => {
 
       await vi.waitFor(() => {
         expect(exitMock).toHaveBeenCalledWith(0);
+      });
+    });
+
+    it('Should force exit when shutdown timeout is exceeded', async () => {
+      const slowManager = new GracefulShutdownManager(100, 5000, exitMock);
+
+      slowManager.registerCleanup(
+        'stuck',
+        () =>
+          new Promise(() => {
+            /* empty */
+          }),
+        GracefulShutdownPriority.WORKER
+      );
+
+      slowManager.shutdown('SIGTERM');
+
+      await vi.waitFor(
+        () => {
+          expect(exitMock).toHaveBeenCalledWith(1);
+        },
+        { timeout: 1000 }
+      );
+    });
+
+    it('Should call exit with 1 if closeServer rejects', async () => {
+      const failingServer = {
+        close: (callback: (error?: Error) => void) => {
+          callback(new Error('server close failed'));
+        },
+      } as unknown as Server;
+
+      manager.attachServer(failingServer);
+      await manager.shutdown('SIGTERM');
+
+      await vi.waitFor(() => {
+        expect(exitMock).toHaveBeenCalledWith(1);
       });
     });
   });
