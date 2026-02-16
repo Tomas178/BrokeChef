@@ -5,6 +5,8 @@ import supertest from 'supertest';
 import { StatusCodes } from 'http-status-codes';
 import type { Database } from '@server/database';
 import { ImageFolder, type ImageFolderValues } from '@server/enums/ImageFolder';
+import { gracefulShutdownManager } from '@server/utils/GracefulShutdownManager';
+import ServiceUnavailable from '@server/utils/errors/general/ServiceUnavailable';
 
 const [mockHandleFileStream, mockHandleStreamUpload] = vi.hoisted(() => [
   vi.fn(),
@@ -18,6 +20,8 @@ vi.mock('@server/utils/handleFileStream', () => ({
 vi.mock('@server/routes/utils/handleStreamUpload', () => ({
   handleStreamUpload: mockHandleStreamUpload,
 }));
+
+vi.spyOn(gracefulShutdownManager, 'isTerminating').mockReturnValue(false);
 
 vi.mock('@server/middleware/authenticate', () => ({
   authenticate: (request: any, _: any, next: any) => {
@@ -35,6 +39,28 @@ describe('Server health check', () => {
     const app = createApp(database);
 
     await supertest(app).get('/api/health').expect(StatusCodes.OK);
+  });
+});
+
+describe('Service Unavailable check', () => {
+  it('Should return 503 when server is shutting down', async () => {
+    const error = new ServiceUnavailable();
+
+    vi.spyOn(gracefulShutdownManager, 'isTerminating').mockReturnValueOnce(
+      true
+    );
+
+    const app = createApp(database);
+
+    const { body } = await supertest(app)
+      .get('/api/health')
+      .expect(StatusCodes.SERVICE_UNAVAILABLE);
+
+    expect(body).toEqual({
+      error: {
+        message: error.message,
+      },
+    });
   });
 });
 

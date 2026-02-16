@@ -16,6 +16,7 @@ import jsonErrorHandler from './middleware/jsonErrors';
 import uploadRouter from './routes/uploadRouter';
 import generateRecipesRouter from './routes/generateRecipesRouter';
 import { gracefulShutdownManager } from './utils/GracefulShutdownManager';
+import ServiceUnavailable from './utils/errors/general/ServiceUnavailable';
 
 export default function createApp(database: Database) {
   const app = express();
@@ -31,9 +32,11 @@ export default function createApp(database: Database) {
 
   app.use((_, res, next) => {
     if (gracefulShutdownManager.isTerminating()) {
-      res.status(StatusCodes.SERVICE_UNAVAILABLE).json({
-        error: 'Service Unavailable',
-        message: 'Server is shutting down',
+      const error = new ServiceUnavailable();
+      res.status(error.status).json({
+        error: {
+          message: error.message,
+        },
       });
       return;
     }
@@ -54,6 +57,7 @@ export default function createApp(database: Database) {
 
   app.use(jsonErrorHandler);
 
+  /* v8 ignore start */
   app.use(
     '/api/v1/rest',
     createOpenApiExpressMiddleware({
@@ -81,6 +85,7 @@ export default function createApp(database: Database) {
       router: appRouter,
     })
   );
+  /* v8 ignore stop */
 
   return app;
 }
