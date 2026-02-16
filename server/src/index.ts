@@ -13,10 +13,29 @@ process.on('unhandledRejection', reason => {
 
 import '@server/workers/email';
 import '@server/workers/recipe';
+import { gracefulShutdownManager } from './utils/GracefulShutdownManager';
+import { GracefulShutdownPriority } from './enums/GracefulShutdownPriority';
 
 const database = createDatabase(config.database);
+
+gracefulShutdownManager.registerCleanup(
+  'database',
+  async () => {
+    await database.destroy();
+  },
+  GracefulShutdownPriority.DATABASE
+);
+
 const app = createApp(database);
 
-app.listen(config.port, '0.0.0.0', () => {
+const server = app.listen(config.port, () => {
   logger.info(`Server is running at port: ${config.port}`);
 });
+
+gracefulShutdownManager.attachServer(server);
+
+const SHUTDOWN_SIGNALS = ['SIGTERM', 'SIGINT'];
+
+for (const signal of SHUTDOWN_SIGNALS) {
+  process.on(signal, async () => gracefulShutdownManager.shutdown(signal));
+}

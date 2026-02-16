@@ -1,8 +1,10 @@
+import { GracefulShutdownPriority } from '@server/enums/GracefulShutdownPriority';
 import { RecipeGenerationStatus } from '@server/enums/RecipeGenerationStatus';
 import logger from '@server/logger';
 import { RECIPE_QUEUE_NAME, type RecipeJobData } from '@server/queues/recipe';
 import { ai } from '@server/utils/GoogleGenAiClient/client';
 import { generateRecipesFromImage } from '@server/utils/GoogleGenAiClient/generateRecipesFromImage';
+import { gracefulShutdownManager } from '@server/utils/GracefulShutdownManager';
 import { redisConnection } from '@server/utils/redis/connection';
 import {
   sseManager,
@@ -46,6 +48,16 @@ export const recipeWorker = new Worker<RecipeJobData>(
     connection: redisConnection,
   }
 );
+
+/* v8 ignore start */
+gracefulShutdownManager.registerCleanup(
+  'recipe worker',
+  async () => {
+    await recipeWorker.close();
+  },
+  GracefulShutdownPriority.WORKER
+);
+/* v8 ignore stop */
 
 recipeWorker.on('ready', () => {
   logger.info(

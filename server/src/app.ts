@@ -15,6 +15,7 @@ import config from './config';
 import jsonErrorHandler from './middleware/jsonErrors';
 import uploadRouter from './routes/uploadRouter';
 import generateRecipesRouter from './routes/generateRecipesRouter';
+import { gracefulShutdownManager } from './utils/GracefulShutdownManager';
 
 export default function createApp(database: Database) {
   const app = express();
@@ -27,6 +28,17 @@ export default function createApp(database: Database) {
       credentials: true,
     })
   );
+
+  app.use((_, res, next) => {
+    if (gracefulShutdownManager.isTerminating()) {
+      res.status(StatusCodes.SERVICE_UNAVAILABLE).json({
+        error: 'Service Unavailable',
+        message: 'Server is shutting down',
+      });
+      return;
+    }
+    next();
+  });
 
   app.all('/api/auth/{*splat}', toNodeHandler(auth));
 

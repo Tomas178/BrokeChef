@@ -117,5 +117,18 @@ export default tseslint.config(
     },
   },
 
+  {
+    files: ['**/src/utils/GracefulShutdownManager/**'],
+    rules: {
+      'unicorn/no-process-exit': 'off',
+      'unicorn/filename-case': [
+        'error',
+        {
+          case: 'pascalCase',
+        },
+      ],
+    },
+  },
+
   prettierConfig
 );

@@ -4,10 +4,12 @@ import {
   EmailTemplate,
   type EmailTemplateValues,
 } from '@server/enums/EmailTemplate';
+import { GracefulShutdownPriority } from '@server/enums/GracefulShutdownPriority';
 import logger from '@server/logger';
 import { EMAIL_QUEUE_NAME, type EmailJobData } from '@server/queues/email';
 import { s3Client } from '@server/utils/AWSS3Client/client';
 import { getTemplate } from '@server/utils/AWSS3Client/getTemplate';
+import { gracefulShutdownManager } from '@server/utils/GracefulShutdownManager';
 import { redisConnection } from '@server/utils/redis/connection';
 import { transporter } from '@server/utils/sendMail/client';
 import { formEmailTemplate } from '@server/utils/sendMail/formEmailTemplate';
@@ -68,6 +70,16 @@ export const emailWorker = new Worker<EmailJobData>(
     concurrency: CONCURRENT_PROCESSES,
   }
 );
+
+/* v8 ignore start */
+gracefulShutdownManager.registerCleanup(
+  'email worker',
+  async () => {
+    await emailWorker.close();
+  },
+  GracefulShutdownPriority.WORKER
+);
+/* v8 ignore stop */
 
 emailWorker.on('ready', () => {
   logger.info(
