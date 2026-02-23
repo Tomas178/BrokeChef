@@ -13,8 +13,8 @@ export default router({
   search,
   findAll,
   findAllRecommended,
+  totalCount,
+  isAuthor,
   findById,
   remove,
-  isAuthor,
-  totalCount,
 });
