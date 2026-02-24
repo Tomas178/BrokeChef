@@ -54,7 +54,7 @@ export const useRecipeGeneratorStore = defineStore('recipeGenerator', () => {
     reset();
     isGenerating.value = true;
 
-    const sseUrl = `${apiOrigin}/api/recipe/events/${userId}`;
+    const sseUrl = `${apiOrigin}/api/recipe/events`;
     eventSource.value = new EventSource(sseUrl, { withCredentials: true });
 
     eventSource.value.onmessage = (event) => {

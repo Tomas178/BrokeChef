@@ -27,8 +27,8 @@ const rateLimitConfig: RateLimitConfig = {
 const checkRequestOrigin = (origin: string) =>
   config.cors.origin.includes(origin);
 
-generateRecipesRouter.get('/events/:userId', (req, res) => {
-  const { userId } = req.params;
+generateRecipesRouter.get('/events', authenticate, (req, res) => {
+  const userId = req.user!.id;
   const requestOrigin = req.headers.origin;
   const isAllowedOrigin = requestOrigin && checkRequestOrigin(requestOrigin);
   const allowOrigin = isAllowedOrigin ? requestOrigin : config.cors.origin[0];

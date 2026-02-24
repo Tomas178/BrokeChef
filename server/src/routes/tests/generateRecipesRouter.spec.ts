@@ -57,7 +57,7 @@ const removeClientSpy = vi.spyOn(sseManager, 'removeClient');
 const database = {} as Database;
 const app = createApp(database);
 
-const getEndpoint = `/api/recipe/events/${userId}`;
+const getEndpoint = `/api/recipe/events`;
 const postEndpoint = '/api/recipe/generate';
 
 beforeEach(() => {
@@ -66,7 +66,7 @@ beforeEach(() => {
 
 describe(`GET ${getEndpoint}`, () => {
   it('Should establish SSE connection and register the client', async () => {
-    addClientSpy.mockImplementationOnce((id: string, res: Response) => {
+    addClientSpy.mockImplementationOnce((_id: string, res: Response) => {
       res.end();
     });
 
