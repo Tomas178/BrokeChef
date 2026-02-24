@@ -17,7 +17,7 @@ Recipe sharing app primarily orientied for students. Users can look for various 
 - Mark/unmark recipe as cooked/tried
 - Create/remove collections
 - Add/remove recipes to/from collections
-- FRIDGE MODE: Add your fridge image and get 3 fully generated recipes. Then select 1 of them and it will be created. (MAXIMUM 3 REQUESTS PER 60 MINUTES FOR USER)
+- FRIDGE MODE: Add your fridge image and get 3 fully generated recipes. Then select 1 of them and it will be created. (MAXIMUM 5 REQUESTS PER 60 MINUTES FOR USER)
 - Follow/unfollow another user
 - Look through following/followers list of a user
 - Search recipes in homepage
