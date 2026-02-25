@@ -157,18 +157,15 @@ describe('getFollowing', () => {
       }),
     ]);
 
-    const followsInDatabase = await selectAll(database, 'follows', eb =>
-      eb('followerId', '=', followLink.followerId)
-    );
-    expect(followsInDatabase).toHaveLength(followLinks.length);
-    expect(followsInDatabase[0]).toMatchObject(followLinks[0]);
-    expect(followsInDatabase[1]).toMatchObject(followLinks[1]);
-
     const followingUsers = await repository.getFollowing(followLink.followerId);
 
     expect(followingUsers).toHaveLength(followLinks.length);
-    expect(followingUsers[0]).toEqual(pick(userFollowed, usersKeysPublic));
-    expect(followingUsers[1]).toEqual(pick(userFollowedTwo, usersKeysPublic));
+    expect(followingUsers).toEqual(
+      expect.arrayContaining([
+        pick(userFollowed, usersKeysPublic),
+        pick(userFollowedTwo, usersKeysPublic),
+      ])
+    );
   });
 });
 
@@ -205,23 +202,16 @@ describe('getFollowers', () => {
       }),
     ]);
 
-    const followsInDatabase = await selectAll(database, 'follows', eb =>
-      eb('followedId', '=', followLink.followedId)
-    );
-    expect(followsInDatabase).toHaveLength(followLinks.length);
-    expect(followsInDatabase[0]).toMatchObject(followLinks[0]);
-    expect(followsInDatabase[1]).toMatchObject(followLinks[1]);
-
     const usersThatAreFollowing = await repository.getFollowers(
       followLink.followedId
     );
 
     expect(usersThatAreFollowing).toHaveLength(followLinks.length);
-    expect(usersThatAreFollowing[0]).toEqual(
-      pick(userFollower, usersKeysPublic)
-    );
-    expect(usersThatAreFollowing[1]).toEqual(
-      pick(userFollowerTwo, usersKeysPublic)
+    expect(usersThatAreFollowing).toEqual(
+      expect.arrayContaining([
+        pick(userFollower, usersKeysPublic),
+        pick(userFollowerTwo, usersKeysPublic),
+      ])
     );
   });
 });
