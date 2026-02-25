@@ -56,10 +56,10 @@ export interface RecipesRepository {
 
 function normalizeRating<T extends { rating: number | string | null }>(
   recipe: T
-): T {
+): Omit<T, 'rating'> & { rating: number } {
   return {
     ...recipe,
-    rating: recipe.rating ? Number(recipe.rating) : recipe.rating,
+    rating: recipe.rating ? Number(recipe.rating) : 0,
   };
 }
 
@@ -68,7 +68,7 @@ export function recipesRepository(database: Database): RecipesRepository {
     async create(recipe) {
       const { embedding, ...rest } = recipe;
 
-      return database
+      const created = await database
         .insertInto(TABLE)
         .values({
           ...rest,
@@ -78,6 +78,8 @@ export function recipesRepository(database: Database): RecipesRepository {
         .returning(withAuthor)
         .returning(withRatings)
         .executeTakeFirstOrThrow();
+
+      return normalizeRating(created);
     },
 
     async search(vector, { offset, limit }) {

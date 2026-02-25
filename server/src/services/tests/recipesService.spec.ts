@@ -343,10 +343,10 @@ describe('search', () => {
     expect(mockAssignSignedUrls).toHaveBeenCalledOnce();
   });
 
-  it('Should return recipes with ratings included as undefined when no ratings exist', async () => {
+  it('Should return recipes with ratings included as 0 when no ratings exist', async () => {
     const fakeRecipes = [
-      fakeRecipeWithRating({ rating: undefined }),
-      fakeRecipeWithRating({ rating: undefined }),
+      fakeRecipeWithRating({ rating: 0 }),
+      fakeRecipeWithRating({ rating: 0 }),
     ];
     mockRecipesRepoSearch.mockResolvedValueOnce(fakeRecipes);
 
@@ -354,8 +354,8 @@ describe('search', () => {
     expect(recipes).toHaveLength(fakeRecipes.length);
     expect(recipes).toEqual(fakeRecipes);
 
-    expect(recipes[0]).toHaveProperty('rating', undefined);
-    expect(recipes[1]).toHaveProperty('rating', undefined);
+    expect(recipes[0]).toHaveProperty('rating', 0);
+    expect(recipes[1]).toHaveProperty('rating', 0);
   });
 
   it('Should return recipes with ratings included as real ratings when ratings exist', async () => {
@@ -408,10 +408,10 @@ describe('findAll', () => {
     expect(mockAssignSignedUrls).toHaveBeenCalledOnce();
   });
 
-  it('Should return recipes with ratings included as undefined when no ratings exist', async () => {
+  it('Should return recipes with ratings included as 0 when no ratings exist', async () => {
     const fakeRecipes = [
-      fakeRecipeWithRating({ rating: undefined }),
-      fakeRecipeWithRating({ rating: undefined }),
+      fakeRecipeWithRating({ rating: 0 }),
+      fakeRecipeWithRating({ rating: 0 }),
     ];
     mockRecipesRepoFindAll.mockResolvedValueOnce(fakeRecipes);
 
@@ -419,8 +419,8 @@ describe('findAll', () => {
     expect(recipes).toHaveLength(fakeRecipes.length);
     expect(recipes).toEqual(fakeRecipes);
 
-    expect(recipes[0]).toHaveProperty('rating', undefined);
-    expect(recipes[1]).toHaveProperty('rating', undefined);
+    expect(recipes[0]).toHaveProperty('rating', 0);
+    expect(recipes[1]).toHaveProperty('rating', 0);
   });
 
   it('Should return recipes with ratings included as real ratings when ratings exist', async () => {
@@ -436,7 +436,7 @@ describe('findAll', () => {
 });
 
 describe('findAllRecommended', () => {
-  describe('Search case', () => {
+  describe('search case', () => {
     beforeEach(() =>
       mockSavedRecipesRepoGetAverageUserEmbedding.mockResolvedValueOnce(
         getVector(0.1)

@@ -9,7 +9,6 @@ import RecipeAlreadyRated from '@server/utils/errors/recipes/RecipeAlreadyRated'
 import { NoResultError } from 'kysely';
 import { PostgresError } from 'pg-error-enum';
 import logger from '@server/logger';
-import type { Nullable } from '@server/shared/types';
 import {
   validateRecipeAndUserIsNotAuthor,
   validateRecipeExists,
@@ -22,10 +21,13 @@ interface RatingInputFull {
 }
 
 export interface RatingsService {
-  getUserRatingForRecipe: (recipeId: number, userId: string) => Promise<Rating>;
-  create: (recipeToRate: RatingInputFull) => Promise<RatingsPublic | undefined>;
+  getUserRatingForRecipe: (
+    recipeId: number,
+    userId: string
+  ) => Promise<Rating | undefined>;
+  create: (recipeToRate: RatingInputFull) => Promise<Rating>;
   update: (recipeToUpdate: RatingInputFull) => Promise<Rating>;
-  remove: (userId: string, recipeId: number) => Promise<Nullable<Rating>>;
+  remove: (userId: string, recipeId: number) => Promise<Rating>;
 }
 
 export function ratingsService(database: Database): RatingsService {
@@ -61,19 +63,21 @@ export function ratingsService(database: Database): RatingsService {
 
         const ratedRecipe: RatingsPublic = {
           ...newRating,
-          rating: updatedRecipe?.rating ?? newRating.rating,
+          rating: updatedRecipe?.rating ?? 0,
         };
 
         logger.info(
-          `User: ${ratedRecipe.userId} rated recipe: ${ratedRecipe.recipeId} with rating: ${ratedRecipe.rating}`
+          `User: ${ratedRecipe.userId} rated recipe: ${ratedRecipe.recipeId} with rating: ${newRating.rating}`
         );
-        return ratedRecipe;
+        return ratedRecipe.rating;
       } catch (error) {
         assertPostgresError(error);
 
         if (error.code == PostgresError.UNIQUE_VIOLATION) {
           throw new RecipeAlreadyRated();
         }
+
+        throw error;
       }
     },
 
@@ -87,9 +91,9 @@ export function ratingsService(database: Database): RatingsService {
       );
 
       logger.info(
-        `User: ${updatedRecipe?.userId} rated recipe: ${updatedRecipe?.id} with rating: ${updatedRecipe?.rating}`
+        `User: ${updatedRecipe?.userId} rated recipe: ${updatedRecipe?.id} with rating: ${updatedRating.rating}`
       );
-      return updatedRecipe?.rating ?? updatedRating.rating;
+      return updatedRecipe?.rating ?? 0;
     },
 
     async remove(userId, recipeId) {
@@ -103,9 +107,11 @@ export function ratingsService(database: Database): RatingsService {
         logger.info(
           `User: ${removedRating.userId} removed rating for recipe: ${removedRating.recipeId} with rating: ${removedRating.rating}`
         );
-        return updatedRecipe?.rating;
+        return updatedRecipe?.rating ?? 0;
       } catch (error) {
         if (error instanceof NoResultError) throw new RatingNotFound();
+
+        throw error;
       }
     },
   };

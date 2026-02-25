@@ -55,17 +55,18 @@ describe('Authenticated tests', () => {
   });
 
   it('Should update the rating', async () => {
+    const newAverageRating = 3.5;
     const updateInput = {
       userId: user.id,
       recipeId,
       rating: ratingForUpdate,
     };
 
-    mockUpdate.mockResolvedValueOnce(updateInput.rating);
+    mockUpdate.mockResolvedValueOnce(newAverageRating);
 
     const updatedRating = await update(updateInput);
 
     expect(mockUpdate).toHaveBeenCalledWith(updateInput);
-    expect(updatedRating).toBe(updateInput.rating);
+    expect(updatedRating).toBe(newAverageRating);
   });
 });

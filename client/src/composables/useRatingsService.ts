@@ -34,7 +34,7 @@ export function useRatingsService(
       const createdRating = await rateRecipe(ratingData);
 
       if (recipe.value) {
-        recipe.value.rating = createdRating?.rating;
+        recipe.value.rating = createdRating;
       }
 
       userRating.value = rating;

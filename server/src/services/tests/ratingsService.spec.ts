@@ -100,12 +100,13 @@ describe('getUserRatingForRecipe', () => {
     ).rejects.toThrow(/not found/i);
   });
 
-  it('Should return undefined if no rating was found', async () => {
-    mockRatingsRepoGetUserRatingForRecipe.mockResolvedValueOnce(undefined);
+  it('Should return 0 if no rating was found', async () => {
+    const zero = 0;
+    mockRatingsRepoGetUserRatingForRecipe.mockResolvedValueOnce(zero);
 
     await expect(
       ratingsService.getUserRatingForRecipe(recipeId, authorId)
-    ).resolves.toBeUndefined();
+    ).resolves.toBe(zero);
   });
 
   it('Should return rating when the rating exists', async () => {
@@ -136,40 +137,42 @@ describe('create', () => {
     );
   });
 
-  it('Should throw an error when rating is already present in database', async () => {
+  describe('Postgres errors', () => {
     vi.mock('@server/utils/errors', () => ({
       assertPostgresError: vi.fn(),
     }));
 
-    mockRatingsRepoCreate.mockRejectedValueOnce({
-      code: PostgresError.UNIQUE_VIOLATION,
+    it('Should throw an error when rating is already present in database', async () => {
+      mockRatingsRepoCreate.mockRejectedValueOnce({
+        code: PostgresError.UNIQUE_VIOLATION,
+      });
+
+      await expect(ratingsService.create(fakeRecipeToRate)).rejects.toThrow(
+        /exists|created|already/i
+      );
     });
 
-    await expect(ratingsService.create(fakeRecipeToRate)).rejects.toThrow(
-      /exists|created|already/i
-    );
+    it('Should rethrow any other Postgres error', async () => {
+      mockRatingsRepoCreate.mockRejectedValueOnce({
+        code: PostgresError.ACTIVE_SQL_TRANSACTION,
+      });
+
+      await expect(ratingsService.create(fakeRecipeToRate)).rejects.toThrow();
+    });
   });
 
   it('Should rate the recipe', async () => {
-    const ratedRecipe = await ratingsService.create(fakeRecipeToRate);
+    const rating = await ratingsService.create(fakeRecipeToRate);
 
-    expect(ratedRecipe).toEqual({
-      ...fakeRecipeToRate,
-      rating: fakeAverageRating,
-      createdAt: expect.any(Date),
-    });
+    expect(rating).toBe(fakeAverageRating);
   });
 
-  it('Should return the raw ratings if the recipe cannot be fetched after creation', async () => {
+  it('Should return 0 if the recipe cannot be fetched after creation', async () => {
     mockRecipesFindById.mockResolvedValueOnce(undefined);
 
-    const ratedRecipe = await ratingsService.create(fakeRecipeToRate);
+    const rating = await ratingsService.create(fakeRecipeToRate);
 
-    expect(ratedRecipe).toEqual({
-      ...fakeRecipeToRate,
-      rating: fakeRecipeToRate.rating,
-      createdAt: expect.any(Date),
-    });
+    expect(rating).toBe(0);
   });
 });
 
@@ -188,12 +191,12 @@ describe('update', () => {
     expect(updatedRating).toBe(fakeRecipeToUpdate.rating);
   });
 
-  it('Should return the raw rating if the recipe cannot be fetched after update', async () => {
+  it('Should return zero if the recipe cannot be fetched after update', async () => {
     mockRecipesFindById.mockResolvedValueOnce(undefined);
 
     const updatedRating = await ratingsService.update(fakeRecipeToUpdate);
 
-    expect(updatedRating).toBe(fakeRecipeToUpdate.rating);
+    expect(updatedRating).toBe(0);
   });
 });
 
@@ -209,9 +212,26 @@ describe('remove', async () => {
     );
   });
 
-  it('Should remove the rating', async () => {
+  it('Should rethrow any other error', async () => {
+    const errorMessage = 'Something happened';
+    mockRatingsRepoRemove.mockRejectedValueOnce(new Error(errorMessage));
+
+    await expect(ratingsService.remove(userId, recipeId)).rejects.toThrow(
+      errorMessage
+    );
+  });
+
+  it('Should remove the rating and return the new average rating', async () => {
     const removedRating = await ratingsService.remove(userId, recipeId);
 
     expect(removedRating).toBe(fakeAverageRating);
+  });
+
+  it('Should remove the rating and return 0 if new recipe rating is undefined', async () => {
+    mockRecipesFindById.mockResolvedValueOnce(undefined);
+
+    const removedRating = await ratingsService.remove(userId, recipeId);
+
+    expect(removedRating).toBe(0);
   });
 });

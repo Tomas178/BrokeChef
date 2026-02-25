@@ -56,6 +56,7 @@ describe('Authenticated tests', () => {
         name: user.name,
         image: user.image,
       },
+      rating: 1.5,
     });
 
     const recipeCreated = await create(createRecipeData);

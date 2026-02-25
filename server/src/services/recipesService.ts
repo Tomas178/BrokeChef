@@ -184,13 +184,7 @@ export function recipesService(database: Database): RecipesService {
 
       const assignedRecipes = await assignSignedUrls(recipes);
 
-      for (const recipe of assignedRecipes) {
-        if (!recipe.rating) {
-          recipe.rating = undefined;
-        }
-      }
-
-      return recipes;
+      return assignedRecipes;
     },
 
     async findById(recipeId) {
@@ -206,13 +200,7 @@ export function recipesService(database: Database): RecipesService {
 
       const assignedRecipes = await assignSignedUrls(recipes);
 
-      for (const recipe of assignedRecipes) {
-        if (!recipe.rating) {
-          recipe.rating = undefined;
-        }
-      }
-
-      return recipes;
+      return assignedRecipes;
     },
 
     async findAllRecommended(userId, pagination) {
@@ -228,13 +216,7 @@ export function recipesService(database: Database): RecipesService {
 
       const assignedRecipes = await assignSignedUrls(recipes);
 
-      for (const recipe of assignedRecipes) {
-        if (!recipe.rating) {
-          recipe.rating = undefined;
-        }
-      }
-
-      return recipes;
+      return assignedRecipes;
     },
 
     async remove(recipeId) {

@@ -9,7 +9,10 @@ import type { Insertable } from 'kysely';
 const TABLE = 'ratings';
 
 export interface RatingsRepository {
-  getUserRatingForRecipe: (recipeId: number, userId: string) => Promise<Rating>;
+  getUserRatingForRecipe: (
+    recipeId: number,
+    userId: string
+  ) => Promise<Rating | undefined>;
   create: (recipeToRate: Insertable<Ratings>) => Promise<RatingsPublic>;
   update: (recipeToUpdate: Insertable<Ratings>) => Promise<RatingsPublic>;
   remove: (recipeId: number, userId: string) => Promise<RatingsPublic>;

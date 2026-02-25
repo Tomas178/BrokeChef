@@ -1,7 +1,7 @@
 import { authenticatedProcedure } from '@server/trpc/authenticatedProcedure';
 import provideServices from '@server/trpc/provideServices';
 import { ratingsService } from '@server/services/ratingsService';
-import { ratingsSchema } from '@server/entities/ratings';
+import { averageRatingSchema, ratingsSchema } from '@server/entities/ratings';
 import * as z from 'zod';
 import { withServiceErrors } from '@server/utils/errors/utils/withServiceErrors';
 
@@ -24,7 +24,7 @@ export default authenticatedProcedure
     },
   })
   .input(createRatingSchema)
-  .output(ratingsSchema.optional())
+  .output(averageRatingSchema)
   .mutation(async ({ input, ctx: { authUser, services } }) =>
     withServiceErrors(async () => {
       const createRatingInput = {

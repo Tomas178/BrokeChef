@@ -58,7 +58,7 @@ describe('create', () => {
       id: expect.any(Number),
       ...pick(recipe, recipesKeysPublic),
       author: pick(authorOne, usersKeysPublicWithoutId),
-      rating: null,
+      rating: 0,
     });
   });
 });
@@ -97,7 +97,7 @@ describe('findById', () => {
       author: pick(authorOne, usersKeysPublicWithoutId),
       ingredients: [],
       tools: [],
-      rating: null,
+      rating: 0,
     });
   });
 
@@ -144,7 +144,7 @@ describe('findCreatedByUser', () => {
     expect(createdRecipesByUser).toEqual({
       ...pick(createdRecipes, recipesKeysPublic),
       author: pick(userRater, usersKeysPublicWithoutId),
-      rating: null,
+      rating: 0,
     });
   });
 
@@ -214,7 +214,7 @@ describe('findSavedByUser', () => {
     expect(savedRecipesByUser).toEqual({
       ...pick(recipeOne, recipesKeysPublic),
       author: pick(authorOne, usersKeysPublicWithoutId),
-      rating: null,
+      rating: 0,
     });
   });
 
@@ -298,7 +298,7 @@ describe('findByCollectionId', () => {
     expect(recipes[0]).toEqual({
       ...pick(recipe, recipesKeysPublic),
       author: pick(authorOne, usersKeysPublicWithoutId),
-      rating: null,
+      rating: 0,
     });
   });
 
@@ -456,7 +456,7 @@ describe('findAll', () => {
         usersNotFromRepo.find(user => user.id === recipe.userId),
         usersKeysPublicWithoutId
       ),
-      rating: null,
+      rating: 0,
     }));
 
     const recipesFromRepo = await repository.findAll(initialPageWithSort);
@@ -498,7 +498,7 @@ describe('findAll', () => {
         usersNotFromRepo.find(user => user.id === recipe.userId),
         usersKeysPublicWithoutId
       ),
-      rating: null,
+      rating: 0,
     }));
 
     const recipesFromRepo = await repository.findAll({
@@ -572,7 +572,7 @@ describe('findAll', () => {
     });
 
     expect(recipesFromRepo[4]).toMatchObject({
-      rating: null,
+      rating: 0,
     });
   });
 
@@ -638,7 +638,7 @@ describe('findAll', () => {
     });
 
     expect(recipesFromRepo[4]).toMatchObject({
-      rating: null,
+      rating: 0,
     });
   });
 });
@@ -670,7 +670,7 @@ describe('remove', () => {
     expect(removedRecipe).toEqual({
       ...pick(removedRecipe, recipesKeysPublic),
       author: pick(authorOne, usersKeysPublicWithoutId),
-      rating: null,
+      rating: 0,
     });
   });
 

@@ -208,7 +208,7 @@ onBeforeMount(async () => {
               <div>
                 <span
                   data-testid="average-rating"
-                  v-if="recipe.rating"
+                  v-if="recipe.rating > 0"
                   class="font-bold tracking-wider text-yellow-400"
                 >
                   {{ formatRecipeRating(recipe.rating) }}/5
@@ -221,11 +221,11 @@ onBeforeMount(async () => {
                   No Ratings yet!
                 </span>
                 <span
-                  data-testid="not-rated-text"
+                  data-testid="average-rating"
                   v-else
-                  class="text-primary-green"
+                  class="font-bold tracking-wider text-yellow-400"
                 >
-                  Be the First one to Rate!
+                  {{ formatRecipeRating(recipe.rating) }}/5
                 </span>
               </div>
             </div>

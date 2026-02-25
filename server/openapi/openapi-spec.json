@@ -108,7 +108,7 @@
                       "maximum": 1000
                     },
                     "createdAt": {
-                      "default": "2026-02-23T20:35:14.675Z",
+                      "default": "2026-02-25T22:52:34.511Z",
                       "type": "string"
                     },
                     "author": {
@@ -139,16 +139,9 @@
                       "type": "string"
                     },
                     "rating": {
-                      "anyOf": [
-                        {
-                          "type": "integer",
-                          "minimum": 1,
-                          "maximum": 5
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 5
                     },
                     "steps": {
                       "type": "string",
@@ -163,6 +156,7 @@
                     "createdAt",
                     "author",
                     "imageUrl",
+                    "rating",
                     "steps"
                   ],
                   "additionalProperties": false
@@ -399,7 +393,7 @@
                         "maximum": 1000
                       },
                       "createdAt": {
-                        "default": "2026-02-23T20:35:14.675Z",
+                        "default": "2026-02-25T22:52:34.511Z",
                         "type": "string"
                       },
                       "author": {
@@ -430,16 +424,9 @@
                         "type": "string"
                       },
                       "rating": {
-                        "anyOf": [
-                          {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 5
-                          },
-                          {
-                            "type": "null"
-                          }
-                        ]
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 5
                       },
                       "steps": {
                         "type": "string",
@@ -454,6 +441,7 @@
                       "createdAt",
                       "author",
                       "imageUrl",
+                      "rating",
                       "steps"
                     ],
                     "additionalProperties": false
@@ -735,7 +723,7 @@
                         "maximum": 1000
                       },
                       "createdAt": {
-                        "default": "2026-02-23T20:35:14.675Z",
+                        "default": "2026-02-25T22:52:34.511Z",
                         "type": "string"
                       },
                       "author": {
@@ -766,16 +754,9 @@
                         "type": "string"
                       },
                       "rating": {
-                        "anyOf": [
-                          {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 5
-                          },
-                          {
-                            "type": "null"
-                          }
-                        ]
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 5
                       },
                       "steps": {
                         "type": "string",
@@ -790,6 +771,7 @@
                       "createdAt",
                       "author",
                       "imageUrl",
+                      "rating",
                       "steps"
                     ],
                     "additionalProperties": false
@@ -1056,7 +1038,7 @@
                         "maximum": 1000
                       },
                       "createdAt": {
-                        "default": "2026-02-23T20:35:14.675Z",
+                        "default": "2026-02-25T22:52:34.511Z",
                         "type": "string"
                       },
                       "author": {
@@ -1087,16 +1069,9 @@
                         "type": "string"
                       },
                       "rating": {
-                        "anyOf": [
-                          {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 5
-                          },
-                          {
-                            "type": "null"
-                          }
-                        ]
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 5
                       },
                       "steps": {
                         "type": "string",
@@ -1111,6 +1086,7 @@
                       "createdAt",
                       "author",
                       "imageUrl",
+                      "rating",
                       "steps"
                     ],
                     "additionalProperties": false
@@ -1818,7 +1794,7 @@
                       }
                     },
                     "createdAt": {
-                      "default": "2026-02-23T20:35:14.675Z",
+                      "default": "2026-02-25T22:52:34.511Z",
                       "type": "string"
                     },
                     "author": {
@@ -1849,16 +1825,9 @@
                       "type": "string"
                     },
                     "rating": {
-                      "anyOf": [
-                        {
-                          "type": "integer",
-                          "minimum": 1,
-                          "maximum": 5
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 5
                     },
                     "ingredients": {
                       "type": "array",
@@ -1886,6 +1855,7 @@
                     "createdAt",
                     "author",
                     "imageUrl",
+                    "rating",
                     "ingredients",
                     "tools"
                   ],
@@ -2354,7 +2324,7 @@
                       "maxLength": 32
                     },
                     "createdAt": {
-                      "default": "2026-02-23T20:35:14.675Z",
+                      "default": "2026-02-25T22:52:34.511Z",
                       "type": "string"
                     }
                   },
@@ -2564,7 +2534,7 @@
                       "maxLength": 32
                     },
                     "createdAt": {
-                      "default": "2026-02-23T20:35:14.675Z",
+                      "default": "2026-02-25T22:52:34.511Z",
                       "type": "string"
                     }
                   },
@@ -3074,7 +3044,7 @@
                             "maximum": 1000
                           },
                           "createdAt": {
-                            "default": "2026-02-23T20:35:14.675Z",
+                            "default": "2026-02-25T22:52:34.511Z",
                             "type": "string"
                           },
                           "author": {
@@ -3105,16 +3075,9 @@
                             "type": "string"
                           },
                           "rating": {
-                            "anyOf": [
-                              {
-                                "type": "integer",
-                                "minimum": 1,
-                                "maximum": 5
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 5
                           },
                           "steps": {
                             "type": "string",
@@ -3129,6 +3092,7 @@
                           "createdAt",
                           "author",
                           "imageUrl",
+                          "rating",
                           "steps"
                         ],
                         "additionalProperties": false
@@ -3160,7 +3124,7 @@
                             "maximum": 1000
                           },
                           "createdAt": {
-                            "default": "2026-02-23T20:35:14.675Z",
+                            "default": "2026-02-25T22:52:34.511Z",
                             "type": "string"
                           },
                           "author": {
@@ -3191,16 +3155,9 @@
                             "type": "string"
                           },
                           "rating": {
-                            "anyOf": [
-                              {
-                                "type": "integer",
-                                "minimum": 1,
-                                "maximum": 5
-                              },
-                              {
-                                "type": "null"
-                              }
-                            ]
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 5
                           },
                           "steps": {
                             "type": "string",
@@ -3215,6 +3172,7 @@
                           "createdAt",
                           "author",
                           "imageUrl",
+                          "rating",
                           "steps"
                         ],
                         "additionalProperties": false
@@ -3497,7 +3455,7 @@
                         "maximum": 1000
                       },
                       "createdAt": {
-                        "default": "2026-02-23T20:35:14.675Z",
+                        "default": "2026-02-25T22:52:34.511Z",
                         "type": "string"
                       },
                       "author": {
@@ -3528,16 +3486,9 @@
                         "type": "string"
                       },
                       "rating": {
-                        "anyOf": [
-                          {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 5
-                          },
-                          {
-                            "type": "null"
-                          }
-                        ]
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 5
                       },
                       "steps": {
                         "type": "string",
@@ -3552,6 +3503,7 @@
                       "createdAt",
                       "author",
                       "imageUrl",
+                      "rating",
                       "steps"
                     ],
                     "additionalProperties": false
@@ -3827,7 +3779,7 @@
                         "maximum": 1000
                       },
                       "createdAt": {
-                        "default": "2026-02-23T20:35:14.675Z",
+                        "default": "2026-02-25T22:52:34.511Z",
                         "type": "string"
                       },
                       "author": {
@@ -3858,16 +3810,9 @@
                         "type": "string"
                       },
                       "rating": {
-                        "anyOf": [
-                          {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 5
-                          },
-                          {
-                            "type": "null"
-                          }
-                        ]
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 5
                       },
                       "steps": {
                         "type": "string",
@@ -3882,6 +3827,7 @@
                       "createdAt",
                       "author",
                       "imageUrl",
+                      "rating",
                       "steps"
                     ],
                     "additionalProperties": false
@@ -5064,7 +5010,7 @@
                 "schema": {
                   "type": "integer",
                   "minimum": 1,
-                  "maximum": 5
+                  "maximum": 9007199254740991
                 }
               }
             }
@@ -5290,16 +5236,9 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "anyOf": [
-                    {
-                      "type": "integer",
-                      "minimum": 1,
-                      "maximum": 5
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 5
                 }
               }
             }
@@ -5525,7 +5464,7 @@
                   "rating": {
                     "type": "integer",
                     "minimum": 1,
-                    "maximum": 5
+                    "maximum": 9007199254740991
                   }
                 },
                 "required": [
@@ -5542,35 +5481,9 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "recipeId": {
-                      "type": "integer",
-                      "exclusiveMinimum": 0,
-                      "maximum": 9007199254740991
-                    },
-                    "userId": {
-                      "type": "string",
-                      "minLength": 32,
-                      "maxLength": 32
-                    },
-                    "rating": {
-                      "type": "integer",
-                      "minimum": 1,
-                      "maximum": 5
-                    },
-                    "createdAt": {
-                      "default": "2026-02-23T20:35:14.675Z",
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "recipeId",
-                    "userId",
-                    "rating",
-                    "createdAt"
-                  ],
-                  "additionalProperties": false
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 5
                 }
               }
             }
@@ -5758,7 +5671,7 @@
                   "rating": {
                     "type": "integer",
                     "minimum": 1,
-                    "maximum": 5
+                    "maximum": 9007199254740991
                   }
                 },
                 "required": [
@@ -5775,8 +5688,8 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "integer",
-                  "minimum": 1,
+                  "type": "number",
+                  "minimum": 0,
                   "maximum": 5
                 }
               }
@@ -6018,7 +5931,7 @@
                       "maxLength": 32
                     },
                     "createdAt": {
-                      "default": "2026-02-23T20:35:14.675Z",
+                      "default": "2026-02-25T22:52:34.511Z",
                       "type": "string"
                     }
                   },
@@ -7654,7 +7567,7 @@
                       "maximum": 9007199254740991
                     },
                     "createdAt": {
-                      "default": "2026-02-23T20:35:14.675Z",
+                      "default": "2026-02-25T22:52:34.511Z",
                       "type": "string"
                     }
                   },
@@ -8336,11 +8249,11 @@
                       "type": "string"
                     },
                     "createdAt": {
-                      "default": "2026-02-23T20:35:14.675Z",
+                      "default": "2026-02-25T22:52:34.511Z",
                       "type": "string"
                     },
                     "updatedAt": {
-                      "default": "2026-02-23T20:35:14.676Z",
+                      "default": "2026-02-25T22:52:34.511Z",
                       "type": "string"
                     }
                   },
@@ -8562,11 +8475,11 @@
                       "type": "string"
                     },
                     "createdAt": {
-                      "default": "2026-02-23T20:35:14.675Z",
+                      "default": "2026-02-25T22:52:34.511Z",
                       "type": "string"
                     },
                     "updatedAt": {
-                      "default": "2026-02-23T20:35:14.676Z",
+                      "default": "2026-02-25T22:52:34.511Z",
                       "type": "string"
                     }
                   },
@@ -9081,7 +8994,7 @@
                         "maximum": 1000
                       },
                       "createdAt": {
-                        "default": "2026-02-23T20:35:14.675Z",
+                        "default": "2026-02-25T22:52:34.511Z",
                         "type": "string"
                       },
                       "author": {
@@ -9112,16 +9025,9 @@
                         "type": "string"
                       },
                       "rating": {
-                        "anyOf": [
-                          {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 5
-                          },
-                          {
-                            "type": "null"
-                          }
-                        ]
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 5
                       },
                       "steps": {
                         "type": "string",
@@ -9136,6 +9042,7 @@
                       "createdAt",
                       "author",
                       "imageUrl",
+                      "rating",
                       "steps"
                     ],
                     "additionalProperties": false
@@ -9850,7 +9757,7 @@
                       "maximum": 9007199254740991
                     },
                     "createdAt": {
-                      "default": "2026-02-23T20:35:14.675Z",
+                      "default": "2026-02-25T22:52:34.511Z",
                       "type": "string"
                     }
                   },

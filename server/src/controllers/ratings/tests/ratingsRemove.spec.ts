@@ -22,7 +22,7 @@ const database = {} as Database;
 const user = fakeUser();
 const recipeId = 123;
 
-const fakeRating = 2;
+const fakeRating = 2.5;
 
 beforeEach(() => vi.resetAllMocks());
 
@@ -50,14 +50,15 @@ describe('Authenticated tests', () => {
     await expect(remove({ id: recipeId })).rejects.toThrow(/unexpected/i);
   });
 
-  it('Should remove the rating and return undefined when no ratings for the recipe are left', async () => {
-    mockRemove.mockResolvedValueOnce(undefined);
+  it('Should remove the rating and return 0 when no ratings for the recipe are left', async () => {
+    const zero = 0;
+    mockRemove.mockResolvedValueOnce(zero);
 
     const removedRating = await remove({ id: recipeId });
 
     expect(mockRemove).toHaveBeenCalledExactlyOnceWith(user.id, recipeId);
 
-    expect(removedRating).toBeUndefined();
+    expect(removedRating).toBe(zero);
   });
 
   it('Should remove the rating and return new rating for the recipe if any ratings are left', async () => {

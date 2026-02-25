@@ -3,7 +3,7 @@ import provideServices from '@server/trpc/provideServices';
 import { ratingsService } from '@server/services/ratingsService';
 import { integerIdObjectSchema } from '@server/entities/shared';
 import { withServiceErrors } from '@server/utils/errors/utils/withServiceErrors';
-import { ratingOptionalSchema } from '@server/entities/ratings';
+import { averageRatingSchema } from '@server/entities/ratings';
 
 export default authenticatedProcedure
   .use(provideServices({ ratingsService }))
@@ -17,7 +17,7 @@ export default authenticatedProcedure
     },
   })
   .input(integerIdObjectSchema)
-  .output(ratingOptionalSchema.nullable())
+  .output(averageRatingSchema)
   .mutation(async ({ input: { id: recipeId }, ctx: { authUser, services } }) =>
     withServiceErrors(async () => {
       const ratingAfterRemoval = await services.ratingsService.remove(

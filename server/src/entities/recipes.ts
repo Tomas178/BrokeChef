@@ -7,7 +7,6 @@ import {
   MIN_DURATION,
   MIN_RECIPE_TITLE_LENGTH,
 } from '@server/shared/consts';
-import type { Nullable } from '@server/shared/types';
 import { createdAtSchema, integerIdSchema, oauthUserIdSchema } from './shared';
 import type { UsersPublicWithoutId } from './users';
 import type { IngredientsName } from './ingredients';
@@ -46,7 +45,7 @@ export const recipesKeysPublic = recipesKeysAll.filter(
 export type RecipesPublic = Pick<
   Selectable<Recipes>,
   (typeof recipesKeysPublic)[number]
-> & { author: UsersPublicWithoutId; rating?: Nullable<Rating> };
+> & { author: UsersPublicWithoutId; rating: Rating };
 
 export type RecipesPublicWithoutRating = Omit<RecipesPublic, 'rating'>;
 
