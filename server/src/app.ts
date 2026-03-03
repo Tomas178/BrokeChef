@@ -17,7 +17,7 @@ import uploadRouter from './routes/uploadRouter';
 import generateRecipesRouter from './routes/generateRecipesRouter';
 import { gracefulShutdownManager } from './utils/GracefulShutdownManager';
 import ServiceUnavailable from './utils/errors/general/ServiceUnavailable';
-import mobileOAuthCallback from './middleware/mobileOAuthCallback';
+import { mobileOAuthCallback } from './middleware/mobileOAuthCallback';
 
 export default function createApp(database: Database) {
   const app = express();
