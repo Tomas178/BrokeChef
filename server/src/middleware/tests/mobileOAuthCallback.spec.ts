@@ -54,7 +54,7 @@ describe('mobileOAuthCallback', () => {
   it('Should redirect with session_token when session cookie exists', async () => {
     req.query = { redirect: 'brokechef://auth/callback' };
     req.headers = {
-      cookie: 'better-auth.session_token=abc123token',
+      cookie: 'brokechef.session_token=abc123token',
     };
 
     await mobileOAuthCallback(req as Request, res as Response, next);
@@ -68,7 +68,7 @@ describe('mobileOAuthCallback', () => {
     req.query = { redirect: 'brokechef://auth/callback' };
     req.headers = {
       cookie:
-        'some_cookie=foo; better-auth.session_token=mytoken123; another=bar',
+        'some_cookie=foo; brokechef.session_token=mytoken123; another=bar',
     };
 
     await mobileOAuthCallback(req as Request, res as Response, next);
@@ -82,7 +82,7 @@ describe('mobileOAuthCallback', () => {
     const encodedToken = 'token%2Bwith%2Bplus%3Dand%2Fslash';
     req.query = { redirect: 'brokechef://auth/callback' };
     req.headers = {
-      cookie: `better-auth.session_token=${encodedToken}`,
+      cookie: `brokechef.session_token=${encodedToken}`,
     };
 
     await mobileOAuthCallback(req as Request, res as Response, next);
@@ -99,7 +99,7 @@ describe('mobileOAuthCallback', () => {
     const signedToken = 'abc123.signature%2Bpart%3D%3D';
     req.query = { redirect: 'brokechef://auth/callback' };
     req.headers = {
-      cookie: `better-auth.session_token=${signedToken}`,
+      cookie: `brokechef.session_token=${signedToken}`,
     };
 
     await mobileOAuthCallback(req as Request, res as Response, next);
@@ -115,7 +115,7 @@ describe('mobileOAuthCallback', () => {
   it('Should preserve existing query parameters on the redirect URL', async () => {
     req.query = { redirect: 'brokechef://auth/callback?existing=param' };
     req.headers = {
-      cookie: 'better-auth.session_token=mytoken',
+      cookie: 'brokechef.session_token=mytoken',
     };
 
     await mobileOAuthCallback(req as Request, res as Response, next);

@@ -1,4 +1,7 @@
+import config from '@server/config';
 import type { RequestHandler } from 'express';
+
+const COOKIE_NAME = `${config.auth.betterAuth.cookiePrefix}.session_token`;
 
 const mobileOAuthCallback: RequestHandler = async (req, res) => {
   const redirect = req.query.redirect as string | undefined;
@@ -12,7 +15,7 @@ const mobileOAuthCallback: RequestHandler = async (req, res) => {
   const sessionCookie = cookies
     .split(';')
     .map(c => c.trim())
-    .find(c => c.startsWith('better-auth.session_token='));
+    .find(c => c.startsWith(`${COOKIE_NAME}=`));
 
   if (!sessionCookie) {
     const redirectUrl = new URL(redirect);

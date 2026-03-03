@@ -110,4 +110,8 @@ export const auth = betterAuth({
   secret: config.auth.betterAuth.secret,
 
   trustedOrigins: config.auth.betterAuth.trustedOrigins,
+
+  advanced: {
+    cookiePrefix: config.auth.betterAuth.cookiePrefix,
+  },
 });

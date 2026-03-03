@@ -59,6 +59,7 @@ const schema = z
         }),
         url: z.url(),
         trustedOrigins: z.array(z.url()),
+        cookiePrefix: z.string().nonempty(),
       }),
 
       aws: z.object({
@@ -122,6 +123,7 @@ const config = schema.parse({
       secret: env.BETTER_AUTH_SECRET,
       url: env.BETTER_AUTH_URL,
       trustedOrigins: [env.BETTER_AUTH_URL, env.FRONT_END_URL, env.MOBILE_URL],
+      cookiePrefix: 'brokechef',
     },
 
     aws: {
