@@ -1,10 +1,30 @@
-import type { Request, Response } from 'express';
-import mobileOAuthCallback from '../mobileOAuthCallback';
+import type { Request, Response, NextFunction } from 'express';
+import { mobileOAuthCallback } from '../mobileOAuthCallback';
+
+const [mockGetSession] = vi.hoisted(() => [vi.fn()]);
+
+vi.mock('@server/auth', () => ({
+  auth: {
+    api: {
+      getSession: mockGetSession,
+    },
+  },
+}));
+
+vi.mock('@server/config', () => ({
+  default: {
+    auth: {
+      betterAuth: {
+        cookiePrefix: 'brokechef',
+      },
+    },
+  },
+}));
 
 describe('mobileOAuthCallback', () => {
   let req: Partial<Request>;
   let res: Partial<Response>;
-  const next = vi.fn();
+  let next: NextFunction;
 
   beforeEach(() => {
     req = {
@@ -16,6 +36,7 @@ describe('mobileOAuthCallback', () => {
       json: vi.fn().mockReturnThis(),
       redirect: vi.fn(),
     };
+    next = vi.fn();
     vi.clearAllMocks();
   });
 
@@ -29,9 +50,10 @@ describe('mobileOAuthCallback', () => {
     expect(res.redirect).not.toHaveBeenCalled();
   });
 
-  it('Should redirect with error=no_session if no session cookie is present', async () => {
+  it('Should redirect with error=no_session if getSession returns null', async () => {
     req.query = { redirect: 'brokechef://auth/callback' };
     req.headers = {};
+    mockGetSession.mockResolvedValue(null);
 
     await mobileOAuthCallback(req as Request, res as Response, next);
 
@@ -40,28 +62,40 @@ describe('mobileOAuthCallback', () => {
     );
   });
 
-  it('Should redirect with error=no_session if cookies exist but no session cookie', async () => {
-    req.query = { redirect: 'brokechef://auth/callback' };
-    req.headers = { cookie: 'other_cookie=value; another=123' };
-
-    await mobileOAuthCallback(req as Request, res as Response, next);
-
-    expect(res.redirect).toHaveBeenCalledWith(
-      'brokechef://auth/callback?error=no_session'
-    );
-  });
-
-  it('Should redirect with session_token when session cookie exists', async () => {
+  it('Should redirect with signed token from cookie when both session and cookie exist', async () => {
     req.query = { redirect: 'brokechef://auth/callback' };
     req.headers = {
-      cookie: 'brokechef.session_token=abc123token',
+      cookie: 'brokechef.session_token=signedToken123.signature',
     };
+    mockGetSession.mockResolvedValue({
+      session: { token: 'unsignedToken123' },
+      user: { id: '1' },
+    });
 
     await mobileOAuthCallback(req as Request, res as Response, next);
 
-    expect(res.redirect).toHaveBeenCalledWith(
-      'brokechef://auth/callback?session_token=abc123token'
+    const redirectUrl = (res.redirect as ReturnType<typeof vi.fn>).mock
+      .calls[0][0] as string;
+    const url = new URL(redirectUrl);
+    expect(url.searchParams.get('session_token')).toBe(
+      'signedToken123.signature'
     );
+  });
+
+  it('Should fall back to session token when cookie is not present', async () => {
+    req.query = { redirect: 'brokechef://auth/callback' };
+    req.headers = {};
+    mockGetSession.mockResolvedValue({
+      session: { token: 'unsignedToken123' },
+      user: { id: '1' },
+    });
+
+    await mobileOAuthCallback(req as Request, res as Response, next);
+
+    const redirectUrl = (res.redirect as ReturnType<typeof vi.fn>).mock
+      .calls[0][0] as string;
+    const url = new URL(redirectUrl);
+    expect(url.searchParams.get('session_token')).toBe('unsignedToken123');
   });
 
   it('Should extract session cookie when multiple cookies are present', async () => {
@@ -70,12 +104,17 @@ describe('mobileOAuthCallback', () => {
       cookie:
         'some_cookie=foo; brokechef.session_token=mytoken123; another=bar',
     };
+    mockGetSession.mockResolvedValue({
+      session: { token: 'fallback' },
+      user: { id: '1' },
+    });
 
     await mobileOAuthCallback(req as Request, res as Response, next);
 
-    expect(res.redirect).toHaveBeenCalledWith(
-      'brokechef://auth/callback?session_token=mytoken123'
-    );
+    const redirectUrl = (res.redirect as ReturnType<typeof vi.fn>).mock
+      .calls[0][0] as string;
+    const url = new URL(redirectUrl);
+    expect(url.searchParams.get('session_token')).toBe('mytoken123');
   });
 
   it('Should decode URL-encoded session token', async () => {
@@ -84,6 +123,10 @@ describe('mobileOAuthCallback', () => {
     req.headers = {
       cookie: `brokechef.session_token=${encodedToken}`,
     };
+    mockGetSession.mockResolvedValue({
+      session: { token: 'fallback' },
+      user: { id: '1' },
+    });
 
     await mobileOAuthCallback(req as Request, res as Response, next);
 
@@ -101,6 +144,10 @@ describe('mobileOAuthCallback', () => {
     req.headers = {
       cookie: `brokechef.session_token=${signedToken}`,
     };
+    mockGetSession.mockResolvedValue({
+      session: { token: 'fallback' },
+      user: { id: '1' },
+    });
 
     await mobileOAuthCallback(req as Request, res as Response, next);
 
@@ -117,6 +164,10 @@ describe('mobileOAuthCallback', () => {
     req.headers = {
       cookie: 'brokechef.session_token=mytoken',
     };
+    mockGetSession.mockResolvedValue({
+      session: { token: 'fallback' },
+      user: { id: '1' },
+    });
 
     await mobileOAuthCallback(req as Request, res as Response, next);
 
@@ -127,14 +178,31 @@ describe('mobileOAuthCallback', () => {
     expect(url.searchParams.get('session_token')).toBe('mytoken');
   });
 
-  it('Should handle empty cookie header', async () => {
+  it('Should redirect with error=session_error if getSession throws', async () => {
     req.query = { redirect: 'brokechef://auth/callback' };
-    req.headers = { cookie: '' };
+    req.headers = {};
+    mockGetSession.mockRejectedValue(new Error('DB connection failed'));
 
     await mobileOAuthCallback(req as Request, res as Response, next);
 
     expect(res.redirect).toHaveBeenCalledWith(
-      'brokechef://auth/callback?error=no_session'
+      'brokechef://auth/callback?error=session_error'
     );
+  });
+
+  it('Should handle empty cookie header with valid session', async () => {
+    req.query = { redirect: 'brokechef://auth/callback' };
+    req.headers = { cookie: '' };
+    mockGetSession.mockResolvedValue({
+      session: { token: 'sessionToken' },
+      user: { id: '1' },
+    });
+
+    await mobileOAuthCallback(req as Request, res as Response, next);
+
+    const redirectUrl = (res.redirect as ReturnType<typeof vi.fn>).mock
+      .calls[0][0] as string;
+    const url = new URL(redirectUrl);
+    expect(url.searchParams.get('session_token')).toBe('sessionToken');
   });
 });
