@@ -41,8 +41,6 @@ jobs:
 
       REDIS_HOST: ${{ vars.DEV_REDIS_HOST }}
       REDIS_PORT: ${{ vars.DEV_REDIS_PORT }}
-
-      MOBILE_URL: ${{ vars.MOBILE_URL }}
     services:
       postgres:
         image: pgvector/pgvector:pg17
@@ -242,8 +240,7 @@ jobs:
                 "FRONT_END_FULL_URL": "${{ vars.FRONT_END_FULL_URL }}",
                 "DATABASE_URL": "${{ secrets.PROD_DATABASE_URL }}",
                 "REDIS_HOST": "${{ vars.DEV_REDIS_HOST }}",
-                "REDIS_PORT": "${{ vars.DEV_REDIS_PORT }}",
-                "MOBILE_URL": "${{ vars.MOBILE_URL }}"
+                "REDIS_PORT": "${{ vars.DEV_REDIS_PORT }}"
               }
             },
             "redis": {

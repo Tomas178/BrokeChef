@@ -28,7 +28,7 @@ gracefulShutdownManager.registerCleanup(
 
 const app = createApp(database);
 
-const server = app.listen(config.port, () => {
+const server = app.listen(config.port, '0.0.0.0', () => {
   logger.info(`Server is running at port: ${config.port}`);
 });
 
