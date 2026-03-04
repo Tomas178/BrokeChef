@@ -11,16 +11,6 @@ vi.mock('@server/auth', () => ({
   },
 }));
 
-vi.mock('@server/config', () => ({
-  default: {
-    auth: {
-      betterAuth: {
-        cookiePrefix: 'brokechef',
-      },
-    },
-  },
-}));
-
 describe('mobileOAuthCallback', () => {
   let req: Partial<Request>;
   let res: Partial<Response>;
@@ -62,32 +52,17 @@ describe('mobileOAuthCallback', () => {
     );
   });
 
-  it('Should redirect with signed token from cookie when both session and cookie exist', async () => {
-    req.query = { redirect: 'brokechef://auth/callback' };
-    req.headers = {
-      cookie: 'brokechef.session_token=signedToken123.signature',
-    };
-    mockGetSession.mockResolvedValue({
-      session: { token: 'unsignedToken123' },
-      user: { id: '1' },
-    });
-
-    await mobileOAuthCallback(req as Request, res as Response, next);
-
-    const redirectUrl = (res.redirect as ReturnType<typeof vi.fn>).mock
-      .calls[0][0] as string;
-    const url = new URL(redirectUrl);
-    expect(url.searchParams.get('session_token')).toBe(
-      'signedToken123.signature'
-    );
-  });
-
-  it('Should fall back to session token when cookie is not present', async () => {
+  it('Should redirect with session token and user data when session exists', async () => {
     req.query = { redirect: 'brokechef://auth/callback' };
     req.headers = {};
     mockGetSession.mockResolvedValue({
-      session: { token: 'unsignedToken123' },
-      user: { id: '1' },
+      session: { token: 'abc123token' },
+      user: {
+        id: 'user-1',
+        name: 'Test User',
+        email: 'test@test.com',
+        image: 'https://example.com/avatar.jpg',
+      },
     });
 
     await mobileOAuthCallback(req as Request, res as Response, next);
@@ -95,58 +70,26 @@ describe('mobileOAuthCallback', () => {
     const redirectUrl = (res.redirect as ReturnType<typeof vi.fn>).mock
       .calls[0][0] as string;
     const url = new URL(redirectUrl);
-    expect(url.searchParams.get('session_token')).toBe('unsignedToken123');
-  });
-
-  it('Should extract session cookie when multiple cookies are present', async () => {
-    req.query = { redirect: 'brokechef://auth/callback' };
-    req.headers = {
-      cookie:
-        'some_cookie=foo; brokechef.session_token=mytoken123; another=bar',
-    };
-    mockGetSession.mockResolvedValue({
-      session: { token: 'fallback' },
-      user: { id: '1' },
-    });
-
-    await mobileOAuthCallback(req as Request, res as Response, next);
-
-    const redirectUrl = (res.redirect as ReturnType<typeof vi.fn>).mock
-      .calls[0][0] as string;
-    const url = new URL(redirectUrl);
-    expect(url.searchParams.get('session_token')).toBe('mytoken123');
-  });
-
-  it('Should decode URL-encoded session token', async () => {
-    const encodedToken = 'token%2Bwith%2Bplus%3Dand%2Fslash';
-    req.query = { redirect: 'brokechef://auth/callback' };
-    req.headers = {
-      cookie: `brokechef.session_token=${encodedToken}`,
-    };
-    mockGetSession.mockResolvedValue({
-      session: { token: 'fallback' },
-      user: { id: '1' },
-    });
-
-    await mobileOAuthCallback(req as Request, res as Response, next);
-
-    const redirectUrl = (res.redirect as ReturnType<typeof vi.fn>).mock
-      .calls[0][0] as string;
-    const url = new URL(redirectUrl);
-    expect(url.searchParams.get('session_token')).toBe(
-      'token+with+plus=and/slash'
+    expect(url.searchParams.get('session_token')).toBe('abc123token');
+    expect(url.searchParams.get('user_id')).toBe('user-1');
+    expect(url.searchParams.get('user_name')).toBe('Test User');
+    expect(url.searchParams.get('user_email')).toBe('test@test.com');
+    expect(url.searchParams.get('user_image')).toBe(
+      'https://example.com/avatar.jpg'
     );
   });
 
-  it('Should handle signed tokens containing equals signs', async () => {
-    const signedToken = 'abc123.signature%2Bpart%3D%3D';
+  it('Should omit user_image when not present', async () => {
     req.query = { redirect: 'brokechef://auth/callback' };
-    req.headers = {
-      cookie: `brokechef.session_token=${signedToken}`,
-    };
+    req.headers = {};
     mockGetSession.mockResolvedValue({
-      session: { token: 'fallback' },
-      user: { id: '1' },
+      session: { token: 'abc123token' },
+      user: {
+        id: 'user-1',
+        name: 'Test User',
+        email: 'test@test.com',
+        image: null,
+      },
     });
 
     await mobileOAuthCallback(req as Request, res as Response, next);
@@ -154,19 +97,22 @@ describe('mobileOAuthCallback', () => {
     const redirectUrl = (res.redirect as ReturnType<typeof vi.fn>).mock
       .calls[0][0] as string;
     const url = new URL(redirectUrl);
-    expect(url.searchParams.get('session_token')).toBe(
-      'abc123.signature+part=='
-    );
+    expect(url.searchParams.get('session_token')).toBe('abc123token');
+    expect(url.searchParams.get('user_id')).toBe('user-1');
+    expect(url.searchParams.has('user_image')).toBe(false);
   });
 
   it('Should preserve existing query parameters on the redirect URL', async () => {
     req.query = { redirect: 'brokechef://auth/callback?existing=param' };
-    req.headers = {
-      cookie: 'brokechef.session_token=mytoken',
-    };
+    req.headers = {};
     mockGetSession.mockResolvedValue({
-      session: { token: 'fallback' },
-      user: { id: '1' },
+      session: { token: 'mytoken' },
+      user: {
+        id: 'user-1',
+        name: 'Test User',
+        email: 'test@test.com',
+        image: null,
+      },
     });
 
     await mobileOAuthCallback(req as Request, res as Response, next);
@@ -188,21 +134,5 @@ describe('mobileOAuthCallback', () => {
     expect(res.redirect).toHaveBeenCalledWith(
       'brokechef://auth/callback?error=session_error'
     );
-  });
-
-  it('Should handle empty cookie header with valid session', async () => {
-    req.query = { redirect: 'brokechef://auth/callback' };
-    req.headers = { cookie: '' };
-    mockGetSession.mockResolvedValue({
-      session: { token: 'sessionToken' },
-      user: { id: '1' },
-    });
-
-    await mobileOAuthCallback(req as Request, res as Response, next);
-
-    const redirectUrl = (res.redirect as ReturnType<typeof vi.fn>).mock
-      .calls[0][0] as string;
-    const url = new URL(redirectUrl);
-    expect(url.searchParams.get('session_token')).toBe('sessionToken');
   });
 });
