@@ -17,8 +17,6 @@ import uploadRouter from './routes/uploadRouter';
 import generateRecipesRouter from './routes/generateRecipesRouter';
 import { gracefulShutdownManager } from './utils/GracefulShutdownManager';
 import ServiceUnavailable from './utils/errors/general/ServiceUnavailable';
-import { mobileOAuthCallback } from './middleware/mobileOAuthCallback';
-import { authenticate } from './middleware/authenticate';
 
 export default function createApp(database: Database) {
   const app = express();
@@ -45,10 +43,6 @@ export default function createApp(database: Database) {
     next();
   });
 
-  app.use('/api/auth/mobile-callback', mobileOAuthCallback);
-  app.get('/api/auth/me', authenticate, (req, res) => {
-    res.json({ user: req.user });
-  });
   app.all('/api/auth/{*splat}', toNodeHandler(auth));
 
   app.use('/api/upload', uploadRouter);

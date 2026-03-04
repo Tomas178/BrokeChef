@@ -122,7 +122,7 @@ const config = schema.parse({
     betterAuth: {
       secret: env.BETTER_AUTH_SECRET,
       url: env.BETTER_AUTH_URL,
-      trustedOrigins: [env.BETTER_AUTH_URL, env.FRONT_END_URL, env.MOBILE_URL],
+      trustedOrigins: [env.BETTER_AUTH_URL, env.FRONT_END_URL],
       cookiePrefix: 'brokechef',
     },
 
